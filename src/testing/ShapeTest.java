@@ -130,7 +130,7 @@ public class ShapeTest implements TestSuite {
                 return false;
             }
         }
-        coordinates = shape.getMatrixCoordinates(10, 10);
+        coordinates = shape.getCoordinates(10, 10);
         target[0] = new int[]{10, 10};
         target[1] = new int[]{11, 10};
         target[2] = new int[]{12, 10};
@@ -156,11 +156,22 @@ public class ShapeTest implements TestSuite {
         
         Shape shape = new Shape(matrix, 5);
         
-        shape.deleteBlock(3, 1);
+        shape.deleteBlock(2, 0);
         
         return shape.getLength() == 4
-                && shape.getWidth() == 1
+                && shape.getWidth() == 2
                 && shape.getHeight() == 4;
+    }
+    
+    public boolean getRotationalCoordinateTest() {
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0, 0, 0};
+        matrix[1] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[3] = new int[]{1, 1, 0, 0};
+        Shape shape = new Shape(matrix, 5);
+        
+        return Arrays.equals(shape.getRotationalCoordinate(), new int[]{1, 0});
     }
     
     public boolean getBottomRowTest() {
@@ -194,6 +205,8 @@ public class ShapeTest implements TestSuite {
         System.out.println(getMatrixCoordinatesTest());
         System.out.println("ShapeTest.measureTest():");
         System.out.println(measureTest());
+        System.out.println("ShapeTest.getRotationalCoordinateTest()");
+        System.out.println(getRotationalCoordinateTest());
         System.out.println("ShapeTest.getBottomRowTest():");
         System.out.println(getBottomRowTest());
     }

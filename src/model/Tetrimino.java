@@ -21,19 +21,24 @@ public class Tetrimino {
     private int mID;
     private boolean mLive;
     private Shape mShape;
+    private int[] mRootCoordinate;
     
     /** A new Tetrimino whose top-leftmost Block is located at the provided
-     * coordinates. 
+     * root coordinate.
      * 
-     * @param shape The Shape that will describe the initial Block ordering.
+     * @param shape The Shape that will describe the Block ordering.
+     * @param row The row of the root coordinate.
+     * @param col The column of the root coordinate.
      * @param ID The ID to be assigned to all Blocks in this Tetrimino. 
      */
     public Tetrimino(Shape shape, int row, int col, int ID) {
         mLive = false;
         mID = ID;
+        mShape = shape;
+        mRootCoordinate = new int[]{row, col};
         
         mBlocks = new ArrayList<Block>();
-        int[][] coordinates = shape.getMatrixCoordinates(row, col);
+        int[][] coordinates = shape.getCoordinates(row, col);
         
         for (int[] coordinate : coordinates) {
             mBlocks.add(new Block(this, coordinate[0], coordinate[1], getID()));
@@ -47,6 +52,16 @@ public class Tetrimino {
      * @param direction The direction to shift the Tetrimino. 
      */
     public void shift(Direction direction) {
+        if (direction == Direction.NORTH) {
+            mRootCoordinate[0] -= 1;
+        } else if (direction == Direction.EAST) {
+            mRootCoordinate[1] += 1;
+        } else if (direction == Direction.SOUTH){
+            mRootCoordinate[0] += 1;
+        } else if (direction == Direction.WEST) {
+            mRootCoordinate[1] -= 1;
+        }
+        
         for (Block b : mBlocks) {
             b.shift(direction);
         }
@@ -54,23 +69,55 @@ public class Tetrimino {
         Debug.print(2, "Tetrimino " + mID + " shifted " + direction);
     }
     
+    /** Deletes the bottom row of Blocks from this Tetrimino. 
+     * 
+     */
     public void deleteRow() {
         //TODO
     }
     
+    /** Deletes the Block, if present, located at matrix-coordinate position
+     * (row, col) from this Tetrimino. 
+     * 
+     * @param row The row coordinate of the Block to be deleted. 
+     * @param col The column coordinate of the Block to be deleted. 
+     */
     private void deleteBlock(int row, int col) {
         //TODO
-//        mShape.deleteBlock(row, col);
+        mShape.deleteBlock(row, col);
+        
+        Debug.print(1, "Block deleted at (" + row + ", " + col + ")");
     }
     
-
-    /** Find the coordinate point around which to rotate this Tetrimino. 
-     * 
-     * @return The rotational coordinate. 
+    /** Rotates this Tetrimino piece 90 degrees clockwise about its rotational 
+     * coordinate.
      */
-    private int[] findRotationalAxis() {
+    public void rotateClockwise() {
+        //TODO SHOULD DO THIS VIA SHAPE!!! THEN NOTIFY BLOCKS!!!
+        //It can just randomly assign its Blocks the coordinates provided by
+        //Shape. They're all the same anyway.
+        mShape.rotateClockwise();
+        //int[][] newCoords = mShape.getC
+    }
+    
+    /** Rotates this Tetrimino piece 90 degrees counter-clockwise about its rotational 
+     * coordinate.
+     */
+    public void rotateCounterClockwise() {
         //TODO
-        return new int[]{0, 0};
+    }
+    
+    /** Returns a list of [row, column] matrix-coordinates representing the
+     * Block matrix-coordinates on an infinitely-sized matrix, if the top-leftmost 
+     * Block has the matrix position given by this Tetrimino's root coordinate.
+     * 
+     *  Note that matrix indexing begins at 0. 
+     * 
+     * @return A list of Block matrix-coordinates. 
+     */
+    public int[][] getBlockCoordinates() {
+        Debug.print(2, "Tetrimino (ID: " + mID + ") Block coordinates requested.");
+        return mShape.getCoordinates(mRootCoordinate[0], mRootCoordinate[1]);
     }
     
     /**
@@ -92,6 +139,17 @@ public class Tetrimino {
      */
     public Shape getShape() {
         return mShape;
+    }
+    
+    /**
+     * @return The root coordinate of this Tetrimino piece. 
+     */
+    public int[] getRootCoordinate() {
+        return mRootCoordinate;
+    }
+    
+    public void setRootCoordinate(int[] rootCoordinate) {
+        mRootCoordinate = rootCoordinate;
     }
     
     /** 

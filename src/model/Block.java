@@ -47,13 +47,13 @@ public class Block {
      */
     public void shift(Direction direction) {
         if (direction == Direction.NORTH) {
-            setColumn(getColumn() + 1); 
+            setRow(getRow() - 1); 
         } else if (direction == Direction.EAST) {
-            setRow(getRow() + 1);
+            setColumn(getColumn() + 1);
         } else if (direction == Direction.SOUTH){
-            setColumn(getColumn() - 1);
+            setRow(getRow() + 1);
         } else if (direction == Direction.WEST) {
-            setRow(getRow() - 1);
+            setColumn(getColumn() - 1);
         }
         
         Debug.print(2, "Block " + mID + " shifted " + direction.toString());
@@ -85,6 +85,15 @@ public class Block {
      */
     private void setColumn(int column) {
         mCoordinate[1] = column; 
+    }
+    
+    /** Set the matrix coordinate of this Block. 
+     * 
+     * @param coordinate The matrix-coordate. 
+     */
+    public void setCoordinate(int[] coordinate) {
+        setRow(coordinate[0]); 
+        setColumn(coordinate[1]);
     }
     
     /**

@@ -12,7 +12,7 @@ public class BlockTest implements TestSuite {
     }
     
     public boolean shiftTest() {
-        Block block = new Block(null, 0, 0, 0);
+        Block block = new Block(null, 1, 1, 0);
         
         block.shift(Direction.NORTH);
         
@@ -22,20 +22,20 @@ public class BlockTest implements TestSuite {
         };
         
         block.shift(Direction.EAST);
-        if(!(block.getRow() == 1
-                && block.getColumn() == 1)) {
+        if(!(block.getRow() == 0
+                && block.getColumn() == 2)) {
             return false;
         };
         
         block.shift(Direction.SOUTH);
         if(!(block.getRow() == 1
-                && block.getColumn() == 0)) {
+                && block.getColumn() == 2)) {
             return false;
         };
         
         block.shift(Direction.WEST);
-        if(!(block.getRow() == 0
-                && block.getColumn() == 0)) {
+        if(!(block.getRow() == 1
+                && block.getColumn() == 1)) {
             return false;
         };
         

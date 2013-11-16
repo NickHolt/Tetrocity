@@ -61,7 +61,6 @@ import util.Matrices;
  */
 public class Shape {
     private int[][] mCoordinates;
-    private int[][] mMatrix;
     private int mLength;
     private int mWidth;
     private int mHeight;
@@ -114,7 +113,6 @@ public class Shape {
                     + "did not match the number of Blocks found (" + count + ")");
         }
         
-        mMatrix = matrix;
         measure(); //generate remaining member variables. 
         
         Debug.print(2, "New shape sucessfully created.");
@@ -141,7 +139,7 @@ public class Shape {
      * @param firstCol The column of the top-leftmost block. 
      * @return A list of Block matrix-coordinates. 
      */
-    public int[][] getMatrixCoordinates(int firstRow, int firstCol) {
+    public int[][] getCoordinates(int firstRow, int firstCol) {
         
         int[][] result = new int[mLength][2];
         for(int i = 0; i < mLength; i++) {
@@ -199,11 +197,10 @@ public class Shape {
         
         mCoordinates = newCoords;
         measure();
-        Debug.print(1, "Block deleted at (" + row + ", " + col + ")");
     }
     
     /**  
-     * Calculate dimensional member variable data based on Block coordinates.
+     * Calculate dimensional member variables based on Block coordinates.
      */
     private void measure() {
         mLength = mHeight = mWidth = 0; 
@@ -217,18 +214,37 @@ public class Shape {
                 mWidth = coord[1];
             }
         }
-        mHeight++;
-        mWidth++; //adjust for 0-indexing
+        mHeight++; //adjust for 0-indexing
+        mWidth++; 
         
         Debug.print(3, "Shape#measure() completed.");
     }
     
-    /**
-     * 
-     * @return The matrix that defines this Shape. 
+    /** Rotates this Shape 90 degrees clockwise about its rotational 
+     * coordinate.
      */
-    public int[][] getMatrix() {
-        return mMatrix;
+    public void rotateClockwise() {
+        //TODO SHOULD DO THIS VIA SHAPE!!! THEN NOTIFY BLOCKS!!!
+        //It can just randomly assign its Blocks the coordinates provided by
+        //Shape. They're all the same anyway. 
+    }
+    
+    /** Rotates this Shape 90 degrees counter-clockwise about its rotational 
+     * coordinate.
+     */
+    public void rotateCounterClockwise() {
+        //TODO
+    }
+    
+    /** Find the coordinate point around which to rotate this Shape. 
+     * 
+     * @return The rotational coordinate. 
+     */
+    public int[] getRotationalCoordinate() {
+        int row = getHeight() / 2 - 1, col = getWidth() / 2 - 1; 
+                                                // - 1 to adjust for 0-indexing
+        Debug.print(3, "Rotational coordinate found: (" + row + ", " + col + ").");
+        return new int[]{row, col};
     }
     
     /**
