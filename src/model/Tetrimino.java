@@ -17,7 +17,6 @@ import util.Direction;
  *
  */
 public class Tetrimino {    
-    private ArrayList<Block> mBlocks;
     private int mID;
     private boolean mLive;
     private Shape mShape;
@@ -36,13 +35,6 @@ public class Tetrimino {
         mID = ID;
         mShape = shape;
         mRootCoordinate = new int[]{row, col};
-        
-        mBlocks = new ArrayList<Block>();
-        int[][] coordinates = shape.getCoordinates(row, col);
-        
-        for (int[] coordinate : coordinates) {
-            mBlocks.add(new Block(this, coordinate[0], coordinate[1], getID()));
-        }
     }   
     
     /** The primary means of updating a Tetrimino's coordinate position. Simply
@@ -60,10 +52,6 @@ public class Tetrimino {
             mRootCoordinate[0] += 1;
         } else if (direction == Direction.WEST) {
             mRootCoordinate[1] -= 1;
-        }
-        
-        for (Block b : mBlocks) {
-            b.shift(direction);
         }
         
         Debug.print(2, "Tetrimino " + mID + " shifted " + direction);
@@ -85,6 +73,7 @@ public class Tetrimino {
     private void deleteBlock(int row, int col) {
         //TODO
         mShape.deleteBlock(row, col);
+        
         
         Debug.print(1, "Block deleted at (" + row + ", " + col + ")");
     }
@@ -118,13 +107,6 @@ public class Tetrimino {
     public int[][] getBlockCoordinates() {
         Debug.print(2, "Tetrimino (ID: " + mID + ") Block coordinates requested.");
         return mShape.getCoordinates(mRootCoordinate[0], mRootCoordinate[1]);
-    }
-    
-    /**
-     * @return the Blocks currently contained by this Tetrimino. 
-     */
-    public Block[] getBlocks() {        
-        return (Block[]) mBlocks.toArray();
     }
 
     /**
