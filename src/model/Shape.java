@@ -8,14 +8,14 @@ import util.Matrices;
 
 /** 
  * A description of a {@link Tetrimino}'s shape. That is, the ordering of the Tetrimino's
- * constituent {@link Block}s. A Shape description is simply a LxL matrix where L is the 
- * total number of Blocks, where each matrix element represents the presence of a Block.
- * A 1 states that a Block exists at that position, while a 0 states the opposite.
+ * constituent blocks. A Shape description is simply a LxL matrix where L is the 
+ * total number of blocks, where each matrix element represents the presence of a block.
+ * A 1 states that a block exists at that position, while a 0 states the opposite.
  * 
- *  Initial Shape construction must adhere to a particular set of rules. 
- * The shape MUST occupy the top left entry of the matrix, i.e. at matrix-coordinate position 
+ *  Initial Shape construction must adhere to a particular set of rules. The shape 
+ * MUST occupy the top left entry of the matrix, i.e. at matrix-coordinate position 
  * (0, 0). In addition, the coordinates MUST be a valid description of a Tetrimino shape: 
- * every Block shares an edge with at least one other block. If any of these criteria
+ * every block shares an edge with at least one other block. If any of these criteria
  * are not met, an IllegalArgumentException will be thrown. 
  * 
  *  Example: an "L" shape Tetrimino in the original game of Tetris:
@@ -52,9 +52,9 @@ import util.Matrices;
  *  
  *  A Shape also tracks Tetrimino dimensional information, such as the width,
  * height, and length of the piece. As a result, it is critical that a Tetrimino
- * update it's Shape when Blocks are deleted.
+ * update its Shape when blocks are deleted.
  * 
- *  Once Blocks are deleted, the rules listed above are no longer enforced.
+ *  Once blocks are deleted, the rules listed above are no longer enforced.
  *  
  * @author Nick Holt
  *
@@ -65,11 +65,11 @@ public class Shape {
     private int mWidth;
     private int mHeight;
     
-    /** A new Shape object whose Block matrix, as per the documentation, is MATRIX.
-     * LENGTH is the total number of Blocks that this Shape orders. 
+    /** A new Shape object whose block matrix, as per the documentation, is MATRIX.
+     * LENGTH is the total number of blocks that this Shape orders. 
      * 
-     * @param matrix The matrix describing the ordering of the Blocks.  
-     * @param length The total number of Blocks. 
+     * @param matrix The matrix describing the ordering of the blocks.  
+     * @param length The total number of blocks. 
      */
     public Shape(int[][] matrix, int length) {
         int rows = matrix.length, cols = matrix[0].length;
@@ -89,13 +89,13 @@ public class Shape {
         for (int i = 1; i < rows + 1; i++) {
             for (int j = 1; j < cols + 1; j++) {
                 if (paddedMatrix[i][j] == 1) {
-                    //Check for neighboring Blocks 
+                    //Check for neighboring blocks 
                     if (length > 1
                             && paddedMatrix[i - 1][j] == 0 
                             && paddedMatrix[i][j + 1] == 0
                             && paddedMatrix[i + 1][j] == 0
                             && paddedMatrix[i][j - 1] == 0) {
-                        throw new IllegalArgumentException("Matrix has floating Block "
+                        throw new IllegalArgumentException("Matrix has floating block "
                                 + "at (" + i + ", " + j + ").");
                     }
                    
@@ -110,7 +110,7 @@ public class Shape {
         
         if (count != length) {
             throw new IllegalArgumentException("The provided length (" + length + ") "
-                    + "did not match the number of Blocks found (" + count + ")");
+                    + "did not match the number of blocks found (" + count + ")");
         }
         
         measure(); //generate remaining member variables. 
@@ -119,25 +119,25 @@ public class Shape {
     }
     
     /** Returns a list of [row, column] matrix-coordinates representing the
-     * Block matrix-coordinates on an infinitely-sized matrix
+     * block matrix-coordinates on an infinitely-sized matrix
      * 
      *  Note that matrix indexing begins at 0. 
      *
-     * @return A list of relative Block matrix-coordinates. 
+     * @return A list of relative block matrix-coordinates. 
      */
     public int[][] getRelativeMatrixCoordinates() {
         return mCoordinates;
     }
 
     /** Returns a list of [row, column] matrix-coordinates representing the
-     * Block matrix-coordinates on an infinitely-sized matrix, if the top-leftmost 
-     * Block has the matrix position [firstRow, firstCol].
+     * block matrix-coordinates on an infinitely-sized matrix, if the top-leftmost 
+     * block has the matrix position [firstRow, firstCol].
      * 
      *  Note that matrix indexing begins at 0. 
      * 
      * @param firstRow The row of the top-leftmost block. 
      * @param firstCol The column of the top-leftmost block. 
-     * @return A list of Block matrix-coordinates. 
+     * @return A list of block matrix-coordinates. 
      */
     public int[][] getCoordinates(int firstRow, int firstCol) {
         
@@ -152,17 +152,17 @@ public class Shape {
     }
     
     /** Return a list of absolute matrix-coordinates representing the 
-     * Block locations present in the bottom row of this Shape, where the
-     * top-leftmost Block is located at (FIRSTROW, FIRSTCOL). 
+     * block locations present in the bottom row of this Shape, where the
+     * top-leftmost block is located at (FIRSTROW, FIRSTCOL). 
      * 
-     * @param firstRow The row of the top-leftmost Block. 
-     * @param firstCol The column of the top-leftmost Block. 
+     * @param firstRow The row of the top-leftmost block. 
+     * @param firstCol The column of the top-leftmost block. 
      * @return
      */
     public int[][] getBottomRow(int firstRow, int firstCol) {
         ArrayList<int[]> bottomRow = new ArrayList<int[]>();
         for (int[] coord : mCoordinates) {
-            if (coord[0] == mHeight - 1) { //Block is at the bottom
+            if (coord[0] == mHeight - 1) { //block is at the bottom
                 bottomRow.add(new int[]{coord[0] + firstRow
                         , coord[1] + firstCol});
             }
@@ -177,7 +177,7 @@ public class Shape {
         return result;
     }
     
-    /** Informs this Shape that the Block positioned at (ROW, COL) was deleted.
+    /** Informs this Shape that the block positioned at (ROW, COL) was deleted.
      * Matrix and dimensional data is updated as a result. 
      * 
      * @param row The row of the deleted block. 
@@ -200,7 +200,7 @@ public class Shape {
     }
     
     /**  
-     * Calculate dimensional member variables based on Block coordinates.
+     * Calculate dimensional member variables based on block coordinates.
      */
     private void measure() {
         mLength = mHeight = mWidth = 0; 
@@ -224,8 +224,8 @@ public class Shape {
      * coordinate.
      */
     public void rotateClockwise() {
-        //TODO SHOULD DO THIS VIA SHAPE!!! THEN NOTIFY BLOCKS!!!
-        //It can just randomly assign its Blocks the coordinates provided by
+        //TODO SHOULD DO THIS VIA SHAPE!!! THEN NOTIFY blockS!!!
+        //It can just randomly assign its blocks the coordinates provided by
         //Shape. They're all the same anyway. 
     }
     
@@ -248,7 +248,7 @@ public class Shape {
     }
     
     /**
-     * @return the length of this Shape, defined to be the total number of Blocks. 
+     * @return the length of this Shape, defined to be the total number of blocks. 
      */
     public int getLength() {
         return mLength;
@@ -256,7 +256,7 @@ public class Shape {
     
     /**
      * @return the width of this Shape, defined to be the horizontal span
-     * of the Blocks. 
+     * of the blocks. 
      */
     public int getWidth() {
         return mWidth;
@@ -264,7 +264,7 @@ public class Shape {
     
     /**
      * @return the height of this Shape, defined to be the vertical span
-     * of the Blocks. 
+     * of the blocks. 
      */
     public int getHeight() {
         return mHeight;
