@@ -56,19 +56,19 @@ public class TetriminoTest implements TestSuite {
     
     public boolean getCoordinatesTest() {
         int[][] matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{1, 0, 0, 0};
-        matrix[3] = new int[]{1, 1, 0, 0};
+        matrix[0] = new int[]{0, 0, 0, 0};
+        matrix[1] = new int[]{0, 1, 0, 0};
+        matrix[2] = new int[]{1, 1, 1, 0};
+        matrix[3] = new int[]{0, 1, 0, 0};
         Shape shape = new Shape(matrix, 5);
         Tetrimino tetrimino = new Tetrimino(shape, 10, 10, 11);
         
         int[][] target = new int[5][2];
-        target[0] = new int[]{10, 10};
+        target[0] = new int[]{10, 11};
         target[1] = new int[]{11, 10};
-        target[2] = new int[]{12, 10};
-        target[3] = new int[]{13, 10};
-        target[4] = new int[]{13, 11};
+        target[2] = new int[]{11, 11};
+        target[3] = new int[]{11, 12};
+        target[4] = new int[]{12, 11};
         
         for (int i = 0; i < target.length; i++) {
             if (!Arrays.equals(target[i], tetrimino.getCoordinates()[i])) {
@@ -81,10 +81,10 @@ public class TetriminoTest implements TestSuite {
     
     public boolean deleteBlockTest() {
         int[][] matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{1, 0, 0, 0};
-        matrix[3] = new int[]{1, 1, 0, 0};
+        matrix[0] = new int[]{1, 0};
+        matrix[1] = new int[]{1, 0};
+        matrix[2] = new int[]{1, 0};
+        matrix[3] = new int[]{1, 1};
         Shape shape = new Shape(matrix, 5);
         Tetrimino tetrimino = new Tetrimino(shape, 10, 10, 11);
         
@@ -131,17 +131,22 @@ public class TetriminoTest implements TestSuite {
     }
     
     @Override
-    public void printAll() {
-        System.out.println("TetriminoTest.instantiationTest():");
-        System.out.println(instantiationTest());
-        System.out.println("TetriminoTest.shiftTest():");
-        System.out.println(shiftTest());
-        System.out.println("TetriminoTest.getCoordinatesTest():");
-        System.out.println(getCoordinatesTest());
-        System.out.println("TetriminoTest.deleteBlockTest():");
-        System.out.println(deleteBlockTest());
-        System.out.println("TetriminoTest.deleteRowTest():");
-        System.out.println(deleteRowTest());
+    public void printFails() {
+        if (!instantiationTest()) {
+            System.out.println("TetriminoTest.instantiationTest() failed.");
+        }
+        if (!shiftTest()) {
+            System.out.println("TetriminoTest.shiftTest() failed.");
+        }
+        if (!getCoordinatesTest()) {
+            System.out.println("TetriminoTest.getCoordinatesTest() failed.");
+        }
+        if (!deleteBlockTest()) {
+            System.out.println("TetriminoTest.deleteBlockTest() failed.");
+        }
+        if (!deleteRowTest()) {
+            System.out.println("TetriminoTest.deleteRowTest() failed.");
+        }
     }
 
 }

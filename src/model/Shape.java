@@ -99,7 +99,8 @@ public class Shape {
     }
     
     /** Returns a list of [row, column] matrix-coordinates representing the
-     * block matrix-coordinates on an infinitely-sized matrix
+     * block matrix-coordinates on an infinitely-sized matrix. These coordinates
+     * are in NO PARTICULAR ORDER. 
      * 
      *  Note that matrix indexing begins at 0. 
      *
@@ -231,16 +232,11 @@ public class Shape {
      * coordinate.
      */
     public void rotateCounterClockwise() {
-        /* We can view this algorithm as simply reversing the procedure
-         * proved in rotateClockwise(). We simply swap newRow and row, as well
-         * as newCol and col. Therefore:
-         * 
-         * newRow = mHeight - 1 - col
-         * newCol = row
+        /* For a similar proof on why this works, see rotateClockwise()
          */
         
         for (int i = 0; i < mCoordinates.length; i++) {
-            mCoordinates[i] = new int[]{mHeight - 1 - mCoordinates[i][1],
+            mCoordinates[i] = new int[]{mWidth - 1 - mCoordinates[i][1],
                     mCoordinates[i][0]};
         }   
         measure();

@@ -6,13 +6,19 @@ import util.Direction;
 /** A singular game piece for a game of Tetrocity. A Tetrimino is a 
  * grouping of one or more blocks, with a Shape describing their 
  * relative matrix placements and Tetrimino dimensional information.
+ * 
  *  The constituent blocks of a Tetrimino piece do not have classes of their
  * own. Instead, they are represented by matrix-coordinate positions. As such,
  * a Tetrimino is essentially a {@link Shape} with an ID an absolute matrix
  * position. All shape information, such as the relative placement of
- * the Tetrimino's constituent blocks are known by the Tetrimino's Shape. 
- * That being said, all in-game manipulation is done through the Tetrimino;
- * its Shape is not accessible to outside objects. 
+ * the Tetrimino's constituent blocks are known by the Tetrimino's Shape.
+ * 
+ *  In order to provide the absolute matrix position information, a root 
+ * coordinate must be provided. A root coordinate is found as such: the row
+ * of the root coordinate is the top row of the Tetrimino, and the column is 
+ * the leftmost column of the Tetrimino. Alternatively, it is the coordinate
+ * of the top-left corner of the smallest possible box that encapsulates the 
+ * entirety of the Tetrimino. 
  * 
  * @author Nick Holt
  *
@@ -23,8 +29,7 @@ public class Tetrimino {
     private Shape mShape;
     private int[] mRootCoordinate;
     
-    /** A new Tetrimino whose top-leftmost block is located at the provided
-     * root coordinate.
+    /** A new Tetrimino whose root is (ROW, COL). 
      * 
      * @param shape The Shape that will describe the block ordering.
      * @param row The row of the root coordinate.
@@ -38,9 +43,8 @@ public class Tetrimino {
         mRootCoordinate = new int[]{row, col};
     }   
     
-    /** The primary means of updating a Tetrimino's coordinate position. Simply
-     *  shifts the Tetrimino's coordinate position one unit it the specified
-     *  direction by shifting all constituent blocks in that direction.
+    /** Shifts the Tetrimimo's coordinate position (i.e. all of its block positions)
+     * one unit in the given DIRECTION. 
      * 
      * @param direction The direction to shift the Tetrimino. 
      */
@@ -80,31 +84,32 @@ public class Tetrimino {
      * coordinate.
      */
     public void rotateClockwise() {
-        //TODO SHOULD DO THIS VIA SHAPE!!! THEN NOTIFY blockS!!!
-        //It can just randomly assign its blocks the coordinates provided by
-        //Shape. They're all the same anyway.
         mShape.rotateClockwise();
-        //int[][] newCoords = mShape.getC
     }
     
     /** Rotates this Tetrimino piece 90 degrees counter-clockwise about its rotational 
      * coordinate.
      */
     public void rotateCounterClockwise() {
-        //TODO
+        mShape.rotateCounterClockwise();
     }
     
-    /** Returns a list of [row, column] matrix-coordinates representing the
-     * block matrix-coordinates on an infinitely-sized matrix, if the top-leftmost 
-     * block has the matrix position given by this Tetrimino's root coordinate.
-     * 
-     *  Note that matrix indexing begins at 0. 
+    /** Returns a list of [row, column] matrix-coordinates representing this Tetrimino's
+     * block locations on the matrix rooted on by the root coordinate. 
      * 
      * @return A list of block matrix-coordinates. 
      */
     public int[][] getCoordinates() {
-        Debug.print(2, "Tetrimino (ID: " + mID + ") block coordinates requested.");
-        return mShape.getAbsoluteMatrixCoordinates(mRootCoordinate[0], mRootCoordinate[1]);
+        int length = mShape.getLength();
+        int[][] relativeCoordinates = mShape.getRelativeMatrixCoordinates();
+        int[][] result = new int[length][2];
+        for(int i = 0; i < length; i++) {
+            result[i] = new int[]{relativeCoordinates[i][0] + mRootCoordinate[0]
+                    , relativeCoordinates[i][1] + mRootCoordinate[1]};
+        }
+        
+        Debug.print(2, "Tetrimino (ID: " + mID + ") coordinates generated.");
+        return result;
     }
 
     /**

@@ -71,24 +71,11 @@ public class ShapeTest implements TestSuite {
                 return false;
             }
         }
-        coordinates = shape.getAbsoluteMatrixCoordinates(10, 10);
-        target[0] = new int[]{10, 10};
-        target[1] = new int[]{11, 10};
-        target[2] = new int[]{12, 10};
-        target[3] = new int[]{13, 10};
-        target[4] = new int[]{13, 11};
-        
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(target[i], coordinates[i])) {
-                return false;
-            }
-        }
         
         return true;
     }
     
     public boolean measureTest() {
-        //Also tests Shape#removeBlock()
         int[][] matrix = new int[4][4];
         matrix[0] = new int[]{1, 0, 0, 0};
         matrix[1] = new int[]{1, 0, 0, 0};
@@ -102,17 +89,6 @@ public class ShapeTest implements TestSuite {
         return shape.getLength() == 4
                 && shape.getWidth() == 2
                 && shape.getHeight() == 4;
-    }
-    
-    public boolean getRotationalCoordinateTest() {
-        int[][] matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0};
-        matrix[1] = new int[]{1, 0, 0};
-        matrix[2] = new int[]{1, 0, 0};
-        matrix[3] = new int[]{1, 1, 0};
-        Shape shape = new Shape(matrix, 5);
-        
-        return Arrays.equals(shape.getRotationalCoordinate(), new int[]{1, 0});
     }
     
     public boolean getBottomRowTest() {
@@ -137,19 +113,123 @@ public class ShapeTest implements TestSuite {
         
         return true;
     }
-
-    @Override
-    public void printAll() {
-        System.out.println("ShapeTest.instantiationTest():");
-        System.out.println(instantiationTest());
-        System.out.println("ShapeTest.getMatrixCoordinatesTest():");
-        System.out.println(getMatrixCoordinatesTest());
-        System.out.println("ShapeTest.measureTest():");
-        System.out.println(measureTest());
-        System.out.println("ShapeTest.getRotationalCoordinateTest()");
-        System.out.println(getRotationalCoordinateTest());
-        System.out.println("ShapeTest.getBottomRowTest():");
-        System.out.println(getBottomRowTest());
+    
+    public boolean rotateClockwiseTest() {
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0, 0, 0};
+        matrix[1] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[3] = new int[]{1, 1, 0, 0};
+        
+        Shape shape = new Shape(matrix, 5);
+        shape.rotateClockwise();
+        
+        int[][] coordinates = shape.getRelativeMatrixCoordinates();
+        int[][] target = new int[5][2];
+        target[0] = new int[]{0, 3};
+        target[1] = new int[]{0, 2};
+        target[2] = new int[]{0, 1};
+        target[3] = new int[]{0, 0};
+        target[4] = new int[]{1, 0};
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(coordinates[i], target[i])) {
+                return false;   
+            }
+        }
+        
+        matrix = new int[3][3];
+        matrix[0] = new int[]{0, 1, 0};
+        matrix[1] = new int[]{1, 1, 1};
+        matrix[2] = new int[]{0, 1, 0};
+        
+        shape = new Shape(matrix, 5);
+        shape.rotateClockwise();
+        
+        coordinates = shape.getRelativeMatrixCoordinates();
+        target = new int[5][2];
+        target[0] = new int[]{1, 2};
+        target[1] = new int[]{0, 1};
+        target[2] = new int[]{1, 1};
+        target[3] = new int[]{2, 1};
+        target[4] = new int[]{1, 0};
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(coordinates[i], target[i])) {
+                return false;   
+            }
+        }
+        
+        return true;
     }
-
+    
+    public boolean rotateCounterClockwiseTest() {
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0, 0, 0};
+        matrix[1] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[3] = new int[]{1, 1, 0, 0};
+        
+        Shape shape = new Shape(matrix, 5);
+        shape.rotateCounterClockwise();
+        
+        int[][] coordinates = shape.getRelativeMatrixCoordinates();
+        int[][] target = new int[5][2];
+        target[0] = new int[]{1, 0};
+        target[1] = new int[]{1, 1};
+        target[2] = new int[]{1, 2};
+        target[3] = new int[]{1, 3};
+        target[4] = new int[]{0, 3};
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(coordinates[i], target[i])) {
+                return false;   
+            }
+        }
+        
+        matrix = new int[3][3];
+        matrix[0] = new int[]{0, 1, 0};
+        matrix[1] = new int[]{1, 1, 1};
+        matrix[2] = new int[]{0, 1, 0};
+        
+        shape = new Shape(matrix, 5);
+        shape.rotateCounterClockwise();
+        
+        coordinates = shape.getRelativeMatrixCoordinates();
+        target = new int[5][2];
+        target[0] = new int[]{1, 0};
+        target[1] = new int[]{2, 1};
+        target[2] = new int[]{1, 1};
+        target[3] = new int[]{0, 1};
+        target[4] = new int[]{1, 2};
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(coordinates[i], target[i])) {
+                return false;   
+            }
+        }
+        
+        return true;
+    }
+    
+    public void printFails() {
+        if (!instantiationTest()) {
+            System.out.println("ShapeTest.instantiationTest() failed.");
+        }
+        if (!getMatrixCoordinatesTest()) {
+            System.out.println("ShapeTest.getMatrixCoordinatesTest() failed.");
+        }
+        if (!measureTest()) {
+            System.out.println("ShapeTest.measureTest() failed.");
+        }
+        if (!getBottomRowTest()) {
+            System.out.println("ShapeTest.getBottomRowTest() failed.");
+        }
+        if (!rotateClockwiseTest()) {
+            System.out.println("ShapeTest.rotateClockwiseTest() failed.");
+        }
+        if (!rotateCounterClockwiseTest()) {
+            System.out.println("ShapeTest.rotateCounterClockwiseTest() failed.");
+        }
+    }
 }

@@ -53,11 +53,13 @@ public class MatricesTest implements TestSuite {
     }
 
     @Override
-    public void printAll() {
-        System.out.println("MatricesTest.padMatrixTest():");
-        System.out.println(padMatrixTest());
-        System.out.println("MatricesTest.shrinkTest():");
-        System.out.println(shrinkTest());
+    public void printFails() {
+        if (!padMatrixTest()) {
+            System.out.println("MatricesTest.padMatrixTest() failed.");
+        }
+        if (!shrinkTest()) {
+            System.out.println("MatricesTest.shrinkTest() failed.");
+        }
     }
 
 }

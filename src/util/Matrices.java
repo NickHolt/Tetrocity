@@ -55,6 +55,7 @@ public class Matrices {
         int rows = matrix.length, cols = matrix[0].length;
         HashSet<Integer> nonPaddedCols = new HashSet<Integer>()
                 , nonPaddedRows = new HashSet<Integer>(); //indices of non-padded cols/rows
+        /* Find which rows to keep. */
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 if (matrix[i][j] != 0) {
@@ -64,8 +65,8 @@ public class Matrices {
             }
         }
         
-        int firstCol = Integer.MAX_VALUE, lastCol = 0, 
-                firstRow = Integer.MAX_VALUE, lastRow = 0; //Bounds of non-padded matrix
+        int firstCol = Integer.MAX_VALUE, lastCol = 0, //Bounds of non-padded matrix
+                firstRow = Integer.MAX_VALUE, lastRow = 0; //This preserves internal 0 rows/cols. 
         for (int row : nonPaddedRows) {
             if (row < firstRow) {
                 firstRow = row;
@@ -90,6 +91,5 @@ public class Matrices {
             }
         }
         return shrunkMatrix;
-        
     }
 }

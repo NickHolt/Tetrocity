@@ -14,10 +14,10 @@ public class Main {
      * @param args null. 
      */
     public static void main(String[] args) {
-        MatricesTest matricesTest = new MatricesTest(); matricesTest.printAll();
-        //BlockTest blockTest = new BlockTest(); blockTest.printAll();
-        ShapeTest shapeTest = new ShapeTest(); shapeTest.printAll();
-        TetriminoTest tetriminoTest = new TetriminoTest(); tetriminoTest.printAll();
+        MatricesTest matricesTest = new MatricesTest(); matricesTest.printFails();
+        ShapeTest shapeTest = new ShapeTest(); shapeTest.printFails();
+        TetriminoTest tetriminoTest = new TetriminoTest(); tetriminoTest.printFails();
+        System.out.println("Testing completed.");
     }
 
 }
