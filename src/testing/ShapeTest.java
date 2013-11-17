@@ -8,67 +8,8 @@ public class ShapeTest implements TestSuite {
     
     public boolean instantiationTest() {
         Shape shape;
-        int[][] matrix = new int[3][4];
-        matrix[0] = new int[]{0, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 1, 0};
-        matrix[2] = new int[]{0, 0, 0, 0};
         
-        boolean errorCaught = false;
-        try {
-            shape = new Shape(matrix, 2);
-        } catch (IllegalArgumentException e) {
-            errorCaught = true;
-        }
-        if (!errorCaught) {
-            return false;
-        }
-        
-        matrix = new int[4][4];
-        matrix[0] = new int[]{0, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 1, 0};
-        matrix[2] = new int[]{0, 0, 0, 0};
-        matrix[3] = new int[]{0, 0, 0, 0};
-        errorCaught = false;
-        try {
-            shape = new Shape(matrix, 2);
-        } catch (IllegalArgumentException e) {
-            errorCaught = true;
-        }
-        if (!errorCaught) {
-            return false;
-        }
-        
-        matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{0, 1, 0, 0};
-        matrix[3] = new int[]{0, 0, 0, 0};
-        errorCaught = false;
-        try {
-            shape = new Shape(matrix, 3);
-        } catch (IllegalArgumentException e) {
-            errorCaught = true;
-        }
-        if (!errorCaught) {
-            return false;
-        }
-        
-        matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{-1, 0, 0, 0};
-        matrix[2] = new int[]{0, 0, 0, 0};
-        matrix[3] = new int[]{0, 0, 0, 0};
-        errorCaught = false;
-        try {
-            shape = new Shape(matrix, 2);
-        } catch (IllegalArgumentException e) {
-            errorCaught = true;
-        }
-        if (!errorCaught) {
-            return false;
-        }
-        
-        matrix = new int[4][4];
+        int[][] matrix = new int[4][4];
         matrix[0] = new int[]{1, 0, 0, 0};
         matrix[1] = new int[]{0, 0, 0, 0};
         matrix[2] = new int[]{0, 0, 0, 0};
@@ -95,7 +36,7 @@ public class ShapeTest implements TestSuite {
             return false;
         }
         
-        errorCaught = false;
+        boolean errorCaught = false;
         try {
             shape = new Shape(matrix, 10);
         } catch (IllegalArgumentException e) {
@@ -110,10 +51,10 @@ public class ShapeTest implements TestSuite {
 
     public boolean getMatrixCoordinatesTest() {
         int[][] matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{1, 0, 0, 0};
-        matrix[3] = new int[]{1, 1, 0, 0};
+        matrix[0] = new int[]{1, 0};
+        matrix[1] = new int[]{1, 0};
+        matrix[2] = new int[]{1, 0};
+        matrix[3] = new int[]{1, 1};
         
         Shape shape = new Shape(matrix, 5);
         
@@ -165,10 +106,10 @@ public class ShapeTest implements TestSuite {
     
     public boolean getRotationalCoordinateTest() {
         int[][] matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{1, 0, 0, 0};
-        matrix[3] = new int[]{1, 1, 0, 0};
+        matrix[0] = new int[]{1, 0, 0};
+        matrix[1] = new int[]{1, 0, 0};
+        matrix[2] = new int[]{1, 0, 0};
+        matrix[3] = new int[]{1, 1, 0};
         Shape shape = new Shape(matrix, 5);
         
         return Arrays.equals(shape.getRotationalCoordinate(), new int[]{1, 0});

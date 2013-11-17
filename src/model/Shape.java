@@ -10,13 +10,8 @@ import util.Matrices;
  * A description of a {@link Tetrimino}'s shape. That is, the ordering of the Tetrimino's
  * constituent blocks. A Shape description is simply a LxL matrix where L is the 
  * total number of blocks, where each matrix element represents the presence of a block.
- * A 1 states that a block exists at that position, while a 0 states the opposite.
- * 
- *  Initial Shape construction must adhere to a particular set of rules. The shape 
- * MUST occupy the top left entry of the matrix, i.e. at matrix-coordinate position 
- * (0, 0). In addition, the coordinates MUST be a valid description of a Tetrimino shape: 
- * every block shares an edge with at least one other block. If any of these criteria
- * are not met, an IllegalArgumentException will be thrown. 
+ * Any integer != 0 states that a block exists at that position, while a 0 states the 
+ * opposite.
  * 
  *  Example: an "L" shape Tetrimino in the original game of Tetris:
  * 
@@ -34,27 +29,32 @@ import util.Matrices;
  *  ,[1, 1, 0, 0]
  *  ,[0, 0, 0, 0]].
  *  
- *  Both
+ *  A Shape is a RELATIVE description. It knows nothing of a Tetrimino's board position.
+ * Coordinates are assigned as such: given  the block layout, draw the smallest possible 
+ * box around the shape. This box is the matrix to which this Shape's coordinate output 
+ * refers. For example, the shape:
+ * 
+ * *******
+ * *00000*
+ * *01000*
+ * *01000*
+ * *01100*
+ * *00000*
+ * *******
+ * 
+ *  will be converted to:
  *  
- *  [[0, 0, 0, 0]
- *  ,[1, 0, 0, 0]
- *  ,[1, 0, 0, 0]
- *  ,[1, 1, 0, 0]].
- *  
- *  and 
- *  
- *  [[0, 0, 0, 0]
- *  ,[1, 0, 1, 0]
- *  ,[1, 1, 0, 0]
- *  ,[0, 0, 0, 0]].
- *  
- *  are illegal Shape descriptions.
+ * ****
+ * *10*
+ * *10*
+ * *11*
+ * ****
+ * 
+ *  The coordinates of that shape will be: {(0, 0), (1, 0), (2, 0), (2, 1)}. 
  *  
  *  A Shape also tracks Tetrimino dimensional information, such as the width,
  * height, and length of the piece. As a result, it is critical that a Tetrimino
  * update its Shape when blocks are deleted.
- * 
- *  Once blocks are deleted, the rules listed above are no longer enforced.
  *  
  * @author Nick Holt
  *
@@ -71,39 +71,19 @@ public class Shape {
      * @param matrix The matrix describing the ordering of the blocks.  
      * @param length The total number of blocks. 
      */
-    public Shape(int[][] matrix, int length) {
-        int rows = matrix.length, cols = matrix[0].length;
-        if (rows != cols) {
-            throw new IllegalArgumentException("Matrix not square.");
-        } else if (matrix[0][0] != 1) {
-            throw new IllegalArgumentException("No entry at (0, 0).");
-        }
+    public Shape(int[][] matrix, int length) {       
+        //"Draw the smallest possible box"
+        matrix = Matrices.shrink(matrix);
         
-        /* The following code checks the validity of the matrix while
-         * figuring out the total number of blocks, width and height
-         * of the Tetrimino. */
-        int[][] paddedMatrix = Matrices.padMatrix(matrix);
+        int rows = matrix.length, cols = matrix[0].length;
         mCoordinates = new int[length][2];
         
         int count = 0;
-        for (int i = 1; i < rows + 1; i++) {
-            for (int j = 1; j < cols + 1; j++) {
-                if (paddedMatrix[i][j] == 1) {
-                    //Check for neighboring blocks 
-                    if (length > 1
-                            && paddedMatrix[i - 1][j] == 0 
-                            && paddedMatrix[i][j + 1] == 0
-                            && paddedMatrix[i + 1][j] == 0
-                            && paddedMatrix[i][j - 1] == 0) {
-                        throw new IllegalArgumentException("Matrix has floating block "
-                                + "at (" + i + ", " + j + ").");
-                    }
-                   
-                    mCoordinates[count] = new int[]{i - 1, j - 1}; //Adjust for padding. 
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (matrix[i][j] == 1) {
+                    mCoordinates[count] = new int[]{i, j}; 
                     count++;
-                } else if (paddedMatrix[i][j] != 0) {
-                    throw new IllegalArgumentException("Matrix entry at (" + i + ", " 
-                            + j + ") was neither a 0 nor a 1.");
                 }
             }
         }
