@@ -109,28 +109,6 @@ public class Shape {
         return mCoordinates;
     }
     
-    /** Returns a list of [row, column] matrix-coordinates representing the
-     * block matrix-coordinates on an infinitely-sized matrix, if the top-leftmost 
-     * block has the matrix position [firstRow, firstCol].
-     * 
-     *  Note that matrix indexing begins at 0. 
-     * 
-     * @param firstRow The row of the top-leftmost block. 
-     * @param firstCol The column of the top-leftmost block. 
-     * @return A list of block matrix-coordinates. 
-     */
-    public int[][] getAbsoluteMatrixCoordinates(int firstRow, int firstCol) {
-        
-        int[][] result = new int[mLength][2];
-        for(int i = 0; i < mLength; i++) {
-            result[i] = new int[]{mCoordinates[i][0] + firstRow
-                    , mCoordinates[i][1] + firstCol};
-        }
-        
-        Debug.print(2, "Matrix coordinates generated.");
-        return result;
-    }
-    
     /** Informs this Shape that the block positioned at matrix coordinate (ROW, COL).
      *  It is critical to note that the ROW, COL used on this method must refer to the
      * relative coordinate matrix used to construct this Shape.
@@ -213,31 +191,59 @@ public class Shape {
         Debug.print(3, "Shape#measure() completed.");
     }
     
-    /** Rotates this Shape 90 degrees clockwise about its rotational 
-     * coordinate.
+    /** Rotates this Shape 90 degrees clockwise.
      */
     public void rotateClockwise() {
-        //TODO SHOULD DO THIS VIA SHAPE!!! THEN NOTIFY blockS!!!
-        //It can just randomly assign its blocks the coordinates provided by
-        //Shape. They're all the same anyway. 
+        /* The following algorithm uses a simple mathematical transformation. 
+         * Given a block with matrix-coordinate position [row, col], and a
+         * coordinate around which to rotate clockwise 90 degrees [rowPivot, colPivot],
+         * the new block coordinates after rotation are: 
+         * [rowPivot - (colPivot - col), colPivot + (rowPivot - row)].
+         * 
+         * Once the algorithm is complete, the coordinates must be shifted back to 
+         * fit the "smallest box" model that Shapes use, by finding the index of the
+         * top row of the new shape, and subtracting that from every coordinate. 
+         * Likewise, I subtract the leftmost column coordinate of the new shape
+         * from every coordinate. However, I claim that in all cases:
+         * topRow = (rowPivot - colPivot) and
+         * leftCol = (colPivot - (mHeight - 1 - rowPivot))
+         * I won't prove this, but the result comes from recognizing that 
+         * there will always be a block in column 0, and another in row (mHeight - 1).
+         * 
+         * Putting these results together:
+         * newRow = rowPivot - (colPivot - col) - topRow
+         *        = col
+         *        
+         * newCol = colPivot + (rowPivot - row) - leftCol
+         *        = mHeight - 1 - row
+         *        
+         * Mind = blown. For a full proof, visit github.com/NickHolt/Tetrocity.git.
+         */
+        
+        for (int i = 0; i < mCoordinates.length; i++) {
+            mCoordinates[i] = new int[]{mCoordinates[i][1],
+                    mHeight - 1 - mCoordinates[i][0]};
+        }   
+        measure();
     }
     
     /** Rotates this Shape 90 degrees counter-clockwise about its rotational 
      * coordinate.
      */
     public void rotateCounterClockwise() {
-        //TODO
-    }
-    
-    /** Find the coordinate point around which to rotate this Shape. 
-     * 
-     * @return The rotational coordinate. 
-     */
-    public int[] getRotationalCoordinate() {
-        int row = getHeight() / 2 - 1, col = getWidth() / 2 - 1; 
-                                                // - 1 to adjust for 0-indexing
-        Debug.print(3, "Rotational coordinate found: (" + row + ", " + col + ").");
-        return new int[]{row, col};
+        /* We can view this algorithm as simply reversing the procedure
+         * proved in rotateClockwise(). We simply swap newRow and row, as well
+         * as newCol and col. Therefore:
+         * 
+         * newRow = mHeight - 1 - col
+         * newCol = row
+         */
+        
+        for (int i = 0; i < mCoordinates.length; i++) {
+            mCoordinates[i] = new int[]{mHeight - 1 - mCoordinates[i][1],
+                    mCoordinates[i][0]};
+        }   
+        measure();
     }
     
     /**
