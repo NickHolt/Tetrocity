@@ -55,16 +55,93 @@ public class TetriminoTest implements TestSuite {
     }
     
     public boolean getCoordinatesTest() {
-        //TODO
-        return false;
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0, 0, 0};
+        matrix[1] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[3] = new int[]{1, 1, 0, 0};
+        Shape shape = new Shape(matrix, 5);
+        Tetrimino tetrimino = new Tetrimino(shape, 10, 10, 11);
+        
+        int[][] target = new int[5][2];
+        target[0] = new int[]{10, 10};
+        target[1] = new int[]{11, 10};
+        target[2] = new int[]{12, 10};
+        target[3] = new int[]{13, 10};
+        target[4] = new int[]{13, 11};
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(target[i], tetrimino.getCoordinates()[i])) {
+                return false;
+            }
+        
+        }
+        return true;
     }
+    
+    public boolean deleteBlockTest() {
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0, 0, 0};
+        matrix[1] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[3] = new int[]{1, 1, 0, 0};
+        Shape shape = new Shape(matrix, 5);
+        Tetrimino tetrimino = new Tetrimino(shape, 10, 10, 11);
+        
+        tetrimino.deleteBlock(13, 11);
+        
+        int[][] target = new int[4][2];
+        target[0] = new int[]{10, 10};
+        target[1] = new int[]{11, 10};
+        target[2] = new int[]{12, 10};
+        target[3] = new int[]{13, 10};
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(target[i], tetrimino.getCoordinates()[i])) {
+                return false;
+            }
+        
+        }
+        return true;
+    }
+    
+    public boolean deleteRowTest() {
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0, 0, 0};
+        matrix[1] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[3] = new int[]{1, 1, 0, 0};
+        Shape shape = new Shape(matrix, 5);
+        Tetrimino tetrimino = new Tetrimino(shape, 10, 10, 11);
+        
+        tetrimino.deleteRow();
+        
+        int[][] target = new int[3][2];
+        target[0] = new int[]{10, 10};
+        target[1] = new int[]{11, 10};
+        target[2] = new int[]{12, 10};
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(target[i], tetrimino.getCoordinates()[i])) {
+                return false;
+            }
+        }
 
+        return true;
+    }
+    
     @Override
     public void printAll() {
         System.out.println("TetriminoTest.instantiationTest():");
         System.out.println(instantiationTest());
         System.out.println("TetriminoTest.shiftTest():");
         System.out.println(shiftTest());
+        System.out.println("TetriminoTest.getCoordinatesTest():");
+        System.out.println(getCoordinatesTest());
+        System.out.println("TetriminoTest.deleteBlockTest():");
+        System.out.println(deleteBlockTest());
+        System.out.println("TetriminoTest.deleteRowTest():");
+        System.out.println(deleteRowTest());
     }
 
 }

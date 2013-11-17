@@ -130,7 +130,7 @@ public class ShapeTest implements TestSuite {
                 return false;
             }
         }
-        coordinates = shape.getCoordinates(10, 10);
+        coordinates = shape.getAbsoluteMatrixCoordinates(10, 10);
         target[0] = new int[]{10, 10};
         target[1] = new int[]{11, 10};
         target[2] = new int[]{12, 10};
@@ -183,10 +183,10 @@ public class ShapeTest implements TestSuite {
         
         Shape shape = new Shape(matrix, 5);
         
-        int[][] bottomRow = shape.getBottomRow(10, 10);
+        int[][] bottomRow = shape.getBottomRow();
         int[][] target = new int[2][2];
-        target[0] = new int[]{13, 10};
-        target[1] = new int[]{13, 11};
+        target[0] = new int[]{3, 0};
+        target[1] = new int[]{3, 1};
         
         for (int i = 0; i < target.length; i++) {
             if (!Arrays.equals(bottomRow[i], target[i])) {

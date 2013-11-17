@@ -128,7 +128,7 @@ public class Shape {
     public int[][] getRelativeMatrixCoordinates() {
         return mCoordinates;
     }
-
+    
     /** Returns a list of [row, column] matrix-coordinates representing the
      * block matrix-coordinates on an infinitely-sized matrix, if the top-leftmost 
      * block has the matrix position [firstRow, firstCol].
@@ -139,7 +139,7 @@ public class Shape {
      * @param firstCol The column of the top-leftmost block. 
      * @return A list of block matrix-coordinates. 
      */
-    public int[][] getCoordinates(int firstRow, int firstCol) {
+    public int[][] getAbsoluteMatrixCoordinates(int firstRow, int firstCol) {
         
         int[][] result = new int[mLength][2];
         for(int i = 0; i < mLength; i++) {
@@ -151,34 +151,11 @@ public class Shape {
         return result;
     }
     
-    /** Return a list of absolute matrix-coordinates representing the 
-     * block locations present in the bottom row of this Shape, where the
-     * top-leftmost block is located at (FIRSTROW, FIRSTCOL). 
-     * 
-     * @param firstRow The row of the top-leftmost block. 
-     * @param firstCol The column of the top-leftmost block. 
-     * @return
-     */
-    public int[][] getBottomRow(int firstRow, int firstCol) {
-        ArrayList<int[]> bottomRow = new ArrayList<int[]>();
-        for (int[] coord : mCoordinates) {
-            if (coord[0] == mHeight - 1) { //block is at the bottom
-                bottomRow.add(new int[]{coord[0] + firstRow
-                        , coord[1] + firstCol});
-            }
-        }
-        
-        int[][] result = new int[bottomRow.size()][2];
-        for (int i = 0; i < bottomRow.size(); i++) {
-            result[i] = bottomRow.get(i);
-        }
-        
-        Debug.print(3, "getBottomRow() called.");
-        return result;
-    }
-    
-    /** Informs this Shape that the block positioned at (ROW, COL) was deleted.
-     * Matrix and dimensional data is updated as a result. 
+    /** Informs this Shape that the block positioned at matrix coordinate (ROW, COL).
+     *  It is critical to note that the ROW, COL used on this method must refer to the
+     * relative coordinate matrix used to construct this Shape.
+     *  This method should not be used by any other class except for {@link Tetrimino},
+     * via {@link Tetrimino#deleteBlock}.
      * 
      * @param row The row of the deleted block. 
      * @param col The column of the deleted block. 
@@ -196,7 +173,43 @@ public class Shape {
         }
         
         mCoordinates = newCoords;
-        measure();
+        measure(); //Re-calculate dimensional data
+    }
+    
+    /** Deletes the bottom row of blocks from this Shape. 
+     */
+    public void deleteRow() {
+        int[][] bottomRow = getBottomRow();
+        for (int[] coord : bottomRow) {
+            deleteBlock(coord[0], coord[1]);
+        }
+        
+        measure(); //Re-calculate dimensional data
+    }
+    
+    /** Return a list of relative matrix-coordinates representing the 
+     * block locations present in the bottom row of this Shape, where the
+     * top-leftmost block is located at (FIRSTROW, FIRSTCOL). 
+     * 
+     * @param firstRow The row of the top-leftmost block. 
+     * @param firstCol The column of the top-leftmost block. 
+     * @return
+     */
+    public int[][] getBottomRow() {
+        ArrayList<int[]> bottomRow = new ArrayList<int[]>();
+        for (int[] coord : mCoordinates) {
+            if (coord[0] == mHeight - 1) { //block is at the bottom
+                bottomRow.add(new int[]{coord[0], coord[1]});
+            }
+        }
+        
+        int[][] result = new int[bottomRow.size()][2];
+        for (int i = 0; i < bottomRow.size(); i++) {
+            result[i] = bottomRow.get(i);
+        }
+        
+        Debug.print(3, "Shape#getBottomRow called.");
+        return result;
     }
     
     /**  

@@ -58,25 +58,22 @@ public class Tetrimino {
         Debug.print(2, "Tetrimino " + mID + " shifted " + direction);
     }
     
-    /** Deletes the bottom row of blocks from this Tetrimino. 
-     * 
-     */
-    public void deleteRow() {
-        //TODO
-    }
-    
     /** Deletes the block, if present, located at matrix-coordinate position
      * (row, col) from this Tetrimino. 
      * 
      * @param row The row coordinate of the block to be deleted. 
      * @param col The column coordinate of the block to be deleted. 
      */
-    private void deleteBlock(int row, int col) {
-        //TODO
-        mShape.deleteBlock(row, col);
-        
-        
-        Debug.print(1, "block deleted at (" + row + ", " + col + ")");
+    public void deleteBlock(int row, int col) {
+        mShape.deleteBlock(row - mRootCoordinate[0], col - mRootCoordinate[1]);        
+    }
+    
+    /** Deletes the bottom row of blocks from this Tetrimino. 
+     * 
+     */
+    public void deleteRow() {
+        mShape.deleteRow();
+        Debug.print(1, "Tetrimino (ID: " + mID + " ) row deleted.");
     }
     
     /** Rotates this Tetrimino piece 90 degrees clockwise about its rotational 
@@ -105,9 +102,9 @@ public class Tetrimino {
      * 
      * @return A list of block matrix-coordinates. 
      */
-    public int[][] getblockCoordinates() {
+    public int[][] getCoordinates() {
         Debug.print(2, "Tetrimino (ID: " + mID + ") block coordinates requested.");
-        return mShape.getCoordinates(mRootCoordinate[0], mRootCoordinate[1]);
+        return mShape.getAbsoluteMatrixCoordinates(mRootCoordinate[0], mRootCoordinate[1]);
     }
 
     /**
