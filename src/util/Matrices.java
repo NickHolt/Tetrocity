@@ -1,5 +1,7 @@
 package util;
 
+import java.util.HashSet;
+
 import testing.Debug;
 
 /** A utility class for matrix operations required by other Tetrocity classes. 
@@ -33,9 +35,8 @@ public class Matrices {
      * @param matrix The matrix to be printed. 
      */
     public static void printMatrix(int[][] matrix) {
-        int rows = matrix.length, cols;
+        int rows = matrix.length, cols = matrix[0].length;
         for (int i = 0; i < rows; i++) {
-            cols = matrix[i].length;
             
             System.out.print("[");
             for (int j = 0; j < cols; j++) {
@@ -43,5 +44,52 @@ public class Matrices {
             }
             System.out.println("]");
         }
+    }
+    
+    /** Removes as much "padding" (i.e. full rows and/or columns of 0's that surround
+     * the matrix) as possible.
+     * 
+     * @return The shrunken matrix. 
+     */
+    public static int[][] shrink(int[][] matrix) {
+        int rows = matrix.length, cols = matrix[0].length;
+        HashSet<Integer> nonPaddedCols = new HashSet<Integer>()
+                , nonPaddedRows = new HashSet<Integer>(); //indices of non-padded cols/rows
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (matrix[i][j] != 0) {
+                    nonPaddedRows.add(i);
+                    nonPaddedCols.add(j);
+                }
+            }
+        }
+        
+        int firstCol = Integer.MAX_VALUE, lastCol = 0, 
+                firstRow = Integer.MAX_VALUE, lastRow = 0; //Bounds of non-padded matrix
+        for (int row : nonPaddedRows) {
+            if (row < firstRow) {
+                firstRow = row;
+            }
+            if (row > lastRow) {
+                lastRow = row;
+            }
+        }
+        for (int col : nonPaddedCols) {
+            if (col < firstCol) {
+                firstCol = col;
+            }
+            if (col > lastCol) {
+                lastCol = col;
+            }
+        }
+        
+        int[][] shrunkMatrix = new int[lastRow - firstRow + 1][lastCol - firstCol + 1];
+        for (int i = firstRow; i <= lastRow; i++) {
+            for (int j = firstCol; j <= lastCol; j++) {
+                shrunkMatrix[i - firstRow][j - firstCol] = matrix[i][j];
+            }
+        }
+        return shrunkMatrix;
+        
     }
 }

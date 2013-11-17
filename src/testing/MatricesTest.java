@@ -1,5 +1,7 @@
 package testing;
 
+import java.util.Arrays;
+
 import util.Matrices;
 
 public class MatricesTest implements TestSuite {
@@ -19,13 +21,34 @@ public class MatricesTest implements TestSuite {
         target[4] = new int[]{0, 0, 0, 0, 0, 0};
         
         for (int i = 0; i < target.length; i++) {
-            for (int j = 0; j < target[0].length; j++) {
-                if (target[i][j] != paddedMatrix[i][j]) {
-                    return false;
-                }
+            if (!Arrays.equals(target[i], paddedMatrix[i])) {
+                return false;
             }
         }
                
+        return true;
+    }
+    
+    public boolean shrinkTest() {
+        int[][] matrix = new int[5][5];
+        matrix[0] = new int[]{0, 0, 0, 0, 0};
+        matrix[1] = new int[]{0, 1, 2, 0, 0};
+        matrix[2] = new int[]{0, 0, 0, 0, 0};
+        matrix[3] = new int[]{0, 9, 10, 0, 0};
+        matrix[4] = new int[]{0, 0, 0, 0, 0};
+        int[][] target = new int[3][2];
+        target[0] = new int[]{1, 2};
+        target[1] = new int[]{0, 0};
+        target[2] = new int[]{9, 10};
+        
+        int[][] shrunkMatrix = Matrices.shrink(matrix);
+        
+        for (int i = 0; i < target.length; i++) {
+            if (!Arrays.equals(target[i], shrunkMatrix[i])) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -33,6 +56,8 @@ public class MatricesTest implements TestSuite {
     public void printAll() {
         System.out.println("MatricesTest.padMatrixTest():");
         System.out.println(padMatrixTest());
+        System.out.println("MatricesTest.shrinkTest():");
+        System.out.println(shrinkTest());
     }
 
 }
