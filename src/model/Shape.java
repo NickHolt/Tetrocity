@@ -264,4 +264,41 @@ public class Shape {
     public int getHeight() {
         return mHeight;
     }
+    
+    /** Checks if the shape matrix is a valid description of a Tetrimino 
+     * piece of the given length. For a piece to be valid, every constituent
+     * block must share an edge with another (unless the length is 1). 
+     * 
+     *  This method assumes the matrix is a valid matrix. That is, every
+     *  row has the same number of elements. 
+     * 
+     * @param matrix The shape matrix to validate. 
+     * @param length The length of the Tetrimino piece described by MATRIX. 
+     * @return True IFF the matrix if a valid description of Tetrimino piece 
+     * of length LENGTH. 
+     */
+    public static boolean isValidTetriminoMatrix(int[][] matrix, int length) {
+        int rows = matrix.length, cols = matrix[0].length;
+        matrix = Matrices.padMatrix(matrix);
+        int count = 0;
+        
+        for (int i = 1; i < rows + 1; i++) { //ranges adjust for padding
+            for (int j = 1; j < cols + 1; j++) {
+                if (matrix[i][j] != 0) {
+                    count++;
+                    
+                    if (length != 1 //Block must have adjacent block, unless it's length 1
+                            && matrix[i - 1][j] == 0
+                            && matrix[i][j + 1] == 0
+                            && matrix[i + 1][j] == 0
+                            && matrix[i][j - 1] == 0) {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        Debug.print(3, "Tetrimino validity checked.");
+        return count == length;
+    }
 }

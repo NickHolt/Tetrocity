@@ -212,6 +212,41 @@ public class ShapeTest implements TestSuite {
         return true;
     }
     
+    public boolean isValidMatrixTest() {
+        int[][] matrix0 = new int[4][4];
+        matrix0[0] = new int[]{1, 0, 0, 0};
+        matrix0[1] = new int[]{1, 0, 0, 0};
+        matrix0[2] = new int[]{1, 0, 0, 0};
+        matrix0[3] = new int[]{1, 1, 0, 0};
+        
+        int[][] matrix1 = new int[4][4];
+        matrix1[0] = new int[]{1, 0, 0, 0};
+        matrix1[1] = new int[]{1, 0, 0, 0};
+        matrix1[2] = new int[]{1, 0, 1, 0};
+        matrix1[3] = new int[]{1, 1, 0, 0};
+        
+        int[][] matrix2 = new int[4][4];
+        matrix2[0] = new int[]{1, 0, 0, 0};
+        matrix2[1] = new int[]{2, 0, 0, 0};
+        matrix2[2] = new int[]{3, 0, 0, 0};
+        matrix2[3] = new int[]{4, 5, 0, 0};
+                
+        int[][] matrix3 = new int[1][1];
+        matrix3[0] = new int[]{1};
+        
+        int[][] matrix4 = new int[4][4];
+        matrix4[0] = new int[]{1, 0, 0, 0};
+        matrix4[1] = new int[]{1, 0, 0, 0};
+        matrix4[2] = new int[]{1, 0, 0, 0};
+        matrix4[3] = new int[]{1, 1, 0, 0};
+        
+        return Shape.isValidTetriminoMatrix(matrix0, 5)
+                && !Shape.isValidTetriminoMatrix(matrix1, 6)
+                && Shape.isValidTetriminoMatrix(matrix2, 5)
+                && Shape.isValidTetriminoMatrix(matrix3, 1)
+                && !Shape.isValidTetriminoMatrix(matrix4, 6);
+        }
+    
     public void printFails() {
         if (!instantiationTest()) {
             System.out.println("ShapeTest.instantiationTest() failed.");
@@ -230,6 +265,9 @@ public class ShapeTest implements TestSuite {
         }
         if (!rotateCounterClockwiseTest()) {
             System.out.println("ShapeTest.rotateCounterClockwiseTest() failed.");
+        }
+        if (!isValidMatrixTest()) {
+            System.out.println("ShapeTest.isValidMatrixTest() failed.");
         }
     }
 }
