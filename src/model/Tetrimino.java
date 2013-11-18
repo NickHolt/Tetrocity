@@ -36,11 +36,11 @@ public class Tetrimino {
      * @param col The column of the root coordinate.
      * @param ID The ID to be assigned to all blocks in this Tetrimino. 
      */
-    public Tetrimino(Shape shape, int row, int col, int ID) {
+    public Tetrimino(Shape shape, int[] rootCoordinate, int ID) {
         mLive = false;
         mID = ID;
         mShape = shape;
-        mRootCoordinate = new int[]{row, col};
+        mRootCoordinate = rootCoordinate;
     }   
     
     /** Shifts the Tetrimimo's coordinate position (i.e. all of its block positions)
@@ -84,6 +84,7 @@ public class Tetrimino {
      * coordinate.
      */
     public void rotateClockwise() {
+        Debug.print(2, "Tetrimino " + mID + "rotated clockwise."); //THIS SLOWS CONTROL DOWN!
         mShape.rotateClockwise();
     }
     
@@ -91,6 +92,7 @@ public class Tetrimino {
      * coordinate.
      */
     public void rotateCounterClockwise() {
+        Debug.print(2, "Tetrimino " + mID + "rotated counterclockwise.");
         mShape.rotateCounterClockwise();
     }
     
