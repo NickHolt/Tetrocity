@@ -111,6 +111,13 @@ public class Tetrimino {
         Debug.print(2, "Tetrimino (ID: " + mID + ") coordinates generated.");
         return result;
     }
+    
+    /**
+     * @return True IFF there are no more blocks in this Tetrimino. 
+     */
+    public boolean isEmpty() {
+        return getCoordinates().length == 0;
+    }
 
     /**
      * @return the ID of this Tetrimino. 
