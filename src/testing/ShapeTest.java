@@ -11,6 +11,17 @@ public class ShapeTest implements TestSuite {
         
         int[][] matrix = new int[4][4];
         matrix[0] = new int[]{1, 0, 0, 0};
+        matrix[1] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[3] = new int[]{1, 1, 0, 0};
+        try {
+            shape = new Shape(matrix);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        
+        matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0, 0, 0};
         matrix[1] = new int[]{0, 0, 0, 0};
         matrix[2] = new int[]{0, 0, 0, 0};
         matrix[3] = new int[]{0, 0, 0, 0};
@@ -234,17 +245,11 @@ public class ShapeTest implements TestSuite {
         int[][] matrix3 = new int[1][1];
         matrix3[0] = new int[]{1};
         
-        int[][] matrix4 = new int[4][4];
-        matrix4[0] = new int[]{1, 0, 0, 0};
-        matrix4[1] = new int[]{1, 0, 0, 0};
-        matrix4[2] = new int[]{1, 0, 0, 0};
-        matrix4[3] = new int[]{1, 1, 0, 0};
-        
-        return Shape.isValidTetriminoMatrix(matrix0, 5)
-                && !Shape.isValidTetriminoMatrix(matrix1, 6)
-                && Shape.isValidTetriminoMatrix(matrix2, 5)
-                && Shape.isValidTetriminoMatrix(matrix3, 1)
-                && !Shape.isValidTetriminoMatrix(matrix4, 6);
+        return Shape.isValidTetriminoMatrix(matrix0)
+                && !Shape.isValidTetriminoMatrix(matrix1)
+                && Shape.isValidTetriminoMatrix(matrix2)
+                && Shape.isValidTetriminoMatrix(matrix3)
+                && Shape.isValidTetriminoMatrix(matrix3);
         }
     
     public void printFails() {
