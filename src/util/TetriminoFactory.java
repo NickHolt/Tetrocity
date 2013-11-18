@@ -1,5 +1,7 @@
 package util;
 
+import java.util.ArrayList;
+
 import model.Shape;
 import model.Tetrimino;
 
@@ -23,31 +25,27 @@ import model.Tetrimino;
  *
  */
 public class TetriminoFactory {
-    public static final int DEFAULT_LOAD = 100;
-    
     private int [] mLengthRange;
     private int mSeed;
-    private int[] mIDs; //ID available IFF mIDs[ID] == 1
+    /* TetriminoFactories use length 32 bit-strings to maintain locally unique IDs.
+     * In short, if the ith bit (little-endian)  is 1, then i is an available
+     * ID. If a new ID is requested and all bit-strings are 0, a new bit-string
+     * is added. The jth bit of the ith bit-string is ID 32*i + j. 
+     * Integers are used instead of Longs since Java bitwise operations
+     * are messy on Long types. 
+     */
+    private ArrayList<Integer> mIDs; 
 
     /** A new TetriminoFactory. 
      * 
      * @param lengthRange The range of Tetrimino lengths which this TetriminoFactory 
      * will generate.
      * @param seed The seed of all random operations of this TetriminoFactory.
-     * @param initialLoad The initial scope of this TetriminoFactory's ID generation.a
-     */
-    public TetriminoFactory(int[] lengthRange, int seed, int initialLoad) {
-        //TODO
-    }
-    
-    /** A new TetriminoFactory with initial load DEFAULT_LOAD. 
-     * 
-     * @param lengthRange The range of Tetrimino lengths which this TetriminoFactory 
-     * will generate.
-     * @param seed The seed of all random operations of this TetriminoFactory.
      */
     public TetriminoFactory(int[] lengthRange, int seed) {
-        this(lengthRange, seed, DEFAULT_LOAD);
+        mLengthRange = lengthRange;
+        mSeed = seed;
+        mIDs = new ArrayList<Integer>();
     }
     
     /**
@@ -59,9 +57,31 @@ public class TetriminoFactory {
         return new Shape(null, 0);
     }
     
-    public int getRandomUniqueID() {
-        //TODO
-        return 0;
+    /** Returns a locally unique ID. These IDs are neither random nor 
+     * non-predictable. 
+     * 
+     * @return A new locally unique ID. 
+     */
+    public int getUniqueID() {
+        int mask;
+        int bitString;
+        for (int i = 0; i < mIDs.size(); i++) {
+            mask = 0x1;
+            bitString = mIDs.get(i);
+            
+            if (bitString != 0) { //There is an available ID in the bit-string
+                for (int j = 0; j < 32; j++) {
+                    if ((bitString & mask) != 0) {
+                        mIDs.set(i, bitString & (mask ^ -1)); //zero the bit: ID is used
+                        return 32 * i + j; 
+                    }
+                    mask <<= 1;
+                }
+            }
+        }
+        /* No ID's available, make new bit-string */
+        mIDs.add(0xFFFFFFFE); //0b111...110, since we're going to use first bit for the ID
+        return (mIDs.size() - 1)* 32; //The ID we just said we were going to use
     }
     
     public Tetrimino getRandomTetrimino(int[] rootCoordinate) {
@@ -69,8 +89,31 @@ public class TetriminoFactory {
         return null;
     }
     
+    /** Marks an ID as free to use, so that it may be assigned to future 
+     * Tetriminoes.
+     * 
+     *  This method is dangerous. If you attempt to free an ID that has not been
+     * distributed yet, or an invalid ID, an exception will be raised. Care should
+     * be used in ensuring the ID being freed was in fact previously in use. 
+     * 
+     * @param ID The ID to mark as free. 
+     */
     public void freeID(int ID) {
-        //TODO
+        if (ID < 0) {
+            throw new IllegalArgumentException("Tried to free a negative "
+                    + "TetriminoFactory ID: " + ID);
+        } else if (ID / 32 >= mIDs.size()) {
+            //This ID wasn't distributed anyway, so this should not be reached
+            //if this method is used properly.
+            throw new IllegalArgumentException("ID: " + ID + " outside of buffer range.");
+        }
+                
+        if ((mIDs.get(ID / 32) & (0x1 << (ID % 32))) != 0) { //I.e. the ID was not used yet
+            throw new IllegalArgumentException("ID: " + ID + " has not been used yet.");
+        }
+        
+        mIDs.set(ID / 32,  //ID / 32 is the index of the bit-string that contains ID
+                mIDs.get(ID / 32) | (0x1 << (ID % 32))); //Flip the relevant ID bit
     }
 
     /**
