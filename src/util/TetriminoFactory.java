@@ -10,8 +10,8 @@ import model.Tetrimino;
  * provided. Note that two Factories of the same seed and block-length range will
  * generate an identical sequence of Tetrimino pieces. 
  * 
- *  A TetriminoFactory can provide random {@link Shape} objects, but also random Tetrimino
- * objects if a root coordinate is provided. 
+ *  A TetriminoFactory can provide pseudorandom {@link Shape} objects, but also 
+ *  pseudorandom Tetrimino objects if a root coordinate is provided. 
  * 
  *  A TetriminoFactory instance will also be able to assign Tetrimino IDs that are
  * unique to all Tetriminoes currently in the game. As such, when a Tetrimino
@@ -40,7 +40,7 @@ public class TetriminoFactory {
      * 
      * @param lengthRange The range of Tetrimino lengths which this TetriminoFactory 
      * will generate.
-     * @param seed The seed of all random operations of this TetriminoFactory.
+     * @param seed The seed of all pseudorandom operations of this TetriminoFactory.
      */
     public TetriminoFactory(int[] lengthRange, int seed) {
         mLengthRange = lengthRange;
@@ -84,6 +84,11 @@ public class TetriminoFactory {
         return (mIDs.size() - 1)* 32; //The ID we just said we were going to use
     }
     
+    /** Returns a Tetrimino with a pseudorandom shape and locally unique ID. 
+     * 
+     * @param rootCoordinate
+     * @return
+     */
     public Tetrimino getRandomTetrimino(int[] rootCoordinate) {
         //TODO
         return null;
@@ -112,8 +117,8 @@ public class TetriminoFactory {
             throw new IllegalArgumentException("ID: " + ID + " has not been used yet.");
         }
         
-        mIDs.set(ID / 32,  //ID / 32 is the index of the bit-string that contains ID
-                mIDs.get(ID / 32) | (0x1 << (ID % 32))); //Flip the relevant ID bit
+        mIDs.set(ID / 32,  //ID / 32 is the index of the bit-string that contains the ID
+                mIDs.get(ID / 32) | (0x1 << (ID % 32))); //Set the relevant ID bit to 1
     }
 
     /**
@@ -132,14 +137,14 @@ public class TetriminoFactory {
     }
 
     /**
-     * @return The random seed used by this TetriminoFactory. 
+     * @return The seed used by this TetriminoFactory's pseudorandom processes.  
      */
     public int getSeed() {
         return mSeed;
     }
 
     /**
-     * @param The random seed to be used by this TetriminoFactory.
+     * @param The seed to be used by this TetriminoFactory's pseudorandom processes.
      */
     public void setSeed(int mSeed) {
         this.mSeed = mSeed;
