@@ -2,6 +2,7 @@ package testing;
 
 import java.util.HashSet;
 
+import model.Shape;
 import util.TetriminoFactory;
 
 public class TetriminoFactoryTest implements TestSuite {
@@ -76,6 +77,18 @@ public class TetriminoFactoryTest implements TestSuite {
         
         return true;
     }
+    
+    public boolean getRandomMatrixTest() {
+        TetriminoFactory tf = new TetriminoFactory(new int[]{1, 10}, 0);
+        for (int i = 0; i < 20; i++) {            
+            if (!Shape.isValidTetriminoMatrix(tf.getRandomShapeMatrix())) {
+                return false;
+            }
+        }
+        
+        return true;
+
+    }
 
     @Override
     public void printFails() {
@@ -84,6 +97,9 @@ public class TetriminoFactoryTest implements TestSuite {
         }
         if (!freeIDTest()) {
             System.out.println("TetriminoFactoryTest.freeIDTest() failed.");
+        }
+        if (!getRandomMatrixTest()) {
+            System.out.println("TetriminoFactoryTest.getRandomMatrixTest() failed.");
         }
 
     }
