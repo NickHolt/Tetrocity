@@ -77,10 +77,8 @@ public class ShapeTest implements TestSuite {
         target[3] = new int[]{3, 0};
         target[4] = new int[]{3, 1};
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(target[i], coordinates[i])) {
-                return false;
-            }
+        if (!Arrays.deepEquals(target, coordinates)) {
+            return false;
         }
         
         return true;
@@ -116,10 +114,8 @@ public class ShapeTest implements TestSuite {
         target[0] = new int[]{3, 0};
         target[1] = new int[]{3, 1};
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(bottomRow[i], target[i])) {
-                return false;   
-            }
+        if (!Arrays.deepEquals(target, bottomRow)) {
+            return false;
         }
         
         return true;
@@ -143,10 +139,8 @@ public class ShapeTest implements TestSuite {
         target[3] = new int[]{0, 0};
         target[4] = new int[]{1, 0};
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(coordinates[i], target[i])) {
-                return false;   
-            }
+        if (!Arrays.deepEquals(coordinates, target)) {
+            return false;
         }
         
         matrix = new int[3][3];
@@ -165,10 +159,8 @@ public class ShapeTest implements TestSuite {
         target[3] = new int[]{2, 1};
         target[4] = new int[]{1, 0};
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(coordinates[i], target[i])) {
-                return false;   
-            }
+        if (!Arrays.deepEquals(coordinates, target)) {
+            return false;
         }
         
         return true;
@@ -192,10 +184,8 @@ public class ShapeTest implements TestSuite {
         target[3] = new int[]{1, 3};
         target[4] = new int[]{0, 3};
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(coordinates[i], target[i])) {
-                return false;   
-            }
+        if (!Arrays.deepEquals(coordinates, target)) {
+            return false;
         }
         
         matrix = new int[3][3];
@@ -214,10 +204,8 @@ public class ShapeTest implements TestSuite {
         target[3] = new int[]{0, 1};
         target[4] = new int[]{1, 2};
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(coordinates[i], target[i])) {
-                return false;   
-            }
+        if (!Arrays.deepEquals(coordinates, target)) {
+            return false;
         }
         
         return true;

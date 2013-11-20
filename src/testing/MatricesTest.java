@@ -20,10 +20,8 @@ public class MatricesTest implements TestSuite {
         target[3] = new int[]{0, 9, 10, 11, 12, 0};
         target[4] = new int[]{0, 0, 0, 0, 0, 0};
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(target[i], paddedMatrix[i])) {
-                return false;
-            }
+        if (!Arrays.deepEquals(paddedMatrix, target)) {
+            return false;
         }
                
         return true;
@@ -43,10 +41,8 @@ public class MatricesTest implements TestSuite {
         
         int[][] shrunkMatrix = Matrices.shrink(matrix);
         
-        for (int i = 0; i < target.length; i++) {
-            if (!Arrays.equals(target[i], shrunkMatrix[i])) {
-                return false;
-            }
+        if (!Arrays.deepEquals(target, shrunkMatrix)) {
+            return false;
         }
 
         return true;
