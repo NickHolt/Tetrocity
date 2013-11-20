@@ -226,30 +226,29 @@ public class Shape {
     /** Rotates this Shape 90 degrees clockwise.
      */
     public void rotateClockwise() {
-        /* The following algorithm uses a simple mathematical transformation. 
-         * Given a block with matrix-coordinate position [row, col], and a
-         * coordinate around which to rotate clockwise 90 degrees [rowPivot, colPivot],
-         * the new block coordinates after rotation are: 
-         * [rowPivot - (colPivot - col), colPivot + (rowPivot - row)].
+        /* A Shape rotation is not about any specific point, as the "smallest
+         * possible shape-matrix" idea must hold both before and after a rotation.
+         * A valid rotation looks as follows:
          * 
-         * Once the algorithm is complete, the coordinates must be shifted back to 
-         * fit the "smallest box" model that Shapes use, by finding the index of the
-         * top row of the new shape, and subtracting that from every coordinate. 
-         * Likewise, I subtract the leftmost column coordinate of the new shape
-         * from every coordinate. However, I claim that in all cases:
-         * topRow = (rowPivot - colPivot) and
-         * leftCol = (colPivot - (mHeight - 1 - rowPivot))
-         * I won't prove this, but the result comes from recognizing that 
-         * there will always be a block in column 0, and another in row (mHeight - 1).
+         * ****    ******
+         * *10* -> *1111*
+         * *10*    *1000*
+         * *10*    ******
+         * *11*
+         * ****
          * 
-         * Putting these results together:
-         * newRow = rowPivot - (colPivot - col) - topRow
-         *        = col
-         *        
-         * newCol = colPivot + (rowPivot - row) - leftCol
-         *        = mHeight - 1 - row
-         *        
-         * Mind = blown. For a full proof, visit github.com/NickHolt/Tetrocity.git.
+         * Fortunately this makes the transformation simple. Every coordinate
+         * (r, c) will undergo the following mapping:
+         *       (r, c) -> (c, mHeight - 1 - r)
+         *       
+         * To see this, consider a block initially in column c. This means that
+         * the horizontal distance between that block and the leftmost block is c. 
+         * After this rotation, the leftmost block becomes the topmost block, and
+         * the distance between the two blocks is still c. Since the topmost block
+         * is in row 0, the original block's new row is c. 
+         * 
+         * You can apply similar logic to see the column mapping c -> mHeight - r -1,
+         * keeping in mind that the bottom blow is always in row mHeight - 1. 
          */
         
         for (int i = 0; i < mCoordinates.length; i++) {
@@ -263,7 +262,7 @@ public class Shape {
      * coordinate.
      */
     public void rotateCounterClockwise() {
-        /* For a similar proof on why this works, see rotateClockwise()
+        /* For a similar explanation on why this works, see rotateClockwise()
          */
         
         for (int i = 0; i < mCoordinates.length; i++) {
