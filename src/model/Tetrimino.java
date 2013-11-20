@@ -24,9 +24,10 @@ import util.Direction;
  *
  */
 public class Tetrimino {    
-    private int mID;
+    private final int mID;
     private boolean mLive;
-    private Shape mShape;
+    private boolean mBeenStored;
+    private final Shape mShape;
     private int[] mRootCoordinate;
     
     /** A new Tetrimino whose root is (ROW, COL). 
@@ -181,5 +182,18 @@ public class Tetrimino {
      */
     public int getHeight() {
         return mShape.getHeight();
+    }
+
+    /**
+     * @return True IFF this Tetrimino has ever been stored. 
+     */
+    public boolean hasBeenStored() {
+        return mBeenStored;
+    }
+
+    /** Mark this Tetrimino as having been stored. 
+     */
+    public void markStored() {
+        mBeenStored = true;
     }
 }
