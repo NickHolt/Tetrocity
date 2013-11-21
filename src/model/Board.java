@@ -89,6 +89,7 @@ public class Board {
     }
     
     /** Updates the grid with the current coordinate positions of all live Tetriminoes.
+     * This method should be called every time movement is applied to any live Tetrimino. 
      */
     public void updateGrid() {
         int tetriminoID;
@@ -180,13 +181,20 @@ public class Board {
     }
     
     /** Removes a Tetrimino from the Queue and adds it to the grid. When
-     * a Tetrimino is added to the grid, the coordinate is chosen such that the 
-     * Tetrimino's bottom row aligns with the bottom of the buffer region.
-     * Its middle will be centered with the grid as well. 
+     * a Tetrimino is added to the grid, the root coordinate is chosen via
+     * {@link Board#getPlacementCoordinate(Tetrimino)}.
      */
     public void putTetrimino() {
         //TODO
         //make sure you update the HashMap
+    }
+    
+    /** Bypass the Queue and add the Tetrimino to the grid. When
+     * a Tetrimino is added to the grid, the root coordinate is chosen via
+     * {@link Board#getPlacementCoordinate(Tetrimino)}.
+     */
+    public void putTetrimino(Tetrimino tetrimino) {
+        //TODO
     }
     
     /**
@@ -195,6 +203,13 @@ public class Board {
      */
     public boolean queueTooSmall() {
         return mTetriminoQueue.size() < FULL_QUEUE_SIZE;
+    }
+    
+    /**
+     * @return The current grid. 
+     */
+    public int[][] getGrid() {
+        return mGrid;
     }
     
     /**
