@@ -61,6 +61,8 @@ import util.Matrices;
  */
 public class Shape {
     private int[][] mCoordinates;
+    private int[][] mBottomRow;
+    private int[][] mAnchorBlocks;
     private int mLength;
     private int mWidth;
     private int mHeight;
@@ -129,18 +131,6 @@ public class Shape {
         Debug.print(2, "New shape sucessfully created.");
     }
     
-    /** Returns a list of [row, column] matrix-coordinates representing the
-     * block matrix-coordinates on an infinitely-sized matrix. These coordinates
-     * are in NO PARTICULAR ORDER. 
-     * 
-     *  Note that matrix indexing begins at 0. 
-     *
-     * @return A list of relative block matrix-coordinates. 
-     */
-    public int[][] getRelativeMatrixCoordinates() {
-        return mCoordinates;
-    }
-    
     /** Informs this Shape that the block positioned at matrix coordinate (ROW, COL).
      *  It is critical to note that the ROW, COL used on this method must refer to the
      * relative coordinate matrix used to construct this Shape.
@@ -177,37 +167,15 @@ public class Shape {
         measure(); //Re-calculate dimensional data
     }
     
-    /** Return a list of relative matrix-coordinates representing the 
-     * block locations present in the bottom row of this Shape, where the
-     * top-leftmost block is located at (FIRSTROW, FIRSTCOL). 
-     * 
-     * @param firstRow The row of the top-leftmost block. 
-     * @param firstCol The column of the top-leftmost block. 
-     * @return
-     */
-    public int[][] getBottomRow() {
-        ArrayList<int[]> bottomRow = new ArrayList<int[]>();
-        for (int[] coord : mCoordinates) {
-            if (coord[0] == mHeight - 1) { //block is at the bottom
-                bottomRow.add(new int[]{coord[0], coord[1]});
-            }
-        }
-        
-        int[][] result = new int[bottomRow.size()][2];
-        for (int i = 0; i < bottomRow.size(); i++) {
-            result[i] = bottomRow.get(i);
-        }
-        
-        Debug.print(3, "Shape#getBottomRow called.");
-        return result;
-    }
-    
     /**  
      * Calculate dimensional member variables based on block coordinates.
      */
     private void measure() {
         mLength = mHeight = mWidth = 0; 
+        ArrayList<int[]> bottomRow = new ArrayList<int[]>(),
+                anchorBlocks = new ArrayList<int[]>();
         
+        boolean isAnchor = false;
         for (int[] coord : mCoordinates) {
             mLength++;
             if (coord[0] > mHeight) {
@@ -216,9 +184,35 @@ public class Shape {
             if (coord[1] > mWidth) {
                 mWidth = coord[1];
             }
+            
+            if (coord[0] == mHeight - 1) { //block is at the bottom
+                bottomRow.add(new int[]{coord[0], coord[1]});
+            }
+            
+            /* Check if it's an anchor block. */
+            for (int[] secondCoord : mCoordinates) {
+                if (secondCoord[0] == coord[0] + 1
+                        && secondCoord[1] == coord[1]) {
+                    isAnchor = false;
+                    break;
+                }
+            }
+            if (isAnchor) {
+                anchorBlocks.add(coord);
+            }
         }
         mHeight++; //adjust for 0-indexing
         mWidth++; 
+        
+        mBottomRow = new int[bottomRow.size()][2];
+        for (int i = 0; i < bottomRow.size(); i++) {
+            mBottomRow[i] = bottomRow.get(i);
+        }
+        
+        mAnchorBlocks = new int[anchorBlocks.size()][2];
+        for (int i = 0; i < anchorBlocks.size(); i++) {
+            mAnchorBlocks[i] = anchorBlocks.get(i);
+        }
         
         Debug.print(3, "Shape#measure() completed.");
     }
@@ -248,7 +242,7 @@ public class Shape {
          * is in row 0, the original block's new row is c. 
          * 
          * You can apply similar logic to see the column mapping c -> mHeight - r -1,
-         * keeping in mind that the bottom blow is always in row mHeight - 1. 
+         * keeping in mind that the bottom block is always in row (mHeight - 1). 
          */
         
         for (int i = 0; i < mCoordinates.length; i++) {
@@ -270,6 +264,37 @@ public class Shape {
                     mCoordinates[i][0]};
         }   
         measure();
+    }
+    
+    /** Returns a list of [row, column] matrix-coordinates representing the
+     * block matrix-coordinates on an infinitely-sized matrix. These coordinates
+     * are in NO PARTICULAR ORDER. 
+     * 
+     *  Note that matrix indexing begins at 0. 
+     *
+     * @return A list of relative block matrix-coordinates. 
+     */
+    public int[][] getRelativeMatrixCoordinates() {
+        return mCoordinates;
+    }
+    
+    /** Return a list of relative matrix-coordinates representing the 
+     * block locations present in the bottom row of this Shape.
+     * 
+     * @return An array of relative-coordinates of the bottom row of blocks. 
+     */
+    public int[][] getBottomRow() {
+        return mBottomRow;
+    }
+    
+    /** Returns a list of "anchor block" relative-coordinates. An anchor block is one that has 
+     * no block beneath it. That is, if a block has coordinate (r, c), then it is an
+     * anchor block is there is no block in coordinate (r + 1, c);
+     * 
+     * @return A list of anchor block relative-coordinates.
+     */
+    public int[][] getAnchorBlocks() {
+        return mAnchorBlocks;
     }
     
     /**
