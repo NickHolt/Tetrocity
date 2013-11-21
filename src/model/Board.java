@@ -35,7 +35,8 @@ import control.Engine;
  */
 public class Board {
     /* The capacity of the Queue this Board will use to track upcoming Tetriminoes. */
-    public static final int FULL_QUEUE_SIZE = 6;
+    public static final int FULL_QUEUE_SIZE = 5;
+    
     /* A grid of Tetrimino IDs representing the game board. -1 is an empty space. */
     private int[][] mGrid;
     /* A HashMap of live Tetrimino IDs to that Tetrimino's last known coordinates. */
@@ -110,8 +111,11 @@ public class Board {
             tetriminoID = tetrimino.getID();
             
             oldCoordinates = mLiveTetriminoCoordinates.get(tetriminoID);
-            for (int[] oldCoord : oldCoordinates) {
-                mGrid[oldCoord[0]][oldCoord[1]] = -1; //Empty old coordinate positions
+            
+            if (oldCoordinates != null) {
+                for (int[] oldCoord : oldCoordinates) {
+                    mGrid[oldCoord[0]][oldCoord[1]] = -1; //Empty old coordinate positions
+                }
             }
             
             newCoordinates = tetrimino.getCoordinates();
@@ -142,10 +146,34 @@ public class Board {
         return 0;
     }
     
+    /** Attempt to shift all live Tetriminoes one coordinate position towards the
+     * provided direction. If a collision is found for a live Tetrimino, that Tetrimino
+     * will not move. Furthermore, if and only if the direction is South, the Tetrimino
+     * will be marked dead.
+     * 
+     *  Note that shiftLiveTetriminoes(Direction.SOUTH) is equivalent to 
+     * {@link Board#dropLiveTetriminoes()}.
+     * 
+     * @param direction The direction to shift all live Tetriminoes in. 
+     */
+    public void shiftLiveTetriminoes(Direction direction) {
+        if (direction == Direction.SOUTH) {
+            dropLiveTetriminoes();
+        } else {
+            //TODO
+        }
+        
+        updateGrid();
+    }
+    
     /** If possible, drops all live Tetriminoes one coordinate space south. That is,
      * it adds one to the row coordinate of every live Tetrimino. If this is not possible,
      * and there exists a block beneath any of the Tetrimino's anchor blocks, the Tetrimino 
      * will be removed from the list of live Tetriminoes.
+     * 
+     *  This method is a special case of {@link Board#shiftLiveTetriminoes} which is equivalent 
+     * to calling shiftLiveTetriminoes(Direction.SOUTH). South is the only direction that will
+     * cause a Tetrimino be marked dead if the Tetrimino's path is blocked. 
      */
     public void dropLiveTetriminoes() {
         int[][] anchorCoordinates;
@@ -154,6 +182,7 @@ public class Board {
             for (int[] anchor : anchorCoordinates) {
                 if (mGrid[anchor[0] + 1][anchor[1]] != -1) { //there is no empty space beneath
                     mLiveTetriminoes.remove(tetrimino); //"mark as dead"
+                    clearRows(); //Check for new filled rows
                     break;
                 }
             }
@@ -161,14 +190,36 @@ public class Board {
         }                                     //shift them anyway to simplify code
         
         updateGrid();
-        Debug.print(2, "Live Tetriminoes dropped.");
     }
     
-    /** Stores the bottom-most Tetrimino. If a Tetrimino already exists in storage,
-     * it will be placed back on the top of the grid and marked as live. 
+    /** Stores the bottom-most Tetrimino that has not been previously stored. If a Tetrimino 
+     * already exists in storage, it will be placed back on the top of the grid and marked as live. 
      */
     public void storeTetrimino() {
-        //TODO
+        Tetrimino bottomLiveValidTetrimino = mLiveTetriminoes.get(0);
+        
+        for (Tetrimino liveTetrimino : mLiveTetriminoes) {
+            if (liveTetrimino.getBottomRow() > bottomLiveValidTetrimino.getBottomRow()) {
+                bottomLiveValidTetrimino = liveTetrimino;
+            }
+        }
+        
+        if (!bottomLiveValidTetrimino.hasBeenStored()) {
+            if (mStoredTetrimino != null) {
+                putTetrimino(mStoredTetrimino);
+            }
+            
+            mLiveTetriminoes.remove(bottomLiveValidTetrimino);
+            mStoredTetrimino = bottomLiveValidTetrimino;
+            bottomLiveValidTetrimino.markStored();
+            
+            updateGrid();
+            
+            Debug.print(1, "Tetrimino stored.");
+        } else {
+            //Do nothing
+            Debug.print(1, "Tetrimino storage rejected.");
+        }
     }
     
     /**
@@ -197,9 +248,8 @@ public class Board {
      * a Tetrimino is added to the grid, the root coordinate is chosen via
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
      */
-    public void putTetrimino() {
-        //TODO
-        //make sure you update the HashMap
+    public void pullTetrimino() {
+        putTetrimino(mTetriminoQueue.poll());
     }
     
     /** Bypass the Queue and add the Tetrimino to the grid. When
@@ -207,7 +257,13 @@ public class Board {
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
      */
     public void putTetrimino(Tetrimino tetrimino) {
-        //TODO
+        tetrimino.setRootCoordinate(getPlacementCoordinate(tetrimino));
+        
+        mLiveTetriminoes.add(tetrimino);
+        
+        updateGrid();
+        
+        Debug.print(2, "New Tetrimino placed on the grid.");
     }
     
     /**
