@@ -78,14 +78,26 @@ public class Board {
     /** Given the Tetrimino, returns a grid coordinate such that the root coordinate of the
      * Tetrimino may be set to it and:
      *  i) Be centered on the grid.
-     *  ii) If possible, have its bottom block(s) align with the bottom of the buffer region. 
+     *  ii) If possible, have its bottom block(s) align with the bottom of the buffer region.
+     *  
+     *  Note that the Tetrimino's width and height must be less than or equal to that of the 
+     *  board.
      * 
      * @param tetrimino The Tetrimino to be placed.
      * @return The placement coordinate.
      */
     public int[] getPlacementCoordinate(Tetrimino tetrimino) {
-        //TODO
-        return null;
+        int col = mGrid[0].length / 2 - tetrimino.getWidth() / 2,
+                row;
+        
+        if (tetrimino.getHeight() > mBuffer) {
+            row = 0; 
+        } else {
+            row = mBuffer - tetrimino.getHeight();
+        }
+        
+        Debug.print(3, "Board#getPlacementCoordinate called.");
+        return new int[]{row, col};
     }
     
     /** Updates the grid with the current coordinate positions of all live Tetriminoes.
@@ -126,6 +138,7 @@ public class Board {
      */
     public int clearRows() {
         //TODO
+        //MAKE SURE YOU DISCOUNT LIVE TETRIMINOES!!!! <- POTENTIAL BUG
         return 0;
     }
     
