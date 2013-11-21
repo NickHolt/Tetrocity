@@ -14,11 +14,14 @@ import util.Direction;
  * the Tetrimino's constituent blocks are known by the Tetrimino's Shape.
  * 
  *  In order to provide the absolute matrix position information, a root 
- * coordinate must be provided. A root coordinate is found as such: the row
+ * coordinate may be provided. A root coordinate is found as such: the row
  * of the root coordinate is the top row of the Tetrimino, and the column is 
  * the leftmost column of the Tetrimino. Alternatively, it is the coordinate
  * of the top-left corner of the smallest possible box that encapsulates the 
  * entirety of the Tetrimino. 
+ * 
+ *  If a root coordinate is not provided, e.g. the Tetrimino is still in queue, it
+ * is critical that it be set before any interaction with the object. 
  * 
  * @author Nick Holt
  *
@@ -29,11 +32,26 @@ public class Tetrimino {
     private final Shape mShape;
     private int[] mRootCoordinate;
     
-    /** A new Tetrimino whose root is (ROW, COL). 
+    /** A new Tetrimino whose relative block ordering is described by SHAPE, 
+     * and ID is equal to ID. 
+     * 
+     *  WARNING: Until the root coordinate is set via {@link Tetrimino#setRootCoordinate(int[])},
+     * all positional methods will throw exceptions. It is critical this is set before any
+     * interaction with this Tetrimino.
      * 
      * @param shape The Shape that will describe the block ordering.
-     * @param row The row of the root coordinate.
-     * @param col The column of the root coordinate.
+     * @param ID The ID to be assigned to all blocks in this Tetrimino. 
+     */
+    public Tetrimino(Shape shape, int ID) {
+        mID = ID;
+        mShape = shape;
+    }   
+        
+    /** A new Tetrimino whose relative block ordering is described by SHAPE, 
+     * root coordinate is set by ROOTCOORDINATE, and ID is equal to ID. 
+     * 
+     * @param shape The Shape that will describe the block ordering.
+     * @param rootCoordinate The root coordinate of this Tetrimino.
      * @param ID The ID to be assigned to all blocks in this Tetrimino. 
      */
     public Tetrimino(Shape shape, int[] rootCoordinate, int ID) {

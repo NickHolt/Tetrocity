@@ -187,6 +187,17 @@ public class TetriminoFactory {
     
     /** Returns a Tetrimino with a pseudorandom shape and instance unique ID. 
      * 
+     * @return The new Tetrimino object. 
+     */
+    public Tetrimino getRandomTetrimino() {
+        
+        Debug.print(1, "New Tetrimino requeted from Factory.");
+        return new Tetrimino(getRandomShape(), getUniqueID()); 
+    }
+    
+    /** Returns a Tetrimino with a pseudorandom shape and instance unique ID positioned
+     * at the provided root coordinate.
+     * 
      * @param rootCoordinate The root coordinate of the Tetrimino object. 
      * @return The new Tetrimino object. 
      */
