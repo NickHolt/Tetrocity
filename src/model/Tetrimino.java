@@ -25,7 +25,6 @@ import util.Direction;
  */
 public class Tetrimino {    
     private final int mID;
-    private boolean mLive;
     private boolean mBeenStored;
     private final Shape mShape;
     private int[] mRootCoordinate;
@@ -38,7 +37,6 @@ public class Tetrimino {
      * @param ID The ID to be assigned to all blocks in this Tetrimino. 
      */
     public Tetrimino(Shape shape, int[] rootCoordinate, int ID) {
-        mLive = false;
         mID = ID;
         mShape = shape;
         mRootCoordinate = rootCoordinate;
@@ -156,20 +154,6 @@ public class Tetrimino {
     
     public void setRootCoordinate(int[] rootCoordinate) {
         mRootCoordinate = rootCoordinate;
-    }
-    
-    /** 
-     * @return True IFF this Tetrimino is live. 
-     */
-    public boolean isLive() {
-        return mLive;
-    }
-    
-    
-    /** Sets the live status of this Tetrimino.
-     */
-    public void setLive(boolean isLive) {
-        mLive = isLive;
     }
     
     /**

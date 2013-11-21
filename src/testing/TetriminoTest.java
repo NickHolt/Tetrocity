@@ -16,8 +16,7 @@ public class TetriminoTest implements TestSuite {
         Shape shape = new Shape(matrix, 5);
         Tetrimino tetrimino = new Tetrimino(shape, new int[]{1, 2}, 11);
         
-        if (tetrimino.isLive()
-                || tetrimino.getID() != 11
+        if (tetrimino.getID() != 11
                 || !Arrays.equals(tetrimino.getRootCoordinate(), new int[]{1, 2})) {
             return false;
         }
@@ -101,6 +100,22 @@ public class TetriminoTest implements TestSuite {
         return true;
     }
     
+    public boolean getAnchorCoordinatesTest() {
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0};
+        matrix[1] = new int[]{1, 0};
+        matrix[2] = new int[]{1, 0};
+        matrix[3] = new int[]{1, 1};
+        Shape shape = new Shape(matrix, 5);
+        Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
+        
+        int[][] target = new int[2][2];
+        target[0] = new int[]{13, 10};
+        target[1] = new int[]{13, 11};
+
+        return Arrays.deepEquals(tetrimino.getAnchorCoordinates(), target);
+    }
+    
     public boolean isEmptyTest() {
         int[][] matrix = new int[2][2];
         matrix[0] = new int[]{1, 0};
@@ -127,6 +142,9 @@ public class TetriminoTest implements TestSuite {
         }
         if (!deleteBlockTest()) {
             System.out.println("TetriminoTest.deleteBlockTest() failed.");
+        }
+        if (!getAnchorCoordinatesTest()) {
+            System.out.println("TetriminoTest.getAnchorCoordinatesTest() failed.");
         }
         if (!isEmptyTest()) {
             System.out.println("TetriminoTest.isEmptyTest() failed.");
