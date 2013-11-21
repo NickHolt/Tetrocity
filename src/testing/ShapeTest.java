@@ -100,27 +100,6 @@ public class ShapeTest implements TestSuite {
                 && shape.getHeight() == 4;
     }
     
-    public boolean getBottomRowTest() {
-        int[][] matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{1, 0, 0, 0};
-        matrix[3] = new int[]{1, 1, 0, 0};
-        
-        Shape shape = new Shape(matrix, 5);
-        
-        int[][] bottomRow = shape.getBottomRow();
-        int[][] target = new int[2][2];
-        target[0] = new int[]{3, 0};
-        target[1] = new int[]{3, 1};
-        
-        if (!Arrays.deepEquals(target, bottomRow)) {
-            return false;
-        }
-        
-        return true;
-    }
-    
     public boolean rotateClockwiseTest() {
         int[][] matrix = new int[4][4];
         matrix[0] = new int[]{1, 0, 0, 0};
@@ -249,9 +228,6 @@ public class ShapeTest implements TestSuite {
         }
         if (!measureTest()) {
             System.out.println("ShapeTest.measureTest() failed.");
-        }
-        if (!getBottomRowTest()) {
-            System.out.println("ShapeTest.getBottomRowTest() failed.");
         }
         if (!rotateClockwiseTest()) {
             System.out.println("ShapeTest.rotateClockwiseTest() failed.");

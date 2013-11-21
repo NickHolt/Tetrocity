@@ -73,14 +73,6 @@ public class Tetrimino {
         mShape.deleteBlock(row - mRootCoordinate[0], col - mRootCoordinate[1]);        
     }
     
-    /** Deletes the bottom row of blocks from this Tetrimino. 
-     * 
-     */
-    public void deleteRow() {
-        mShape.deleteRow();
-        Debug.print(1, "Tetrimino (ID: " + mID + " ) row deleted.");
-    }
-    
     /** Rotates this Tetrimino piece 90 degrees clockwise about its rotational 
      * coordinate.
      */
@@ -113,6 +105,28 @@ public class Tetrimino {
         
         Debug.print(2, "Tetrimino (ID: " + mID + ") coordinates generated.");
         return result;
+    }
+    
+    /** Return a list of absolute matrix-coordinates representing the 
+     * block locations present in the bottom row of this Shape.
+     * 
+     * @return An array of relative-coordinates of the bottom row of blocks. 
+     */
+    public int[][] getBottomRow() {
+        //TODO
+        return null;
+    }
+    
+    
+    /** Returns a list of "anchor block" absolute-coordinates. An anchor block is one that has 
+     * no block beneath it. That is, if a block has coordinate (r, c), then it is an
+     * anchor block is there is no block in coordinate (r + 1, c);
+     * 
+     * @return A list of anchor block absolute-coordinates.
+     */
+    public int[][] getAnchorBlock() {
+        //TODO
+        return null;
     }
     
     /**

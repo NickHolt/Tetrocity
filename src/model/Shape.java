@@ -61,7 +61,6 @@ import util.Matrices;
  */
 public class Shape {
     private int[][] mCoordinates;
-    private int[][] mBottomRow;
     private int[][] mAnchorBlocks;
     private int mLength;
     private int mWidth;
@@ -156,17 +155,6 @@ public class Shape {
         measure(); //Re-calculate dimensional data
     }
     
-    /** Deletes the bottom row of blocks from this Shape. 
-     */
-    public void deleteRow() {
-        int[][] bottomRow = getBottomRow();
-        for (int[] coord : bottomRow) {
-            deleteBlock(coord[0], coord[1]);
-        }
-        
-        measure(); //Re-calculate dimensional data
-    }
-    
     /**  
      * Calculate dimensional member variables based on block coordinates.
      */
@@ -185,10 +173,6 @@ public class Shape {
                 mWidth = coord[1];
             }
             
-            if (coord[0] == mHeight - 1) { //block is at the bottom
-                bottomRow.add(new int[]{coord[0], coord[1]});
-            }
-            
             /* Check if it's an anchor block. */
             for (int[] secondCoord : mCoordinates) {
                 if (secondCoord[0] == coord[0] + 1
@@ -203,11 +187,6 @@ public class Shape {
         }
         mHeight++; //adjust for 0-indexing
         mWidth++; 
-        
-        mBottomRow = new int[bottomRow.size()][2];
-        for (int i = 0; i < bottomRow.size(); i++) {
-            mBottomRow[i] = bottomRow.get(i);
-        }
         
         mAnchorBlocks = new int[anchorBlocks.size()][2];
         for (int i = 0; i < anchorBlocks.size(); i++) {
@@ -276,15 +255,6 @@ public class Shape {
      */
     public int[][] getRelativeMatrixCoordinates() {
         return mCoordinates;
-    }
-    
-    /** Return a list of relative matrix-coordinates representing the 
-     * block locations present in the bottom row of this Shape.
-     * 
-     * @return An array of relative-coordinates of the bottom row of blocks. 
-     */
-    public int[][] getBottomRow() {
-        return mBottomRow;
     }
     
     /** Returns a list of "anchor block" relative-coordinates. An anchor block is one that has 

@@ -101,29 +101,6 @@ public class TetriminoTest implements TestSuite {
         return true;
     }
     
-    public boolean deleteRowTest() {
-        int[][] matrix = new int[4][4];
-        matrix[0] = new int[]{1, 0, 0, 0};
-        matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{1, 0, 0, 0};
-        matrix[3] = new int[]{1, 1, 0, 0};
-        Shape shape = new Shape(matrix, 5);
-        Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
-        
-        tetrimino.deleteRow();
-        
-        int[][] target = new int[3][2];
-        target[0] = new int[]{10, 10};
-        target[1] = new int[]{11, 10};
-        target[2] = new int[]{12, 10};
-        
-        if (!Arrays.deepEquals(tetrimino.getCoordinates(), target)) {
-            return false;
-        }
-
-        return true;
-    }
-    
     public boolean isEmptyTest() {
         int[][] matrix = new int[2][2];
         matrix[0] = new int[]{1, 0};
@@ -150,9 +127,6 @@ public class TetriminoTest implements TestSuite {
         }
         if (!deleteBlockTest()) {
             System.out.println("TetriminoTest.deleteBlockTest() failed.");
-        }
-        if (!deleteRowTest()) {
-            System.out.println("TetriminoTest.deleteRowTest() failed.");
         }
         if (!isEmptyTest()) {
             System.out.println("TetriminoTest.isEmptyTest() failed.");
