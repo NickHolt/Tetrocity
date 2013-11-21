@@ -95,9 +95,22 @@ public class ShapeTest implements TestSuite {
         
         shape.deleteBlock(2, 0);
         
-        return shape.getLength() == 4
+        if (!(shape.getLength() == 4
                 && shape.getWidth() == 2
-                && shape.getHeight() == 4;
+                && shape.getHeight() == 4)) {
+            return false;
+        }
+        
+        int[][] anchorTarget = new int[3][2];
+        anchorTarget[0] = new int[]{1, 0};
+        anchorTarget[1] = new int[]{3, 0};
+        anchorTarget[2] = new int[]{3, 1};
+        
+        if (!Arrays.deepEquals(shape.getAnchorBlocks(), anchorTarget)) {
+            return false;
+        }
+        
+        return true;
     }
     
     public boolean rotateClockwiseTest() {
@@ -220,23 +233,23 @@ public class ShapeTest implements TestSuite {
         }
     
     public void printFails() {
-        if (!instantiationTest()) {
-            System.out.println("ShapeTest.instantiationTest() failed.");
-        }
-        if (!getMatrixCoordinatesTest()) {
-            System.out.println("ShapeTest.getMatrixCoordinatesTest() failed.");
-        }
+//        if (!instantiationTest()) {
+//            System.out.println("ShapeTest.instantiationTest() failed.");
+//        }
+//        if (!getMatrixCoordinatesTest()) {
+//            System.out.println("ShapeTest.getMatrixCoordinatesTest() failed.");
+//        }
         if (!measureTest()) {
             System.out.println("ShapeTest.measureTest() failed.");
         }
-        if (!rotateClockwiseTest()) {
-            System.out.println("ShapeTest.rotateClockwiseTest() failed.");
-        }
-        if (!rotateCounterClockwiseTest()) {
-            System.out.println("ShapeTest.rotateCounterClockwiseTest() failed.");
-        }
-        if (!isValidMatrixTest()) {
-            System.out.println("ShapeTest.isValidMatrixTest() failed.");
-        }
+//        if (!rotateClockwiseTest()) {
+//            System.out.println("ShapeTest.rotateClockwiseTest() failed.");
+//        }
+//        if (!rotateCounterClockwiseTest()) {
+//            System.out.println("ShapeTest.rotateCounterClockwiseTest() failed.");
+//        }
+//        if (!isValidMatrixTest()) {
+//            System.out.println("ShapeTest.isValidMatrixTest() failed.");
+//        }
     }
 }

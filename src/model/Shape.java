@@ -160,10 +160,9 @@ public class Shape {
      */
     private void measure() {
         mLength = mHeight = mWidth = 0; 
-        ArrayList<int[]> bottomRow = new ArrayList<int[]>(),
-                anchorBlocks = new ArrayList<int[]>();
+        ArrayList<int[]> anchorBlocks = new ArrayList<int[]>();
         
-        boolean isAnchor = false;
+        boolean isAnchor;
         for (int[] coord : mCoordinates) {
             mLength++;
             if (coord[0] > mHeight) {
@@ -174,6 +173,7 @@ public class Shape {
             }
             
             /* Check if it's an anchor block. */
+            isAnchor = true;
             for (int[] secondCoord : mCoordinates) {
                 if (secondCoord[0] == coord[0] + 1
                         && secondCoord[1] == coord[1]) {
