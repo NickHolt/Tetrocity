@@ -1,9 +1,11 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import testing.Debug;
+import util.Direction;
 import control.Engine;
 
 /** A game board in a game of Tetrocity. A Board knows only of the {@link Tetrimino}
@@ -32,23 +34,19 @@ import control.Engine;
  *
  */
 public class Board {
-    /* The game board is a matrix of Tetrimino ID's. A -1 represents
-     * the absence of a Tetrimino, since 0 is a valid ID. 
-     * 
-     */
     /* The capacity of the Queue this Board will use to track upcoming Tetriminoes. */
     public static final int FULL_QUEUE_SIZE = 6;
-    
     /* A grid of Tetrimino IDs representing the game board. -1 is an empty space. */
     private int[][] mGrid;
+    /* A HashMap of live Tetrimino IDs to that Tetrimino's last known coordinates. */
+    private HashMap<Integer, int[][]> mLiveTetriminoCoordinates;
     /* The number of non-visible buffer rows. */
     private final int mBuffer;
     /* All currently live Tetriminoes (i.e. ones that the player controls). */
     private ArrayList<Tetrimino> mLiveTetriminoes;
     /* The stored Tetrimino. */
     private Tetrimino mStoredTetrimino;
-    /* The Queue of upcoming Tetriminoes. Live Tetriminoes are taken from the
-     * Queue as instructed by the Engine. */
+    /* The Queue of upcoming Tetriminoes. Live Tetriminoes are taken from the Queue. */
     private ArrayBlockingQueue<Tetrimino> mTetriminoQueue;
     
     /** A new Board for a game of Tetrocity. A board is a (BUFFER + ROWS) x COLS matrix 
@@ -71,9 +69,47 @@ public class Board {
         mGrid = new int[rows + buffer][cols];
         mBuffer = buffer;
         
+        mLiveTetriminoCoordinates = new HashMap<Integer, int[][]>();
         mTetriminoQueue = new ArrayBlockingQueue<Tetrimino>(FULL_QUEUE_SIZE);
         
         Debug.print(1, "New Board instantiated.");
+    }
+    
+    /** Given the Tetrimino, returns a grid coordinate such that the root coordinate of the
+     * Tetrimino may be set to it and:
+     *  i) Be centered on the grid.
+     *  ii) If possible, have its bottom block(s) align with the bottom of the buffer region. 
+     * 
+     * @param tetrimino The Tetrimino to be placed.
+     * @return The placement coordinate.
+     */
+    public int[] getPlacementCoordinate(Tetrimino tetrimino) {
+        //TODO
+        return null;
+    }
+    
+    /** Updates the grid with the current coordinate positions of all live Tetriminoes.
+     */
+    public void updateGrid() {
+        int tetriminoID;
+        int[][] oldCoordinates, newCoordinates;
+        for (Tetrimino tetrimino : mLiveTetriminoes) {
+            tetriminoID = tetrimino.getID();
+            
+            oldCoordinates = mLiveTetriminoCoordinates.get(tetriminoID);
+            for (int[] oldCoord : oldCoordinates) {
+                mGrid[oldCoord[0]][oldCoord[1]] = -1; //Empty old coordinate positions
+            }
+            
+            newCoordinates = tetrimino.getCoordinates();
+            for (int[] newCoord : newCoordinates) {
+                mGrid[newCoord[0]][newCoord[1]] = tetriminoID; //Set new coordinate positions
+            }
+            
+            mLiveTetriminoCoordinates.put(tetriminoID, newCoordinates);
+        }
+        
+        Debug.print(3, "Grid updated.");
     }
     
     /** Attempt to clear filled rows. 
@@ -92,12 +128,26 @@ public class Board {
         return 0;
     }
     
-    /** If possible, drops all live Tetriminoes one coordinate space south. That it,
+    /** If possible, drops all live Tetriminoes one coordinate space south. That is,
      * it adds one to the row coordinate of every live Tetrimino. If this is not possible,
-     * the Tetrimino will be marked as dead. 
+     * and there exists a block beneath any of the Tetrimino's anchor blocks, the Tetrimino 
+     * will be removed from the list of live Tetriminoes.
      */
     public void dropLiveTetriminoes() {
-        //TODO
+        int[][] anchorCoordinates;
+        for (Tetrimino tetrimino : mLiveTetriminoes) {
+            anchorCoordinates = tetrimino.getAnchorCoordinates();
+            for (int[] anchor : anchorCoordinates) {
+                if (mGrid[anchor[0] + 1][anchor[1]] != -1) { //there is no empty space beneath
+                    mLiveTetriminoes.remove(tetrimino); //"mark as dead"
+                    break;
+                }
+            }
+            tetrimino.shift(Direction.SOUTH); //garbage collector will take care of dead Tetriminoes
+        }                                     //shift them anyway to simplify code
+        
+        updateGrid();
+        Debug.print(2, "Live Tetriminoes dropped.");
     }
     
     /** Stores the bottom-most Tetrimino. If a Tetrimino already exists in storage,
@@ -136,6 +186,7 @@ public class Board {
      */
     public void putTetrimino() {
         //TODO
+        //make sure you update the HashMap
     }
     
     /**
@@ -167,5 +218,4 @@ public class Board {
         //TODO
         return super.toString();
     }
-
 }
