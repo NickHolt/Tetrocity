@@ -149,38 +149,62 @@ public class Board {
     }
     
     /** Attempt to shift all live Tetriminoes one coordinate position towards the
-     * provided direction. If a collision is found for a live Tetrimino, that Tetrimino
-     * will not move. Furthermore, if shiftDirection == killDirection and the Tetrimino
-     * is found to be blocked, the Tetrimino will be marked dead.
+     * provided direction. A shift failure occurs in one of two ways:
+     * 1) The Tetrimino attempts to shift off of the grid or into the buffer region.
+     * 2) Another Tetrimino already occupies that space. 
      * 
-     * 
-     *  Note that shiftLiveTetriminoes(Direction.SOUTH) is equivalent to 
-     * {@link Board#dropLiveTetriminoes()}.
+     *  If a failure is found for a live Tetrimino, that Tetrimino
+     * will not move. Furthermore, if shiftDirection == Direction.SOUTH and a Tetrimino
+     * shift fails, the Tetrimino will be marked dead.
      * 
      * @param direction The direction to shift all live Tetriminoes in. 
      */
-    public void shiftLiveTetriminoes(Direction shiftDirection, Direction killDirection) {
-        //TODO
+    public void shiftLiveTetriminoes(Direction shiftDirection) {
         int[][] coordinates;
-        boolean shiftFailed = false;
+        int newRow = -1, newCol = -1, tetriminoID;
+        boolean shiftFailed;
         for (Tetrimino tetrimino : mLiveTetriminoes) {
             coordinates = tetrimino.getCoordinates();
+            tetriminoID = tetrimino.getID();
+            shiftFailed = false; //innocent until proven guilty
+            
             for (int[] coord : coordinates) {
                 if (shiftDirection == Direction.NORTH) {
-                    //TODO
+                    newRow = coord[0] - 1;
+                    newCol = coord[1];
                 } else if (shiftDirection == Direction.EAST) {
-                  //TODO
+                    newRow = coord[0];
+                    newCol = coord[1] + 1;
                 } else if (shiftDirection == Direction.SOUTH) {
-                  //TODO
+                    newRow = coord[0] + 1;
+                    newCol = coord[1];
                 } else if (shiftDirection == Direction.WEST) {
-                  //TODO
+                    newRow = coord[0];
+                    newCol = coord[1] - 1;
+                }
+                
+                if ((newRow < mBuffer
+                        && shiftDirection == Direction.NORTH) //can't shift up into buffer
+                        || newRow >= mGrid.length
+                        || newCol < 0
+                        || newCol >= mGrid[0].length
+                        || !(mGrid[newRow][newCol] == -1 //can't shift into occupied space
+                        || mGrid[newRow][newCol] == tetriminoID)) {
+                    shiftFailed = true;
+                    break;
                 }
             }
             
-            //TODO mark dead
+            if (shiftFailed && shiftDirection == Direction.SOUTH) {
+                mLiveTetriminoes.remove(tetrimino); //kill the Tetrimino
+            } else if (!shiftFailed) {
+                tetrimino.shift(shiftDirection);
+            }
+            //Note non-south shift failures simply do nothing for that Tetrimino
         }
         
         updateGrid();
+        Debug.print(1, "Live Tetriminoes shifted " + shiftDirection);
     }
     
     /** Stores the bottom-most Tetrimino that has not been previously stored. If a Tetrimino 
@@ -239,7 +263,7 @@ public class Board {
      * a Tetrimino is added to the grid, the root coordinate is chosen via
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
      */
-    public void pullTetrimino() {
+    public void putTetrimino() {
         putTetrimino(mTetriminoQueue.poll());
     }
     
