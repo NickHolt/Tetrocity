@@ -2,7 +2,7 @@ package testing;
 
 import java.util.Arrays;
 
-import util.Matrices;
+import util.Direction;
 import model.Shape;
 
 public class ShapeTest implements TestSuite {
@@ -27,7 +27,7 @@ public class ShapeTest implements TestSuite {
         matrix[2] = new int[]{0, 0, 0, 0};
         matrix[3] = new int[]{0, 0, 0, 0};
         try {
-            shape = new Shape(matrix, 1);
+            shape = new Shape(matrix);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -37,7 +37,7 @@ public class ShapeTest implements TestSuite {
         matrix[2] = new int[]{1, 0, 0, 0};
         matrix[3] = new int[]{1, 1, 0, 0};
         try {
-            shape = new Shape(matrix, 5);
+            shape = new Shape(matrix);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -45,16 +45,6 @@ public class ShapeTest implements TestSuite {
         if (!(shape.getHeight() == 4 
                 && shape.getWidth() == 2
                 && shape.getLength() == 5)) {
-            return false;
-        }
-        
-        boolean errorCaught = false;
-        try {
-            shape = new Shape(matrix, 10);
-        } catch (IllegalArgumentException e) {
-            errorCaught = true;
-        }
-        if (!errorCaught) {
             return false;
         }
         
@@ -68,7 +58,7 @@ public class ShapeTest implements TestSuite {
         matrix[2] = new int[]{1, 0};
         matrix[3] = new int[]{1, 1};
         
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         
         int[][] coordinates = shape.getRelativeMatrixCoordinates();
         int[][] target = new int[5][2];
@@ -89,25 +79,45 @@ public class ShapeTest implements TestSuite {
         int[][] matrix = new int[4][4];
         matrix[0] = new int[]{1, 0, 0, 0};
         matrix[1] = new int[]{1, 0, 0, 0};
-        matrix[2] = new int[]{1, 0, 0, 0};
+        matrix[2] = new int[]{1, 0, 0, 0}; //0, 0, 0, 0
         matrix[3] = new int[]{1, 1, 0, 0};
         
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         
         shape.deleteBlock(2, 0);
-        
+                
         if (!(shape.getLength() == 4
                 && shape.getWidth() == 2
                 && shape.getHeight() == 4)) {
             return false;
         }
         
-        int[][] anchorTarget = new int[3][2];
-        anchorTarget[0] = new int[]{1, 0};
-        anchorTarget[1] = new int[]{3, 0};
-        anchorTarget[2] = new int[]{3, 1};
+        int[][] northAnchorTarget = new int[3][2];
+        northAnchorTarget[0] = new int[]{0, 0};
+        northAnchorTarget[1] = new int[]{3, 0};
+        northAnchorTarget[2] = new int[]{3, 1};
         
-        if (!Arrays.deepEquals(shape.getAnchorBlocks(), anchorTarget)) {
+        int[][] eastAnchorTarget = new int[3][2];
+        eastAnchorTarget[0] = new int[]{0, 0};
+        eastAnchorTarget[1] = new int[]{1, 0};
+        eastAnchorTarget[2] = new int[]{3, 1};
+        
+        int[][] southAnchorTarget = new int[3][2];
+        southAnchorTarget[0] = new int[]{1, 0};
+        southAnchorTarget[1] = new int[]{3, 0};
+        southAnchorTarget[2] = new int[]{3, 1};
+        
+        int[][] westAnchorTarget = new int[4][2];
+        westAnchorTarget[0] = new int[]{0, 0};
+        westAnchorTarget[1] = new int[]{1, 0};
+        westAnchorTarget[2] = new int[]{2, 0};
+        westAnchorTarget[3] = new int[]{3, 0};
+
+        
+        if (!Arrays.deepEquals(shape.getAnchorCoordinates(Direction.NORTH), northAnchorTarget)
+                && !Arrays.deepEquals(shape.getAnchorCoordinates(Direction.EAST), eastAnchorTarget)
+                && !Arrays.deepEquals(shape.getAnchorCoordinates(Direction.SOUTH), southAnchorTarget)
+                && !Arrays.deepEquals(shape.getAnchorCoordinates(Direction.WEST), westAnchorTarget)) {
             return false;
         }
         
@@ -121,7 +131,7 @@ public class ShapeTest implements TestSuite {
         matrix[2] = new int[]{1, 0, 0, 0};
         matrix[3] = new int[]{1, 1, 0, 0};
         
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         shape.rotateClockwise();
         
         int[][] coordinates = shape.getRelativeMatrixCoordinates();
@@ -141,7 +151,7 @@ public class ShapeTest implements TestSuite {
         matrix[1] = new int[]{1, 1, 1};
         matrix[2] = new int[]{0, 1, 0};
         
-        shape = new Shape(matrix, 5);
+        shape = new Shape(matrix);
         shape.rotateClockwise();
         
         coordinates = shape.getRelativeMatrixCoordinates();
@@ -166,7 +176,7 @@ public class ShapeTest implements TestSuite {
         matrix[2] = new int[]{1, 0, 0, 0};
         matrix[3] = new int[]{1, 1, 0, 0};
         
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         shape.rotateCounterClockwise();
         
         int[][] coordinates = shape.getRelativeMatrixCoordinates();
@@ -186,7 +196,7 @@ public class ShapeTest implements TestSuite {
         matrix[1] = new int[]{1, 1, 1};
         matrix[2] = new int[]{0, 1, 0};
         
-        shape = new Shape(matrix, 5);
+        shape = new Shape(matrix);
         shape.rotateCounterClockwise();
         
         coordinates = shape.getRelativeMatrixCoordinates();
@@ -211,7 +221,7 @@ public class ShapeTest implements TestSuite {
         matrix[2] = new int[]{1, 0};
         matrix[3] = new int[]{1, 1};
         
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
                 
         if (!Arrays.deepEquals(shape.getMatrix(), matrix)) {
             return false;

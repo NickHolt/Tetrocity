@@ -13,7 +13,7 @@ public class TetriminoTest implements TestSuite {
         matrix[1] = new int[]{1, 0, 0, 0};
         matrix[2] = new int[]{1, 0, 0, 0};
         matrix[3] = new int[]{1, 1, 0, 0};
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         Tetrimino tetrimino = new Tetrimino(shape, new int[]{1, 2}, 11);
         
         if (tetrimino.getID() != 11
@@ -30,7 +30,7 @@ public class TetriminoTest implements TestSuite {
         matrix[1] = new int[]{1, 0, 0, 0};
         matrix[2] = new int[]{1, 0, 0, 0};
         matrix[3] = new int[]{1, 1, 0, 0};
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
         
         tetrimino.shift(Direction.NORTH);
@@ -59,7 +59,7 @@ public class TetriminoTest implements TestSuite {
         matrix[1] = new int[]{0, 1, 0, 0};
         matrix[2] = new int[]{1, 1, 1, 0};
         matrix[3] = new int[]{0, 1, 0, 0};
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
         
         int[][] target = new int[5][2];
@@ -82,7 +82,7 @@ public class TetriminoTest implements TestSuite {
         matrix[1] = new int[]{1, 0};
         matrix[2] = new int[]{1, 0};
         matrix[3] = new int[]{1, 1};
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
         
         tetrimino.deleteBlock(13, 11);
@@ -106,27 +106,39 @@ public class TetriminoTest implements TestSuite {
         matrix[1] = new int[]{1, 0};
         matrix[2] = new int[]{1, 0};
         matrix[3] = new int[]{1, 1};
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
         
         int[][] target = new int[2][2];
         target[0] = new int[]{13, 10};
         target[1] = new int[]{13, 11};
 
-        return Arrays.deepEquals(tetrimino.getAnchorCoordinates(), target);
+        return Arrays.deepEquals(tetrimino.getAnchorCoordinates(Direction.SOUTH), target);
     }
     
     public boolean isEmptyTest() {
         int[][] matrix = new int[2][2];
         matrix[0] = new int[]{1, 0};
         matrix[1] = new int[]{1, 0};
-        Shape shape = new Shape(matrix, 2);
+        Shape shape = new Shape(matrix);
         Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
         
         tetrimino.deleteBlock(10, 10);
         tetrimino.deleteBlock(11, 10);
         
         return tetrimino.isEmpty();
+    }
+    
+    public boolean getBottomRowTest() {
+        int[][] matrix = new int[4][4];
+        matrix[0] = new int[]{1, 0};
+        matrix[1] = new int[]{1, 0};
+        matrix[2] = new int[]{1, 0};
+        matrix[3] = new int[]{1, 1};
+        Shape shape = new Shape(matrix);
+        Tetrimino tetrimino = new Tetrimino(shape, new int[]{10, 10}, 11);
+        
+        return tetrimino.getBottomRow() == 13;
     }
     
     @Override
@@ -148,6 +160,9 @@ public class TetriminoTest implements TestSuite {
         }
         if (!isEmptyTest()) {
             System.out.println("TetriminoTest.isEmptyTest() failed.");
+        }
+        if (!getBottomRowTest()) {
+            System.out.println("TetriminoTest.getBottomRow() failed.");
         }
     }
 

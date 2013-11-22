@@ -130,14 +130,15 @@ public class Tetrimino {
         return mRootCoordinate[0] + getShape().getHeight() - 1;
     }
     
-    /** Returns a list of "anchor block" absolute-coordinates. An anchor block is one that has 
-     * no block beneath it. That is, if a block has coordinate (r, c), then it is an
-     * anchor block is there is no block in coordinate (r + 1, c);
+    /** Returns an array of "anchor block" absolute-coordinates. An anchor block is one that has 
+     * no neighboring block in the provided direction. For example, if the direction were south and
+     * a block has coordinate (r, c), then it is an anchor block is there is no block in coordinate 
+     * (r + 1, c);
      * 
      * @return A list of anchor block absolute-coordinates.
      */
-    public int[][] getAnchorCoordinates() {
-        int[][] relativeAnchorCoords = mShape.getAnchorBlocks(), 
+    public int[][] getAnchorCoordinates(Direction direction) {
+        int[][] relativeAnchorCoords = mShape.getAnchorCoordinates(direction), 
                 result = new int[relativeAnchorCoords.length][2];
         
         for (int i = 0; i < relativeAnchorCoords.length; i++) {
@@ -164,7 +165,8 @@ public class Tetrimino {
     }
     
     /**
-     * @return the Shape first used to construct this Tetrimino.
+     * @return the Shape first used to construct this Tetrimino. The Shape contains
+     * all dimensional information, such as Tetrimino height and width. 
      */
     public Shape getShape() {
         return mShape;
