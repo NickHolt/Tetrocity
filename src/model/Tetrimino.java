@@ -121,7 +121,14 @@ public class Tetrimino {
         
         Debug.print(2, "Tetrimino (ID: " + mID + ") coordinates generated.");
         return result;
-    }    
+    }
+    
+    /**
+     * @return The largest occupied row of this Tetrimino. 
+     */
+    public int getBottomRow() {
+        return mRootCoordinate[0] + getShape().getHeight() - 1;
+    }
     
     /** Returns a list of "anchor block" absolute-coordinates. An anchor block is one that has 
      * no block beneath it. That is, if a block has coordinate (r, c), then it is an
@@ -172,29 +179,6 @@ public class Tetrimino {
     
     public void setRootCoordinate(int[] rootCoordinate) {
         mRootCoordinate = rootCoordinate;
-    }
-    
-    /**
-     * @return the length of this Shape, defined to be the total number of blocks. 
-     */
-    public int getLength() {
-        return mShape.getLength();
-    }
-    
-    /**
-     * @return the width of this Shape, defined to be the horizontal span
-     * of the blocks. 
-     */
-    public int getWidth() {
-        return mShape.getWidth();
-    }
-    
-    /**
-     * @return the height of this Shape, defined to be the vertical span
-     * of the blocks. 
-     */
-    public int getHeight() {
-        return mShape.getHeight();
     }
 
     /**
