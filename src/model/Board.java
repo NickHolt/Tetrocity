@@ -117,7 +117,7 @@ public class Board {
     /** Updates the grid with the current coordinate positions of all live Tetriminoes.
      * This method should be called every time movement is applied to any live Tetrimino. 
      */
-    public void updateGrid() {
+    public void refreshLiveTetriminoesOnGrid() {
         int tetriminoID;
         int[][] oldCoordinates, newCoordinates;
         for (Tetrimino tetrimino : mLiveTetriminoes) {
@@ -275,7 +275,7 @@ public class Board {
             //Note non-south shift failures simply do nothing for that Tetrimino
         }
         
-        updateGrid();
+        refreshLiveTetriminoesOnGrid();
         Debug.print(1, "Live Tetriminoes shifted " + shiftDirection);
     }
     
@@ -300,7 +300,7 @@ public class Board {
             mStoredTetrimino = bottomLiveValidTetrimino;
             bottomLiveValidTetrimino.markStored();
             
-            updateGrid();
+            refreshLiveTetriminoesOnGrid();
             
             Debug.print(1, "Tetrimino stored.");
         } else {
@@ -348,7 +348,7 @@ public class Board {
         
         mLiveTetriminoes.add(tetrimino);
         
-        updateGrid();
+        refreshLiveTetriminoesOnGrid();
         
         Debug.print(2, "New Tetrimino placed on the grid.");
     }
