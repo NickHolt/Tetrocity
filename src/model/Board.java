@@ -41,7 +41,8 @@ public class Board {
     private int[][] mGrid;
     /* A HashMap of live Tetrimino IDs to that Tetrimino's last known coordinates. This
      * is a space-time tradeoff such that the Board does not have to scan its entire grid
-     * to find the last known coordinates. */
+     * to find the last known coordinates. 
+     * This variable also serves a secondary purpose for looking up live Tetrimino IDs. */
     private HashMap<Integer, int[][]> mLiveTetriminoCoordinates;
     /* The number of non-visible buffer rows. */
     private int mBuffer;
@@ -83,13 +84,23 @@ public class Board {
      *  i) Be centered on the grid.
      *  ii) If possible, have its bottom block(s) align with the bottom of the buffer region.
      *  
-     *  Note that the Tetrimino's width and height must be less than or equal to that of the 
-     *  board.
+     *  If a Tetrimino is too large to have its bottom aligned, its top row coordinate will be 0.
+     * Note that a placement coordinate will never contain a row such that the bottom row
+     * of the Tetrimino begins more than one space above the buffer region.
+     *  
+     *  This method also acts as the medium for communicating when a game of Tetrocity is over.
+     * If a placement coordinate is generated and it is determined that the Tetrimino will
+     * collide with an already present Tetrimino, then this method will return null, signaling
+     * that the game is over. 
+     * 
+     * Note that the Tetrimino's width and height must be less than or equal to that of the 
+     *  board or behavior is unpredictable. 
      * 
      * @param tetrimino The Tetrimino to be placed.
      * @return The placement coordinate.
      */
     public int[] getPlacementCoordinate(Tetrimino tetrimino) {
+        //TODO THIS SHOULD RETURN NULL IF THAT SPACE IS OCCUPIED. THAT MEANS THE GAME IS OVER!!!!
         int col = mGrid[0].length / 2 - tetrimino.getShape().getWidth() / 2,
                 row;
         
@@ -114,12 +125,12 @@ public class Board {
             
             oldCoordinates = mLiveTetriminoCoordinates.get(tetriminoID);
             
-            if (oldCoordinates != null) {
+            if (oldCoordinates != null) { //Since we might not have tracked it yet
                 for (int[] oldCoord : oldCoordinates) {
                     mGrid[oldCoord[0]][oldCoord[1]] = -1; //Empty old coordinate positions
                 }
             }
-            
+                        
             newCoordinates = tetrimino.getCoordinates();
             for (int[] newCoord : newCoordinates) {
                 mGrid[newCoord[0]][newCoord[1]] = tetriminoID; //Set new coordinate positions
@@ -133,8 +144,8 @@ public class Board {
     
     /** Attempt to clear filled rows. 
      * 
-     *  A row is filled when there exists a block in every position on that row. 
-     * Rows are checked from the bottom up. If a row is found to be full, every
+     *  A row is filled when there exists a dead block in every position on that row. 
+     * Rows are checked from the top down. If a row is found to be full, every
      * block present in that row is deleted from the grid, and all dead blocks 
      * above it are shifted accordingly. 
      * 
@@ -143,9 +154,70 @@ public class Board {
      * @return The number of lines cleared. 
      */
     public int clearRows() {
-        //TODO
-        //MAKE SURE YOU DISCOUNT LIVE TETRIMINOES!!!! <- POTENTIAL BUG
-        return 0;
+        int rowsCleared = 0;
+        int[] row;
+        boolean isFilled;
+        
+        for (int i = 0; i < mGrid.length; i++) {
+            row = mGrid[i];
+            isFilled = true;
+            
+            for (int j = 0; j < row.length; j++) {
+                if (row[j] == -1 || mLiveTetriminoCoordinates.containsKey(row[j])) {
+                    isFilled = false;
+                    break;
+                }
+            }
+            
+            if (isFilled) {
+                dropDeadBlocks(i);
+                rowsCleared++;
+            }
+        }
+        
+        Debug.print(1, rowsCleared + " rows cleared.");
+        return rowsCleared;
+    }
+    
+    /** Shifts every dead block contained in a row < ROW one coordinate position down. Note
+     * that this will overwrite ROW.
+     * 
+     *  Live Tetrimino blocks are not shifted.
+     * 
+     *  If the input is 0, each element of row 0 will be set to -1. 
+     * 
+     * @param row The shift border. 
+     */
+    private void dropDeadBlocks(int rowBorder) {
+        if (rowBorder < 0) {
+            throw new IllegalArgumentException("The provided row: " + rowBorder + " was negative");
+        }
+        
+        if (rowBorder == 0) {
+            for (int i = 0; i < mGrid[0].length; i++) {
+                if (!mLiveTetriminoCoordinates.containsKey(mGrid[0][i])) {
+                    mGrid[0][i] = -1;
+                }
+            }
+        }
+        
+        int[] curr, above;
+        for (int i = rowBorder; i > 0; i--) {
+            curr = mGrid[i];
+            above = mGrid[i - 1];
+            
+            for (int j = 0; j < curr.length; j++) {
+                if (!mLiveTetriminoCoordinates.containsKey(curr[j])){
+                    if (!mLiveTetriminoCoordinates.containsKey(above[j])) {
+                        curr[j] = above[j];
+                    } else {
+                        curr[j] = -1;
+                    }   
+                }
+            }
+        }
+        
+        Debug.print(2, "Grid dropped.");
     }
     
     /** Attempt to shift all live Tetriminoes one coordinate position towards the
