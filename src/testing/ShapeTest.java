@@ -2,6 +2,7 @@ package testing;
 
 import java.util.Arrays;
 
+import util.Matrices;
 import model.Shape;
 
 public class ShapeTest implements TestSuite {
@@ -203,6 +204,50 @@ public class ShapeTest implements TestSuite {
         return true;
     }
     
+    public boolean getMatrixTest() {
+        int[][] matrix = new int[4][2];
+        matrix[0] = new int[]{1, 0};
+        matrix[1] = new int[]{1, 0};
+        matrix[2] = new int[]{1, 0};
+        matrix[3] = new int[]{1, 1};
+        
+        Shape shape = new Shape(matrix, 5);
+                
+        if (!Arrays.deepEquals(shape.getMatrix(), matrix)) {
+            return false;
+        }
+        
+        shape.rotateClockwise();
+        int[][] target = new int[2][5];
+        target[0] = new int[]{1, 1, 1, 1};
+        target[1] = new int[]{1, 0, 0, 0};
+        
+        if (!Arrays.deepEquals(shape.getMatrix(), target)) {
+            return false;
+        }
+        
+        shape.rotateCounterClockwise();
+        shape.rotateCounterClockwise();
+        target = new int[2][4];
+        target[0] = new int[]{0, 0, 0, 1};
+        target[1] = new int[]{1, 1, 1, 1};
+        
+        if (!Arrays.deepEquals(shape.getMatrix(), target)) {
+            return false;
+        }
+        
+        shape.deleteBlock(1, 1);
+        target = new int[2][4];
+        target[0] = new int[]{0, 0, 0, 1};
+        target[1] = new int[]{1, 0, 1, 1};
+        
+        if (!Arrays.deepEquals(shape.getMatrix(), target)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
     public boolean isValidMatrixTest() {
         int[][] matrix0 = new int[4][4];
         matrix0[0] = new int[]{1, 0, 0, 0};
@@ -230,26 +275,29 @@ public class ShapeTest implements TestSuite {
                 && Shape.isValidTetriminoMatrix(matrix2)
                 && Shape.isValidTetriminoMatrix(matrix3)
                 && Shape.isValidTetriminoMatrix(matrix3);
-        }
+    }
     
     public void printFails() {
-//        if (!instantiationTest()) {
-//            System.out.println("ShapeTest.instantiationTest() failed.");
-//        }
-//        if (!getMatrixCoordinatesTest()) {
-//            System.out.println("ShapeTest.getMatrixCoordinatesTest() failed.");
-//        }
+        if (!instantiationTest()) {
+            System.out.println("ShapeTest.instantiationTest() failed.");
+        }
+        if (!getMatrixCoordinatesTest()) {
+            System.out.println("ShapeTest.getMatrixCoordinatesTest() failed.");
+        }
         if (!measureTest()) {
             System.out.println("ShapeTest.measureTest() failed.");
         }
-//        if (!rotateClockwiseTest()) {
-//            System.out.println("ShapeTest.rotateClockwiseTest() failed.");
-//        }
-//        if (!rotateCounterClockwiseTest()) {
-//            System.out.println("ShapeTest.rotateCounterClockwiseTest() failed.");
-//        }
-//        if (!isValidMatrixTest()) {
-//            System.out.println("ShapeTest.isValidMatrixTest() failed.");
-//        }
+        if (!rotateClockwiseTest()) {
+            System.out.println("ShapeTest.rotateClockwiseTest() failed.");
+        }
+        if (!rotateCounterClockwiseTest()) {
+            System.out.println("ShapeTest.rotateCounterClockwiseTest() failed.");
+        }
+        if (!getMatrixTest()) {
+            System.out.println("ShapeTest.getMatrixTest() failed.");
+        }
+        if (!isValidMatrixTest()) {
+            System.out.println("ShapeTest.isValidMatrixTest() failed.");
+        }
     }
 }

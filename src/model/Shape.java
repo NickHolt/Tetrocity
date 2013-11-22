@@ -2,8 +2,10 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import testing.Debug;
+import util.Direction;
 import util.Matrices;
 
 /** 
@@ -52,6 +54,12 @@ import util.Matrices;
  * 
  *  The coordinates of that shape will be: {(0, 0), (1, 0), (2, 0), (2, 1)}. 
  *  
+ *  At its core, a Shape primarily manipulates the coordinate data, as this representation is more
+ * useful for external objects. However, the matrix will still be stored and updated as a space-time
+ * tradeoff to more easily facilitate certain calculations. The matrix will always be based on the
+ * current set of coordinates. That is, any change to the Shape's block ordering will be first applied
+ * to the coordinate set, and then to the matrix. 
+ *  
  *  A Shape also tracks Tetrimino dimensional information, such as the width,
  * height, and length of the piece. As a result, it is critical that a Tetrimino
  * update its Shape when blocks are deleted.
@@ -62,6 +70,8 @@ import util.Matrices;
 public class Shape {
     private int[][] mCoordinates;
     private int[][] mAnchorBlocks;
+    private HashMap<Direction, int[][]> mAnchorBlockHashMap;
+    private int[][] mMatrix;
     private int mLength;
     private int mWidth;
     private int mHeight;
@@ -93,7 +103,8 @@ public class Shape {
         }
         
         measure(); //generate remaining member variables. 
-        
+        mMatrix = matrix;
+
         Debug.print(2, "New shape sucessfully created.");
     }
     
@@ -106,7 +117,6 @@ public class Shape {
     public Shape(int[][] matrix, int length) {       
         //"Draw the smallest possible box"
         matrix = Matrices.shrink(matrix);
-        
         int rows = matrix.length, cols = matrix[0].length;
         mCoordinates = new int[length][2];
         
@@ -126,7 +136,8 @@ public class Shape {
         }
         
         measure(); //generate remaining member variables. 
-        
+        mMatrix = matrix;
+
         Debug.print(2, "New shape sucessfully created.");
     }
     
@@ -153,6 +164,7 @@ public class Shape {
         
         mCoordinates = newCoords;
         measure(); //Re-calculate dimensional data
+        refreshMatrix();
     }
     
     /**  
@@ -196,6 +208,16 @@ public class Shape {
         Debug.print(3, "Shape#measure() completed.");
     }
     
+    /** Uses the current shape coordinates and dimensional data to generate a new shape-matrix 
+     * for this Shape. 
+     */
+    private void refreshMatrix() {
+        mMatrix = new int[mHeight][mWidth];
+        for (int[] coord : mCoordinates) {
+            mMatrix[coord[0]][coord[1]] = 1;
+        }
+    }
+    
     /** Rotates this Shape 90 degrees clockwise.
      */
     public void rotateClockwise() {
@@ -229,6 +251,7 @@ public class Shape {
                     mHeight - 1 - mCoordinates[i][0]};
         }   
         measure();
+        refreshMatrix();
     }
     
     /** Rotates this Shape 90 degrees counter-clockwise about its rotational 
@@ -243,6 +266,7 @@ public class Shape {
                     mCoordinates[i][0]};
         }   
         measure();
+        refreshMatrix();
     }
     
     /** Returns a list of [row, column] matrix-coordinates representing the
@@ -265,6 +289,13 @@ public class Shape {
      */
     public int[][] getAnchorBlocks() {
         return mAnchorBlocks;
+    }
+    
+    /**
+     * @return The shape-matrix that describes this shape.
+     */
+    public int[][] getMatrix() {
+        return mMatrix;
     }
     
     /**
