@@ -92,35 +92,6 @@ public class ShapeTest implements TestSuite {
             return false;
         }
         
-        int[][] northAnchorTarget = new int[3][2];
-        northAnchorTarget[0] = new int[]{0, 0};
-        northAnchorTarget[1] = new int[]{3, 0};
-        northAnchorTarget[2] = new int[]{3, 1};
-        
-        int[][] eastAnchorTarget = new int[3][2];
-        eastAnchorTarget[0] = new int[]{0, 0};
-        eastAnchorTarget[1] = new int[]{1, 0};
-        eastAnchorTarget[2] = new int[]{3, 1};
-        
-        int[][] southAnchorTarget = new int[3][2];
-        southAnchorTarget[0] = new int[]{1, 0};
-        southAnchorTarget[1] = new int[]{3, 0};
-        southAnchorTarget[2] = new int[]{3, 1};
-        
-        int[][] westAnchorTarget = new int[4][2];
-        westAnchorTarget[0] = new int[]{0, 0};
-        westAnchorTarget[1] = new int[]{1, 0};
-        westAnchorTarget[2] = new int[]{2, 0};
-        westAnchorTarget[3] = new int[]{3, 0};
-
-        
-        if (!Arrays.deepEquals(shape.getAnchorCoordinates(Direction.NORTH), northAnchorTarget)
-                && !Arrays.deepEquals(shape.getAnchorCoordinates(Direction.EAST), eastAnchorTarget)
-                && !Arrays.deepEquals(shape.getAnchorCoordinates(Direction.SOUTH), southAnchorTarget)
-                && !Arrays.deepEquals(shape.getAnchorCoordinates(Direction.WEST), westAnchorTarget)) {
-            return false;
-        }
-        
         return true;
     }
     
@@ -214,50 +185,6 @@ public class ShapeTest implements TestSuite {
         return true;
     }
     
-    public boolean getMatrixTest() {
-        int[][] matrix = new int[4][2];
-        matrix[0] = new int[]{1, 0};
-        matrix[1] = new int[]{1, 0};
-        matrix[2] = new int[]{1, 0};
-        matrix[3] = new int[]{1, 1};
-        
-        Shape shape = new Shape(matrix);
-                
-        if (!Arrays.deepEquals(shape.getMatrix(), matrix)) {
-            return false;
-        }
-        
-        shape.rotateClockwise();
-        int[][] target = new int[2][5];
-        target[0] = new int[]{1, 1, 1, 1};
-        target[1] = new int[]{1, 0, 0, 0};
-        
-        if (!Arrays.deepEquals(shape.getMatrix(), target)) {
-            return false;
-        }
-        
-        shape.rotateCounterClockwise();
-        shape.rotateCounterClockwise();
-        target = new int[2][4];
-        target[0] = new int[]{0, 0, 0, 1};
-        target[1] = new int[]{1, 1, 1, 1};
-        
-        if (!Arrays.deepEquals(shape.getMatrix(), target)) {
-            return false;
-        }
-        
-        shape.deleteBlock(1, 1);
-        target = new int[2][4];
-        target[0] = new int[]{0, 0, 0, 1};
-        target[1] = new int[]{1, 0, 1, 1};
-        
-        if (!Arrays.deepEquals(shape.getMatrix(), target)) {
-            return false;
-        }
-        
-        return true;
-    }
-    
     public boolean isValidMatrixTest() {
         int[][] matrix0 = new int[4][4];
         matrix0[0] = new int[]{1, 0, 0, 0};
@@ -302,9 +229,6 @@ public class ShapeTest implements TestSuite {
         }
         if (!rotateCounterClockwiseTest()) {
             System.out.println("ShapeTest.rotateCounterClockwiseTest() failed.");
-        }
-        if (!getMatrixTest()) {
-            System.out.println("ShapeTest.getMatrixTest() failed.");
         }
         if (!isValidMatrixTest()) {
             System.out.println("ShapeTest.isValidMatrixTest() failed.");

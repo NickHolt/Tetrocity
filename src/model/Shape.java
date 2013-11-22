@@ -2,10 +2,8 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import testing.Debug;
-import util.Direction;
 import util.Matrices;
 
 /** 
@@ -55,12 +53,7 @@ import util.Matrices;
  *  The coordinates of that shape will be: {(0, 0), (1, 0), (2, 0), (2, 1)}. 
  *  
  *  At its core, a Shape primarily manipulates the coordinate data, as this representation is more
- * useful for external objects. However, the matrix will still be stored and updated as a space-time
- * tradeoff to more easily facilitate certain calculations. The matrix will always be based on the
- * current set of coordinates. That is, any change to the Shape's block ordering will be first applied
- * to the coordinate set, and then to the matrix. 
- *  
- *  A Shape also tracks Tetrimino dimensional information, such as the width,
+ * useful for external objects. A Shape also tracks Tetrimino dimensional information, such as the width,
  * height, and length of the piece. As a result, it is critical that a Tetrimino
  * update its Shape when blocks are deleted.
  *  
@@ -69,8 +62,6 @@ import util.Matrices;
  */
 public class Shape {
     private int[][] mCoordinates;
-    private int[][] mMatrix;
-    private HashMap<Direction, ArrayList<int[]>> mAnchorBlocks;
     private int mLength;
     private int mWidth;
     private int mHeight;
@@ -101,14 +92,7 @@ public class Shape {
             mCoordinates[i] = tmpCoordinates.get(i);
         }
         
-        mAnchorBlocks = new HashMap<Direction, ArrayList<int[]>>(4);
-        mAnchorBlocks.put(Direction.NORTH, new ArrayList<int[]>());
-        mAnchorBlocks.put(Direction.EAST, new ArrayList<int[]>());
-        mAnchorBlocks.put(Direction.SOUTH, new ArrayList<int[]>());
-        mAnchorBlocks.put(Direction.WEST, new ArrayList<int[]>());
-        
         measure(); //generate remaining member variables. 
-        mMatrix = matrix;
 
         Debug.print(2, "New shape sucessfully created.");
     }
@@ -165,34 +149,7 @@ public class Shape {
         mHeight++; //adjust for 0-indexing
         mWidth++; 
         
-        mMatrix = new int[mHeight][mWidth];
-        for (int[] coord : mCoordinates) {
-            mMatrix[coord[0]][coord[1]] = 1;
-        }
-        
-        ArrayList<int[]> northAnchorCoords = new ArrayList<int[]>(),
-                eastAnchorCoords = new ArrayList<int[]>(),
-                southAnchorCoords = new ArrayList<int[]>(),
-                westAnchorCoords = new ArrayList<int[]>();
-        int[][] paddedMatrix = Matrices.padMatrix(mMatrix);
-        for (int[] coord : mCoordinates) {
-            if (paddedMatrix[coord[0]][coord[1] + 1] == 0) {
-                northAnchorCoords.add(coord);
-            }
-            if (paddedMatrix[coord[0] + 1][coord[1] + 2] == 0) {
-                eastAnchorCoords.add(coord);
-            }
-            if (paddedMatrix[coord[0] + 2][coord[1] + 1] == 0) {
-                southAnchorCoords.add(coord);
-            }
-            if (paddedMatrix[coord[0] + 1][coord[1]] == 0) {
-                westAnchorCoords.add(coord);
-            }
-        }
-        mAnchorBlocks.put(Direction.NORTH, northAnchorCoords);
-        mAnchorBlocks.put(Direction.EAST, eastAnchorCoords);
-        mAnchorBlocks.put(Direction.SOUTH, southAnchorCoords);
-        mAnchorBlocks.put(Direction.WEST, westAnchorCoords);
+        Debug.print(2, "Shape measured.");
     }
     
     /** Rotates this Shape 90 degrees clockwise.
@@ -254,31 +211,6 @@ public class Shape {
      */
     public int[][] getRelativeMatrixCoordinates() {
         return mCoordinates;
-    }
-    
-    /** Returns an array of "anchor block" relative-coordinates. An anchor block is one that has 
-     * no neighboring block in the provided direction. For example, if the direction were south and
-     * a block has coordinate (r, c), then it is an anchor block is there is no block in coordinate 
-     * (r + 1, c);
-     * 
-     * @return A list of anchor block relative-coordinates.
-     */
-    public int[][] getAnchorCoordinates(Direction direction) {
-        ArrayList<int[]> anchorCoords = mAnchorBlocks.get(direction);
-        int[][] result = new int[anchorCoords.size()][2];
-        
-        for (int i = 0; i < anchorCoords.size(); i++) {
-            result[i] = anchorCoords.get(i);
-        }
-        
-        return result;
-    }
-    
-    /**
-     * @return The shape-matrix that describes this shape.
-     */
-    public int[][] getMatrix() {
-        return mMatrix;
     }
     
     /**

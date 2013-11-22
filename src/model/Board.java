@@ -39,10 +39,12 @@ public class Board {
     
     /* A grid of Tetrimino IDs representing the game board. -1 is an empty space. */
     private int[][] mGrid;
-    /* A HashMap of live Tetrimino IDs to that Tetrimino's last known coordinates. */
+    /* A HashMap of live Tetrimino IDs to that Tetrimino's last known coordinates. This
+     * is a space-time tradeoff such that the Board does not have to scan its entire grid
+     * to find the last known coordinates. */
     private HashMap<Integer, int[][]> mLiveTetriminoCoordinates;
     /* The number of non-visible buffer rows. */
-    private final int mBuffer;
+    private int mBuffer;
     /* All currently live Tetriminoes (i.e. ones that the player controls). */
     private ArrayList<Tetrimino> mLiveTetriminoes;
     /* The stored Tetrimino. */
@@ -88,13 +90,13 @@ public class Board {
      * @return The placement coordinate.
      */
     public int[] getPlacementCoordinate(Tetrimino tetrimino) {
-        int col = mGrid[0].length / 2 - tetrimino.getWidth() / 2,
+        int col = mGrid[0].length / 2 - tetrimino.getShape().getWidth() / 2,
                 row;
         
-        if (tetrimino.getHeight() > mBuffer) {
+        if (tetrimino.getShape().getHeight() > mBuffer) {
             row = 0; 
         } else {
-            row = mBuffer - tetrimino.getHeight();
+            row = mBuffer - tetrimino.getShape().getHeight();
         }
         
         Debug.print(3, "Board#getPlacementCoordinate called.");
@@ -148,46 +150,35 @@ public class Board {
     
     /** Attempt to shift all live Tetriminoes one coordinate position towards the
      * provided direction. If a collision is found for a live Tetrimino, that Tetrimino
-     * will not move. Furthermore, if and only if the direction is South, the Tetrimino
-     * will be marked dead.
+     * will not move. Furthermore, if shiftDirection == killDirection and the Tetrimino
+     * is found to be blocked, the Tetrimino will be marked dead.
+     * 
      * 
      *  Note that shiftLiveTetriminoes(Direction.SOUTH) is equivalent to 
      * {@link Board#dropLiveTetriminoes()}.
      * 
      * @param direction The direction to shift all live Tetriminoes in. 
      */
-    public void shiftLiveTetriminoes(Direction direction) {
-        if (direction == Direction.SOUTH) {
-            dropLiveTetriminoes();
-        } else {
-            //TODO
-        }
-        
-        updateGrid();
-    }
-    
-    /** If possible, drops all live Tetriminoes one coordinate space south. That is,
-     * it adds one to the row coordinate of every live Tetrimino. If this is not possible,
-     * and there exists a block beneath any of the Tetrimino's anchor blocks, the Tetrimino 
-     * will be removed from the list of live Tetriminoes.
-     * 
-     *  This method is a special case of {@link Board#shiftLiveTetriminoes} which is equivalent 
-     * to calling shiftLiveTetriminoes(Direction.SOUTH). South is the only direction that will
-     * cause a Tetrimino be marked dead if the Tetrimino's path is blocked. 
-     */
-    public void dropLiveTetriminoes() {
-        int[][] anchorCoordinates;
+    public void shiftLiveTetriminoes(Direction shiftDirection, Direction killDirection) {
+        //TODO
+        int[][] coordinates;
+        boolean shiftFailed = false;
         for (Tetrimino tetrimino : mLiveTetriminoes) {
-            anchorCoordinates = tetrimino.getAnchorCoordinates();
-            for (int[] anchor : anchorCoordinates) {
-                if (mGrid[anchor[0] + 1][anchor[1]] != -1) { //there is no empty space beneath
-                    mLiveTetriminoes.remove(tetrimino); //"mark as dead"
-                    clearRows(); //Check for new filled rows
-                    break;
+            coordinates = tetrimino.getCoordinates();
+            for (int[] coord : coordinates) {
+                if (shiftDirection == Direction.NORTH) {
+                    //TODO
+                } else if (shiftDirection == Direction.EAST) {
+                  //TODO
+                } else if (shiftDirection == Direction.SOUTH) {
+                  //TODO
+                } else if (shiftDirection == Direction.WEST) {
+                  //TODO
                 }
             }
-            tetrimino.shift(Direction.SOUTH); //garbage collector will take care of dead Tetriminoes
-        }                                     //shift them anyway to simplify code
+            
+            //TODO mark dead
+        }
         
         updateGrid();
     }
