@@ -346,6 +346,20 @@ public class Board {
         }
     }
     
+    /** If possible, rotates the bottom-most live Tetrimino clockwise. If a collision is detected
+     * the piece will not rotate. 
+     */
+    public void rotateTetriminoClockwise() {
+        //TODO
+    }
+    
+    /** If possible, rotates the bottom-most live Tetrimino counter-clockwise. If a collision is detected
+     * the piece will not rotate. 
+     */
+    public void rotateTetriminoCounterClockwise() {
+        //TODO
+    }
+    
     /**
      * @return The bottom-most live Tetrimino.
      */
@@ -445,12 +459,18 @@ public class Board {
         int[][] coordinates = tetrimino.getCoordinates();
         
         for (int[] coord : coordinates) {
-            if (mGrid[coord[0]][coord[1]] != -1) {
-                Debug.print(3, "Board#getPlacementCoordinate could not be found. Game is over.");
-                
-                throw new GameOverException("Grid element (" + coord[0] + ", " + coord[1] + ") was "
-                        + "already occupied. Game over.");
+            try {
+                if (mGrid[coord[0]][coord[1]] != -1) {
+                    Debug.print(3, "Board#getPlacementCoordinate could not be found. Game is over.");
+                    
+                    throw new GameOverException("Grid element (" + coord[0] + ", " + coord[1] + ") was "
+                            + "already occupied. Game over.");
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw new GameOverException("Grid element (" + coord[0] + ", " + coord[1] + ") exceeded "
+                        + "grid. Tetrimino too large. Game over.");
             }
+            
         }
         
         mLiveTetriminoes.add(tetrimino);
