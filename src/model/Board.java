@@ -6,6 +6,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import testing.Debug;
 import util.Direction;
+import util.GameOverException;
 import control.Engine;
 
 /** A game board in a game of Tetrocity. A Board knows only of the {@link Tetrimino}
@@ -94,11 +95,6 @@ public class Board {
      *  If a Tetrimino is too large to have its bottom aligned, its top row coordinate will be 0.
      * Note that a placement coordinate will never contain a row such that the bottom row
      * of the Tetrimino begins more than one space above the buffer region.
-     *  
-     *  This method also acts as the medium for communicating when a game of Tetrocity is over.
-     * If a placement coordinate is generated and it is determined that the Tetrimino will
-     * collide with an already present Tetrimino, then this method will return null, signaling
-     * that the game is over. 
      * 
      * Note that the Tetrimino's width and height must be less than or equal to that of the 
      *  board or behavior is unpredictable. 
@@ -115,21 +111,9 @@ public class Board {
         } else {
             row = mBuffer - tetrimino.getShape().getHeight();
         }
-        
-        int[] placementCoordinate = new int[]{row, col};
-        
-        Tetrimino dummyTetrimino = new Tetrimino(tetrimino.getShape(), -2, placementCoordinate);
-        
-        int[][] dummyTetriminoCoordinates = dummyTetrimino.getCoordinates();
-        for (int[] coord : dummyTetriminoCoordinates) {
-            if (mGrid[coord[0]][coord[1]] != -1) {
-                Debug.print(3, "Board#getPlacementCoordinate could not be found. Game is over.");
-                return null;
-            }
-        }
-        
+                
         Debug.print(3, "Board#getPlacementCoordinate successfully generated.");
-        return placementCoordinate;
+        return new int[]{row, col};
     }
     
     /** Updates the grid with the current coordinate positions of all live Tetriminoes.
@@ -299,8 +283,10 @@ public class Board {
     
     /** Stores the bottom-most Tetrimino that has not been previously stored. If a Tetrimino 
      * already exists in storage, it will be placed back on the top of the grid and marked as live. 
+     * @throws GameOverException thrown if the space where the new, previously stored Tetrimino
+     * is already occupied. This should not happen by game design.
      */
-    public void storeTetrimino() {
+    public void storeTetrimino() throws GameOverException {
         Tetrimino bottomLiveValidTetrimino = mLiveTetriminoes.get(0);
         
         for (Tetrimino liveTetrimino : mLiveTetriminoes) {
@@ -352,31 +338,48 @@ public class Board {
     /** Removes a Tetrimino from the Queue and adds it to the grid. When
      * a Tetrimino is added to the grid, the root coordinate is chosen via
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
+     * @throws GameOverException thrown when the target grid spaces are already occupied.
      */
-    public void putTetrimino() {
+    public void putTetrimino() throws GameOverException {
         Tetrimino tetrimino = mTetriminoQueue.poll();
         putTetrimino(tetrimino, getPlacementCoordinate(tetrimino));
     }
     
     /** Removes a Tetrimino from the Queue and adds it to the grid at the given 
      * root coordinate. 
+     * @throws GameOverException thrown when the target grid spaces are already occupied.
      */
-    public void putTetrimino(int[] rootCoordinate) {
+    public void putTetrimino(int[] rootCoordinate) throws GameOverException {
         putTetrimino(mTetriminoQueue.poll(), rootCoordinate);
     }
     
     /** Bypass the Queue and add the Tetrimino to the grid. When
      * a Tetrimino is added to the grid, the root coordinate is chosen via
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
+     * @throws GameOverException thrown when the target grid spaces are already occupied.
      */
-    public void putTetrimino(Tetrimino tetrimino) {
+    public void putTetrimino(Tetrimino tetrimino) throws GameOverException {
         putTetrimino(tetrimino, getPlacementCoordinate(tetrimino));
     }
     
-    /** Bypass the Queue and add the Tetrimino to the grid at the given root coordinate. 
+    /** Bypass the Queue and add the Tetrimino to the grid at the given root coordinate. If it is 
+     * found that the grid spaces are already occupied, a GameOverException will be thrown. 
+     * 
+     * @throws GameOverException thrown when the target grid spaces are already occupied.
      */
-    public void putTetrimino(Tetrimino tetrimino, int[] rootCoordinate) {
+    public void putTetrimino(Tetrimino tetrimino, int[] rootCoordinate) throws GameOverException {
         tetrimino.setRootCoordinate(rootCoordinate);
+        
+        int[][] coordinates = tetrimino.getCoordinates();
+        
+        for (int[] coord : coordinates) {
+            if (mGrid[coord[0]][coord[1]] != -1) {
+                Debug.print(3, "Board#getPlacementCoordinate could not be found. Game is over.");
+                
+                throw new GameOverException("Grid element (" + coord[0] + ", " + coord[1] + ") was "
+                        + "already occupied. Game over.");
+            }
+        }
         
         mLiveTetriminoes.add(tetrimino);
         
