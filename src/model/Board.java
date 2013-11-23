@@ -286,19 +286,47 @@ public class Board {
         Debug.print(1, "Live Tetriminoes shifted " + shiftDirection);
     }
     
+    /** "Drops" the bottom-most live Tetrimino. That is: sets its root coordinate's row to 
+     * the largest possible such that a collision does not occur during its trajectory. 
+     * 
+     *  Once the Tetrimino is dropped, it is killed.
+     */
+    public void dropTetrimino() {
+        Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
+        int dropVal = 0, tetriminoID = bottomLiveValidTetrimino.getID(), newRow;
+        int[][] coordinates = bottomLiveValidTetrimino.getCoordinates();
+        boolean maxFound = false;
+        
+        while (!maxFound) {
+            dropVal++;
+            
+            for (int[] coord : coordinates) {
+                newRow = coord[0] + dropVal;
+                
+                if (newRow >= mGrid.length
+                        || !(mGrid[newRow][coord[1]] == -1
+                        || mGrid[newRow][coord[1]] == tetriminoID)) {
+                    maxFound = true;
+                    break;
+                }
+            }            
+        }
+        dropVal --; //One step back was maximum
+        
+        int[]rootCoord = bottomLiveValidTetrimino.getRootCoordinate();
+        bottomLiveValidTetrimino.setRootCoordinate(new int[]{rootCoord[0] + dropVal,
+                rootCoord[1]});
+        refreshGrid();
+        killTetrimino(bottomLiveValidTetrimino);   
+    }
+    
     /** Stores the bottom-most Tetrimino that has not been previously stored. If a Tetrimino 
      * already exists in storage, it will be placed back on the top of the grid and marked as live. 
      * @throws GameOverException thrown if the space where the new, previously stored Tetrimino
      * is already occupied. This should not happen by game design.
      */
     public void storeTetrimino() throws GameOverException {
-        Tetrimino bottomLiveValidTetrimino = mLiveTetriminoes.get(0);
-        
-        for (Tetrimino liveTetrimino : mLiveTetriminoes) {
-            if (liveTetrimino.getBottomRow() > bottomLiveValidTetrimino.getBottomRow()) {
-                bottomLiveValidTetrimino = liveTetrimino;
-            }
-        }
+        Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
         
         if (!bottomLiveValidTetrimino.hasBeenStored()) {
             if (mStoredTetrimino != null) {
@@ -318,6 +346,21 @@ public class Board {
         }
     }
     
+    /**
+     * @return The bottom-most live Tetrimino.
+     */
+    private Tetrimino getBottomLiveTetrimino() {
+        Tetrimino bottomLiveValidTetrimino = mLiveTetriminoes.get(0);
+        
+        for (Tetrimino liveTetrimino : mLiveTetriminoes) {
+            if (liveTetrimino.getBottomRow() > bottomLiveValidTetrimino.getBottomRow()) {
+                bottomLiveValidTetrimino = liveTetrimino;
+            }
+        }
+        
+        return bottomLiveValidTetrimino;
+    }
+    
     /** Removes the Tetrimino from the list of live Tetriminoes. A "dead" Tetrimino will
      * continue to exist on the grid until it is cleared completely though normal gameplay.
      * 
@@ -328,7 +371,7 @@ public class Board {
         mLiveTetriminoCoordinates.remove(tetrimino.getID());
     }
     
-    /** Removes the Tetrimino from the grid and kills it. 
+    /** Removes the Tetrimino from the grid and the list of live Tetriminoes. 
      * 
      * @param tetrimino The Tetrimino to remove.
      */
