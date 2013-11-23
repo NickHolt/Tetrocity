@@ -70,8 +70,14 @@ public class Board {
                     + "(rows = " + rows + ", cols = " + cols + ", buffer = " + buffer
                     + ") is invalid.");
         }
+        
         mGrid = new int[rows + buffer][cols];
         mBuffer = buffer;
+        for (int i = 0; i < mGrid.length; i++) {
+            for (int j = 0; j < mGrid[0].length; j++) {
+                mGrid[i][j] = -1; //initialize grid to empty
+            }
+        }
         
         mLiveTetriminoCoordinates = new HashMap<Integer, int[][]>();
         mTetriminoQueue = new ArrayBlockingQueue<Tetrimino>(FULL_QUEUE_SIZE);
@@ -100,7 +106,6 @@ public class Board {
      * @return The placement coordinate.
      */
     public int[] getPlacementCoordinate(Tetrimino tetrimino) {
-        //TODO THIS SHOULD RETURN NULL IF THAT SPACE IS OCCUPIED. THAT MEANS THE GAME IS OVER!!!!
         int col = mGrid[0].length / 2 - tetrimino.getShape().getWidth() / 2,
                 row;
         
@@ -110,8 +115,20 @@ public class Board {
             row = mBuffer - tetrimino.getShape().getHeight();
         }
         
-        Debug.print(3, "Board#getPlacementCoordinate called.");
-        return new int[]{row, col};
+        int[] placementCoordinate = new int[]{row, col};
+        
+        Tetrimino dummyTetrimino = new Tetrimino(tetrimino.getShape(), -2, placementCoordinate);
+        
+        int[][] dummyTetriminoCoordinates = dummyTetrimino.getCoordinates();
+        for (int[] coord : dummyTetriminoCoordinates) {
+            if (mGrid[coord[0]][coord[1]] != -1) {
+                Debug.print(3, "Board#getPlacementCoordinate could not be found. Game is over.");
+                return null;
+            }
+        }
+        
+        Debug.print(3, "Board#getPlacementCoordinate successfully generated.");
+        return placementCoordinate;
     }
     
     /** Updates the grid with the current coordinate positions of all live Tetriminoes.
