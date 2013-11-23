@@ -1,4 +1,4 @@
-package util;
+package control;
 
 /** An enum that lists all controls recognized by the Engine of a game of 
  * Tetrocity. 
@@ -10,5 +10,9 @@ public enum Control {
     UP,
     DOWN,
     LEFT,
-    RIGHT //etc... 
+    RIGHT,
+    DROP,
+    ROTATE_CLOCKWISE,
+    ROTATE_COUNTERCLOCKWISE,
+    STORE
 }
