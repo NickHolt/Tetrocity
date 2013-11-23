@@ -237,6 +237,7 @@ public class Board {
         int[][] coordinates;
         int newRow = -1, newCol = -1, tetriminoID;
         boolean shiftFailed;
+        ArrayList<Tetrimino> toKill = new ArrayList<Tetrimino>();
         for (Tetrimino tetrimino : mLiveTetriminoes) {
             coordinates = tetrimino.getCoordinates();
             tetriminoID = tetrimino.getID();
@@ -270,13 +271,17 @@ public class Board {
             }
             
             if (shiftFailed && shiftDirection == Direction.SOUTH) {
-                mLiveTetriminoes.remove(tetrimino); //kill the Tetrimino
+                toKill.add(tetrimino); //kill the Tetrimino
             } else if (!shiftFailed) {
                 tetrimino.shift(shiftDirection);
             }
             //Note non-south shift failures simply do nothing for that Tetrimino
         }
         
+        for (Tetrimino deadTetrimino : toKill) {
+            killTetrimino(deadTetrimino);
+        }
+                
         refreshLiveTetriminoesOnGrid();
         Debug.print(1, "Live Tetriminoes shifted " + shiftDirection);
     }
@@ -300,7 +305,7 @@ public class Board {
                 putTetrimino(mStoredTetrimino);
             }
             
-            mLiveTetriminoes.remove(bottomLiveValidTetrimino);
+            killTetrimino(bottomLiveValidTetrimino);
             mStoredTetrimino = bottomLiveValidTetrimino;
             bottomLiveValidTetrimino.markStored();
             
@@ -311,6 +316,15 @@ public class Board {
             //Do nothing
             Debug.print(1, "Tetrimino storage rejected.");
         }
+    }
+    
+    /** Removes the Tetrimino from the list of live Tetriminoes.
+     * 
+     * @param tetrimino The Tetrimimno to kill
+     */
+    public void killTetrimino(Tetrimino tetrimino) {
+        mLiveTetriminoes.remove(tetrimino);
+        mLiveTetriminoCoordinates.remove(tetrimino.getID());
     }
     
     /**
