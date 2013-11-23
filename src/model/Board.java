@@ -7,7 +7,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import testing.Debug;
 import util.Direction;
 import util.GameOverException;
-import control.Engine;
+import control.NormalEngine;
 
 /** A game board in a game of Tetrocity. A Board knows only of the {@link Tetrimino}
  * pieces currently in play. This includes the dead Tetriminoes and the live
@@ -22,7 +22,7 @@ import control.Engine;
  *  
  *   A Board is responsible for tracking the Tetrimino queue, as well as the
  *  stored Tetrimino. It is not responsible for tracking player score. It will
- *  communicate the relevant information to the {@link Engine}, which will then
+ *  communicate the relevant information to the {@link NormalEngine}, which will then
  *  deal with it. 
  * 
  *  When prompted to do so, a Board is capable of examining its state and reacting
@@ -350,14 +350,62 @@ public class Board {
      * the piece will not rotate. 
      */
     public void rotateTetriminoClockwise() {
-        //TODO
+        Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
+        bottomLiveValidTetrimino.rotateClockwise();
+
+        int[][] coordinates = bottomLiveValidTetrimino.getCoordinates();
+        int row, col, tetriminoID = bottomLiveValidTetrimino.getID();
+        boolean rotationFailed = false;
+        for (int[] coord : coordinates) {
+            row = coord[0];
+            col = coord[1];
+            
+            if (row < 0
+                    || row >= mGrid.length
+                    || col < 0
+                    || col >= mGrid[0].length
+                    || !(mGrid[row][col] == -1
+                    || mGrid[row][col] == tetriminoID)) {
+                rotationFailed = true;
+                break;
+            }
+        }
+        if (rotationFailed) {
+            bottomLiveValidTetrimino.rotateCounterClockwise(); //undo rotation
+        } else {
+            refreshGrid();
+        }
     }
     
     /** If possible, rotates the bottom-most live Tetrimino counter-clockwise. If a collision is detected
      * the piece will not rotate. 
      */
     public void rotateTetriminoCounterClockwise() {
-        //TODO
+        Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
+        bottomLiveValidTetrimino.rotateCounterClockwise();
+
+        int[][] coordinates = bottomLiveValidTetrimino.getCoordinates();
+        int row, col, tetriminoID = bottomLiveValidTetrimino.getID();
+        boolean rotationFailed = false;
+        for (int[] coord : coordinates) {
+            row = coord[0];
+            col = coord[1];
+            
+            if (row < 0
+                    || row >= mGrid.length
+                    || col < 0
+                    || col >= mGrid[0].length
+                    || !(mGrid[row][col] == -1
+                    || mGrid[row][col] == tetriminoID)) {
+                rotationFailed = true;
+                break;
+            }
+        }
+        if (rotationFailed) {
+            bottomLiveValidTetrimino.rotateClockwise(); //undo rotation
+        } else {
+            refreshGrid();
+        }
     }
     
     /**
