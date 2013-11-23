@@ -54,7 +54,7 @@ public class Tetrimino {
      * @param rootCoordinate The root coordinate of this Tetrimino.
      * @param ID The ID to be assigned to all blocks in this Tetrimino. 
      */
-    public Tetrimino(Shape shape, int[] rootCoordinate, int ID) {
+    public Tetrimino(Shape shape, int ID, int[] rootCoordinate) {
         mID = ID;
         mShape = shape;
         mRootCoordinate = rootCoordinate;
