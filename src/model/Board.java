@@ -119,7 +119,7 @@ public class Board {
     /** Updates the grid with the current coordinate positions of all live Tetriminoes.
      * This method should be called every time movement is applied to any live Tetrimino. 
      */
-    public void refreshLiveTetriminoesOnGrid() {
+    public void refreshGrid() {
         int tetriminoID;
         int[][] oldCoordinates, newCoordinates;
         for (Tetrimino tetrimino : mLiveTetriminoes) {
@@ -282,7 +282,7 @@ public class Board {
             killTetrimino(deadTetrimino);
         }
                 
-        refreshLiveTetriminoesOnGrid();
+        refreshGrid();
         Debug.print(1, "Live Tetriminoes shifted " + shiftDirection);
     }
     
@@ -305,11 +305,11 @@ public class Board {
                 putTetrimino(mStoredTetrimino);
             }
             
-            killTetrimino(bottomLiveValidTetrimino);
+            removeTetrimino(bottomLiveValidTetrimino);
             mStoredTetrimino = bottomLiveValidTetrimino;
             bottomLiveValidTetrimino.markStored();
             
-            refreshLiveTetriminoesOnGrid();
+            refreshGrid();
             
             Debug.print(1, "Tetrimino stored.");
         } else {
@@ -318,13 +318,27 @@ public class Board {
         }
     }
     
-    /** Removes the Tetrimino from the list of live Tetriminoes.
+    /** Removes the Tetrimino from the list of live Tetriminoes. A "dead" Tetrimino will
+     * continue to exist on the grid until it is cleared completely though normal gameplay.
      * 
-     * @param tetrimino The Tetrimimno to kill
+     * @param tetrimino The Tetrimino to kill
      */
     public void killTetrimino(Tetrimino tetrimino) {
         mLiveTetriminoes.remove(tetrimino);
         mLiveTetriminoCoordinates.remove(tetrimino.getID());
+    }
+    
+    /** Removes the Tetrimino from the grid and kills it. 
+     * 
+     * @param tetrimino The Tetrimino to remove.
+     */
+    public void removeTetrimino(Tetrimino tetrimino) {
+        int[][] coords = tetrimino.getCoordinates();
+        for (int[] coord : coords) {
+            mGrid[coord[0]][coord[1]] = -1;
+        }
+        
+        killTetrimino(tetrimino);
     }
     
     /**
@@ -352,6 +366,7 @@ public class Board {
     /** Removes a Tetrimino from the Queue and adds it to the grid. When
      * a Tetrimino is added to the grid, the root coordinate is chosen via
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
+     * 
      * @throws GameOverException thrown when the target grid spaces are already occupied.
      */
     public void putTetrimino() throws GameOverException {
@@ -397,7 +412,7 @@ public class Board {
         
         mLiveTetriminoes.add(tetrimino);
         
-        refreshLiveTetriminoesOnGrid();
+        refreshGrid();
         
         Debug.print(2, "New Tetrimino placed on the grid.");
     }
@@ -435,7 +450,6 @@ public class Board {
      * string will contain the grid only. 
      */
     public String toString() {
-        //TODO
         StringBuffer result = new StringBuffer();
         int gridHeight = mGrid.length,
                 gridWidth = mGrid[0].length;
