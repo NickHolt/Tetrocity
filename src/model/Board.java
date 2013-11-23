@@ -79,6 +79,7 @@ public class Board {
             }
         }
         
+        mLiveTetriminoes = new ArrayList<Tetrimino>();
         mLiveTetriminoCoordinates = new HashMap<Integer, int[][]>();
         mTetriminoQueue = new ArrayBlockingQueue<Tetrimino>(FULL_QUEUE_SIZE);
         
@@ -353,7 +354,15 @@ public class Board {
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
      */
     public void putTetrimino() {
-        putTetrimino(mTetriminoQueue.poll());
+        Tetrimino tetrimino = mTetriminoQueue.poll();
+        putTetrimino(tetrimino, getPlacementCoordinate(tetrimino));
+    }
+    
+    /** Removes a Tetrimino from the Queue and adds it to the grid at the given 
+     * root coordinate. 
+     */
+    public void putTetrimino(int[] rootCoordinate) {
+        putTetrimino(mTetriminoQueue.poll(), rootCoordinate);
     }
     
     /** Bypass the Queue and add the Tetrimino to the grid. When
@@ -361,7 +370,13 @@ public class Board {
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
      */
     public void putTetrimino(Tetrimino tetrimino) {
-        tetrimino.setRootCoordinate(getPlacementCoordinate(tetrimino));
+        putTetrimino(tetrimino, getPlacementCoordinate(tetrimino));
+    }
+    
+    /** Bypass the Queue and add the Tetrimino to the grid at the given root coordinate. 
+     */
+    public void putTetrimino(Tetrimino tetrimino, int[] rootCoordinate) {
+        tetrimino.setRootCoordinate(rootCoordinate);
         
         mLiveTetriminoes.add(tetrimino);
         
@@ -400,10 +415,36 @@ public class Board {
     }
     
     /** Returns a string object representing the state of this Board. The
-     * string will contain the grid, queue, and stored Tetrimino. 
+     * string will contain the grid only. 
      */
     public String toString() {
         //TODO
-        return super.toString();
+        StringBuffer result = new StringBuffer();
+        int gridHeight = mGrid.length,
+                gridWidth = mGrid[0].length;
+        for (int i = 0; i < gridWidth + 2; i++) {
+            result.append('*');
+        }
+        result.append('\n');
+        
+        for (int i = mBuffer; i < gridHeight; i++) {
+            result.append('*');
+            
+            for (int j = 0; j < gridWidth; j++) {
+                if (mGrid[i][j] == -1) {
+                    result.append(' ');
+                } else {
+                    result.append('#');
+                }
+            }
+            result.append("*\n");
+        }
+        
+        for (int i = 0; i < gridWidth + 2; i++) {
+            result.append('*');
+        }
+                
+        Debug.print(3, "Board string generated.");
+        return result.toString();
     }
 }
