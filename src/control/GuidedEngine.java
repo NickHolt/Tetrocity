@@ -61,6 +61,41 @@ public class GuidedEngine extends JFrame{
      * a GameOverException is raised (to be changed, obviously).
      */
     public void begin() {
+        constructGUI();
+        
+        /* Run the game. */
+        float dropPeriod = (1 / (float) INITIAL_DROP_SPEED) * 1000, //in milliseconds
+                logicPeriod = (1 / (float) LOGICAL_FPS) * 1000;
+                
+        double dropTime = 0, 
+                logicTime = 0; //The last system time these operations ran
+        
+        while (true) {
+            if (System.currentTimeMillis() >= dropTime + dropPeriod) {
+                mBoard.shiftLiveTetriminoes(Direction.SOUTH);
+                dropTime = System.currentTimeMillis();
+            }
+            if (System.currentTimeMillis() >= logicTime + logicPeriod) {
+                if (mPlayer.getScore() > mGuidedLevelParameters.getMaximumLevelScore(mLevel)) { 
+                    mLevel++; //update level
+                    dropPeriod = (1 / (float) (INITIAL_DROP_SPEED * 
+                            Math.pow(DROP_SPEED_INCREASE_FACTOR, 
+                                    mGuidedLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
+                    mTetriminoFactory.
+                        setLengthRange(mGuidedLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));
+                    
+                    mBoard.clearTetriminoQueue();
+                }
+                
+                doGameLogic();
+                
+                mScoreBar.setText("Level: " + mLevel + ", Score: " + String.valueOf(mPlayer.getScore()));
+                logicTime = System.currentTimeMillis();
+            }          
+        }
+    }
+    
+    private void constructGUI() {
         int rows = (int) (GuidedLevelParameters.MAX_TETRIMINO_LENGTH * ROW_RATIO),
                 cols = (int) (GuidedLevelParameters.MAX_TETRIMINO_LENGTH * COLUMN_RATIO),
                 buffer = GuidedLevelParameters.MAX_TETRIMINO_LENGTH;
@@ -78,58 +113,33 @@ public class GuidedEngine extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+    
+    private void doGameLogic() {
+        fillBoardQueue();
+
         
-        /* Run the game. */
-        float dropPeriod = (1 / (float) INITIAL_DROP_SPEED) * 1000, //in milliseconds
-                logicPeriod = (1 / (float) LOGICAL_FPS) * 1000;
-                
-        double dropTime = 0, 
-                logicTime = 0; //The last system time these operations ran
+        interpretInput(mPlayer.getMoveKeyCode());
+        updateScore(mBoard.clearRows()); //clear rows and update score
         
-        while (true) {
-            if (System.currentTimeMillis() >= dropTime + dropPeriod) {
-                mBoard.shiftLiveTetriminoes(Direction.SOUTH);
-                dropTime = System.currentTimeMillis();
+        
+        if (mBoard.numLiveTetriminoes() != 0 &&
+                mBoard.getTopLiveTetrimino().getRootCoordinate()[0] - mBoard.getBuffer() >=
+                mGuidedLevelParameters.getLevelLiveTetriminoSpacing(mLevel)) {
+            try {
+                mBoard.putTetrimino();
+            } catch (GameOverException e) {
+                gameOver();
             }
-            if (System.currentTimeMillis() >= logicTime + logicPeriod) {
-                if (mPlayer.getScore() > mGuidedLevelParameters.getMaximumLevelScore(mLevel)) {
-                    mLevel++;
-                    dropPeriod = (1 / (float) (INITIAL_DROP_SPEED * 
-                            Math.pow(DROP_SPEED_INCREASE_FACTOR, 
-                                    mGuidedLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
-                    mTetriminoFactory.
-                        setLengthRange(mGuidedLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));
-                    
-                    mBoard.clearTetriminoQueue();
-                }
-                fillBoardQueue();
-                
-                interpretInput(mPlayer.getMoveKeyCode());
-                updateScore(mBoard.clearRows()); //clear rows and update score
-                
-                
-                if (mBoard.numLiveTetriminoes() != 0 &&
-                        mBoard.getTopLiveTetrimino().getRootCoordinate()[0] - mBoard.getBuffer() >=
-                        mGuidedLevelParameters.getLevelLiveTetriminoSpacing(mLevel)) {
-                    try {
-                        mBoard.putTetrimino();
-                    } catch (GameOverException e) {
-                        gameOver();
-                    }
-                }
-                
-                if (mBoard.numLiveTetriminoes() == 0) {
-                    try {
-                        mBoard.putTetrimino();
-                    } catch (GameOverException e) {
-                        gameOver();
-                    }
-                }
-                
-                mScoreBar.setText("Level: " + mLevel + ", Score: " + String.valueOf(mPlayer.getScore()));
-                logicTime = System.currentTimeMillis();
-            }          
         }
+        
+        if (mBoard.numLiveTetriminoes() == 0) {
+            try {
+                mBoard.putTetrimino();
+            } catch (GameOverException e) {
+                gameOver();
+            }
+        }        
     }
     
     /** Interpret a KeyEvent keyCode and respond as dictated by the game rules.
