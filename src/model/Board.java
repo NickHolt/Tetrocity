@@ -1,13 +1,17 @@
 package model;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import javax.swing.JPanel;
+
 import testing.Debug;
 import util.Direction;
 import util.GameOverException;
-import control.NormalEngine;
+import control.GuidedEngine;
 
 /** A game board in a game of Tetrocity. A Board knows only of the {@link Tetrimino}
  * pieces currently in play. This includes the dead Tetriminoes and the live
@@ -22,7 +26,7 @@ import control.NormalEngine;
  *  
  *   A Board is responsible for tracking the Tetrimino queue, as well as the
  *  stored Tetrimino. It is not responsible for tracking player score. It will
- *  communicate the relevant information to the {@link NormalEngine}, which will then
+ *  communicate the relevant information to the {@link GuidedEngine}, which will then
  *  deal with it. 
  * 
  *  When prompted to do so, a Board is capable of examining its state and reacting
@@ -34,9 +38,11 @@ import control.NormalEngine;
  * @author Nick Holt
  *
  */
-public class Board {
+public class Board extends JPanel{
+    private static final long serialVersionUID = 1L;
+
     /* The capacity of the Queue this Board will use to track upcoming Tetriminoes. */
-    public static final int FULL_QUEUE_SIZE = 5;
+    public static final int FULL_QUEUE_SIZE = 6;
     
     /* A grid of Tetrimino IDs representing the game board. -1 is an empty space. */
     private int[][] mGrid;
@@ -53,6 +59,11 @@ public class Board {
     private Tetrimino mStoredTetrimino;
     /* The Queue of upcoming Tetriminoes. Live Tetriminoes are taken from the Queue. */
     private ArrayBlockingQueue<Tetrimino> mTetriminoQueue;
+    
+    /* A set of Tetrimino colors. */
+    public static final Color[] colorSet = new Color[]{Color.BLACK, Color.BLUE, Color.CYAN,
+        Color.DARK_GRAY, Color.GRAY, Color.GREEN, Color.MAGENTA, Color.ORANGE, 
+        Color.PINK, Color.RED, Color.YELLOW};
     
     /** A new Board for a game of Tetrocity. A board is a (BUFFER + ROWS) x COLS matrix 
      * (grid) on which the game is played. A buffer is used to provide a number of
@@ -83,6 +94,8 @@ public class Board {
         mLiveTetriminoes = new ArrayList<Tetrimino>();
         mLiveTetriminoCoordinates = new HashMap<Integer, int[][]>();
         mTetriminoQueue = new ArrayBlockingQueue<Tetrimino>(FULL_QUEUE_SIZE);
+                
+        setVisible(true);
         
         Debug.print(1, "New Board instantiated.");
     }
@@ -141,6 +154,7 @@ public class Board {
             mLiveTetriminoCoordinates.put(tetriminoID, newCoordinates);
         }
         
+        repaint();
         Debug.print(3, "Grid updated.");
     }
     
@@ -178,6 +192,7 @@ public class Board {
         }
         
         Debug.print(1, rowsCleared + " rows cleared.");
+        repaint();
         return rowsCleared;
     }
     
@@ -219,6 +234,7 @@ public class Board {
             }
         }
         
+        repaint();
         Debug.print(2, "Grid dropped.");
     }
     
@@ -283,6 +299,7 @@ public class Board {
         }
                 
         refreshGrid();
+        repaint();
         Debug.print(1, "Live Tetriminoes shifted " + shiftDirection);
     }
     
@@ -318,6 +335,7 @@ public class Board {
                 rootCoord[1]});
         refreshGrid();
         killTetrimino(bottomLiveValidTetrimino);   
+        repaint();
     }
     
     /** Stores the bottom-most Tetrimino that has not been previously stored. If a Tetrimino 
@@ -329,16 +347,20 @@ public class Board {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
         
         if (!bottomLiveValidTetrimino.hasBeenStored()) {
-            if (mStoredTetrimino != null) {
-                putTetrimino(mStoredTetrimino);
-            }
-            
             removeTetrimino(bottomLiveValidTetrimino);
-            mStoredTetrimino = bottomLiveValidTetrimino;
-            bottomLiveValidTetrimino.markStored();
             
+            Tetrimino tmp = mStoredTetrimino;
+            
+            mStoredTetrimino = bottomLiveValidTetrimino;
+            mStoredTetrimino.markStored();
+            
+            if (tmp != null) {
+                putTetrimino(tmp);
+            }
+
             refreshGrid();
             
+            repaint();
             Debug.print(1, "Tetrimino stored.");
         } else {
             //Do nothing
@@ -374,6 +396,7 @@ public class Board {
             bottomLiveValidTetrimino.rotateCounterClockwise(); //undo rotation
         } else {
             refreshGrid();
+            repaint();
         }
     }
     
@@ -405,13 +428,14 @@ public class Board {
             bottomLiveValidTetrimino.rotateClockwise(); //undo rotation
         } else {
             refreshGrid();
+            repaint();
         }
     }
     
     /**
      * @return The bottom-most live Tetrimino.
      */
-    private Tetrimino getBottomLiveTetrimino() {
+    public Tetrimino getBottomLiveTetrimino() {
         Tetrimino bottomLiveValidTetrimino = mLiveTetriminoes.get(0);
         
         for (Tetrimino liveTetrimino : mLiveTetriminoes) {
@@ -421,6 +445,21 @@ public class Board {
         }
         
         return bottomLiveValidTetrimino;
+    }
+    
+    /**
+     * @return The topmost live Tetrimino.
+     */
+    public Tetrimino getTopLiveTetrimino() {
+        Tetrimino topLiveValidTetrimino = mLiveTetriminoes.get(0);
+        
+        for (Tetrimino liveTetrimino : mLiveTetriminoes) {
+            if (liveTetrimino.getTopRow() < topLiveValidTetrimino.getTopRow()) {
+                topLiveValidTetrimino = liveTetrimino;
+            }
+        }
+        
+        return topLiveValidTetrimino;
     }
     
     /** Removes the Tetrimino from the list of live Tetriminoes. A "dead" Tetrimino will
@@ -444,6 +483,7 @@ public class Board {
         }
         
         killTetrimino(tetrimino);
+        repaint();
     }
     
     /**
@@ -524,6 +564,7 @@ public class Board {
         mLiveTetriminoes.add(tetrimino);
         
         refreshGrid();
+        repaint();
         
         Debug.print(2, "New Tetrimino placed on the grid.");
     }
@@ -588,5 +629,58 @@ public class Board {
                 
         Debug.print(3, "Board string generated.");
         return result.toString();
+    }
+    
+    public float squareHeight() {
+        return  (float) getSize().getHeight() / (float) (mGrid.length - mBuffer);
+    }
+    
+    public float squareWidth() {
+        return (float) getSize().getWidth() / (float) mGrid[0].length;
+    }
+    
+    public void paint(Graphics g) {
+        super.paint(g);
+        drawGrid(g);
+                
+        for (int i = mBuffer; i < mGrid.length; i++) {
+            for (int j = 0; j < mGrid[0].length; j++) {
+                if (mGrid[i][j] != -1) {
+                    drawSquare(g, j * squareWidth(),
+                            (i - mBuffer)  * squareHeight(), mGrid[i][j]);
+                }
+            }
+        }
+    }
+    
+    private void drawGrid(Graphics g) {
+        g.setColor(Color.LIGHT_GRAY);
+                
+        int width = (int) getSize().getWidth(),
+                height = (int) getSize().getHeight();
+        for (int i = 0; i < height / squareHeight(); i++) {
+            g.drawLine(0, (int) (squareHeight() * (i + 1)), width, (int) (squareHeight() * (i + 1)));
+        }
+        for (int i = 0; i < width / squareWidth(); i++) {
+            g.drawLine((int) (squareWidth() * (i + 1)), 0, (int) (squareWidth() * (i + 1)), height);
+        }
+    }
+    
+    private void drawSquare(Graphics g, float x, float y, int tetriminoID) {
+        Color color;
+        color = colorSet[tetriminoID % colorSet.length];
+        
+        g.setColor(color);
+        g.fillRect((int) x + 1, (int) y + 1, (int) (squareWidth() - 1), (int) (squareHeight() - 1));
+        
+        g.setColor(color.brighter());
+        g.drawLine((int) x, (int) (y + squareHeight() - 1), (int) x, (int) y);
+        g.drawLine((int) x, (int) y, (int) (x + squareWidth() - 1), (int) y);
+        
+        g.setColor(color.darker());
+        g.drawLine((int) x + 1, (int) (y + squareHeight() - 1),
+                (int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1));
+        g.drawLine((int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1), 
+                (int) (x + squareWidth() - 1), (int) y + 1);
     }
 }
