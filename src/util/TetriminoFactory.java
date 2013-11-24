@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import testing.Debug;
 import model.Shape;
 import model.Tetrimino;
+import testing.Debug;
 
 /** A pseudo-random generator of {@link Tetrimino} piece information for a game of Tetrocity. To 
  * instantiate a TetriminoFactory, a seed and Tetrimino block-length range must be
@@ -48,7 +48,6 @@ public class TetriminoFactory {
     public TetriminoFactory(int[] lengthRange, int seed) {
         mLengthRange = lengthRange;
         mRandom = new Random(seed);
-        mRandom.nextInt();  //Prime the RNG to avoid bad behavior. 
         mIDs = new ArrayList<Integer>();
         
         Debug.print(1, "New TetriminoFactory instantiated.");
@@ -81,11 +80,16 @@ public class TetriminoFactory {
          * This process is repeated until there are no remaining block to place. 
          * 
          */
-        int length = mRandom.nextInt(mLengthRange[1] - mLengthRange[0] + 1) 
-                //length is the same if that argument is a power of 2...
-                + mLengthRange[0], //lowerBound <= length <= upperBound
+        int[] lengths = new int[mLengthRange[1] - mLengthRange[0] + 1]; //I know this is dumb, it fixes a
+        for (int i = 0; i < lengths.length; i++) {                      //bug with Java Random.nextInt(int)
+            lengths[i] = i + mLengthRange[0];
+        }
+        int random = mRandom.nextInt();
+        random <<= 1; random >>>= 1; //make positive
+
+        int length = lengths[random % lengths.length],
                 blocksLeft = length;
-        
+                
         int[][] matrix = new int[2 * length + 1][2 * length + 1];
         
         ArrayList<int[]> eligibleCoords = new ArrayList<int[]>();
@@ -103,7 +107,7 @@ public class TetriminoFactory {
         int[] randomCoord, top, right, bottom, left;
         while (blocksLeft > 0) {
             /* Find a random coordinate. */
-            randomIndex = mRandom.nextInt(eligibleCoords.size());
+            randomIndex = (int) (Math.random() % eligibleCoords.size());
             randomCoord = 
                     eligibleCoords.get(randomIndex);
             eligibleCoords.remove(randomIndex);
@@ -204,7 +208,7 @@ public class TetriminoFactory {
     public Tetrimino getRandomTetrimino(int[] rootCoordinate) {
         
         Debug.print(1, "New Tetrimino requeted from Factory.");
-        return new Tetrimino(getRandomShape(), rootCoordinate, getUniqueID()); 
+        return new Tetrimino(getRandomShape(), getUniqueID(), rootCoordinate); 
     }
     
     /** Marks an ID as free to use, so that it may be assigned to future 
@@ -249,13 +253,6 @@ public class TetriminoFactory {
      */
     public void setLengthRange(int [] lengthRange) {
         mLengthRange = lengthRange;
-    }
-
-    /**
-     * @param The seed to be used by this TetriminoFactory's pseudorandom processes.
-     */
-    public void setSeed(int seed) {
-        mRandom.setSeed(seed);
     }
     
     /** Checks if an ArrayList of coordinates contains a given coordinate. Coordinates
