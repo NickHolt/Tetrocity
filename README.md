@@ -30,4 +30,7 @@ Escape : Pause.
 
 r : Restart.
 
+That's it?
+==========
+
 That's it! Have fun!
