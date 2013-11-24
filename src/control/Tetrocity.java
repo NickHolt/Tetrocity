@@ -3,14 +3,14 @@ package control;
 import util.CommandArgs;
 
 /** A game of Tetrocity. This object provides an interface for parsing command-line input, which
- * can then be interpreted into the relevant parameters required by {@link NormalEngine}. 
+ * can then be interpreted into the relevant parameters required by {@link GuidedEngine}. 
  * 
  * @author Nick Holt
  *
  */
 public class Tetrocity {
     /* The recognized command-line arguments. */
-    public static final String OPTIONS = "--lowerLengthBound= --upperLengthBound --rules --controls "
+    public static final String OPTIONS = "--lowerLengthBound= --upperLengthBound= --rules --controls "
             + "--normal";
 
     /** This method is used to construct the relevant game parameters. As of this build,
@@ -38,7 +38,7 @@ public class Tetrocity {
         if (cArgs.containsKey("--normal")) {
             gameIsNormal = true;
         }
-        if (!cArgs.containsKey("--lowerLengthBound=") || !cArgs.containsKey("--upperLengthBound=")) {
+        if (!cArgs.containsKey("--lowerLengthBound") || !cArgs.containsKey("--upperLengthBound")) {
             usage(); //these are required parameters
         } else {
             lowerBound = cArgs.getInt("--lowerLengthBound");
@@ -46,8 +46,7 @@ public class Tetrocity {
         }
         
         if (gameIsNormal) {
-            NormalEngine normalEngine = new NormalEngine(new int[]{lowerBound, upperBound},
-                    (int) System.currentTimeMillis());
+            GuidedEngine normalEngine = new GuidedEngine();
             
             normalEngine.begin();
         }
@@ -65,7 +64,8 @@ public class Tetrocity {
                 + "* --normal. An optional field that specifies the game mode is normal.\n";
         
         System.out.println(usage);
-        }
+        System.exit(0);
+    }
     
     public static void rules() {
         String rules = " Tetrocity is at heart, a Tetris clone with a slew of cool new features."
