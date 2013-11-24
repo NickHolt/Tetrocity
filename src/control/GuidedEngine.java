@@ -99,17 +99,17 @@ public class GuidedEngine extends JFrame{
                                     mGuidedLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
                     mTetriminoFactory.
                         setLengthRange(mGuidedLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));
+                    
+                    mBoard.clearTetriminoQueue();
                 }
+                fillBoardQueue();
                 
                 interpretInput(mPlayer.getMoveKeyCode());
                 updateScore(mBoard.clearRows()); //clear rows and update score
                 
-                while (mBoard.queueTooSmall()) { //replenish Tetrimino queue
-                    mBoard.enqueueTetrimino(mTetriminoFactory.getRandomTetrimino());
-                }
                 
                 if (mBoard.numLiveTetriminoes() != 0 &&
-                        mBoard.getTopLiveTetrimino().getRootCoordinate()[0] >=
+                        mBoard.getTopLiveTetrimino().getRootCoordinate()[0] - mBoard.getBuffer() >=
                         mGuidedLevelParameters.getLevelLiveTetriminoSpacing(mLevel)) {
                     try {
                         mBoard.putTetrimino();
@@ -137,9 +137,7 @@ public class GuidedEngine extends JFrame{
      * @param keyCode The key code to interpret. 
      */
     public void interpretInput(int keyCode) {        
-        if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_KP_UP) {
-            mBoard.shiftLiveTetriminoes(Direction.NORTH);
-        } else if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
+        if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
             mBoard.shiftLiveTetriminoes(Direction.EAST);
         } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_KP_DOWN) {
             mBoard.shiftLiveTetriminoes(Direction.SOUTH);
@@ -171,6 +169,12 @@ public class GuidedEngine extends JFrame{
      */
     public long interpretScore(int linesCleared) {
         return linesCleared * linesCleared * mLevel;
+    }
+    
+    public void fillBoardQueue() {
+        while (mBoard.queueTooSmall()) {
+            mBoard.enqueueTetrimino(mTetriminoFactory.getRandomTetrimino());
+        }
     }
     
     /** Update the player's score given the number of lines cleared. 
@@ -284,7 +288,7 @@ public class GuidedEngine extends JFrame{
         public GuidedLevelParameters() {
             mLevelParameters = new float[14][5];
             mLevelParameters[0] = new float[]{1, 26, 2, 3, 2};
-            mLevelParameters[1] = new float[]{2, 26, 2, 3, 5};
+            mLevelParameters[1] = new float[]{2, 26, 3, 4, 5};
             mLevelParameters[2] = new float[]{3, 26, 2, 4, 20};
             mLevelParameters[3] = new float[]{4, 21, 2, 4, 60};
             mLevelParameters[4] = new float[]{4, 21, 3, 4, 110};
