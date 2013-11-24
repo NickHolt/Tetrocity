@@ -8,7 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import javax.swing.JPanel;
 
-import testing.Debug;
+import util.Debug;
 import util.Direction;
 import util.GameOverException;
 import control.GuidedEngine;
@@ -61,7 +61,7 @@ public class Board extends JPanel{
     private ArrayBlockingQueue<Tetrimino> mTetriminoQueue;
     
     /* A set of Tetrimino colors. */
-    public static final Color[] colorSet = new Color[]{Color.BLACK, Color.BLUE, Color.CYAN,
+    public static final Color[] colorSet = new Color[]{Color.BLUE, Color.CYAN,
         Color.DARK_GRAY, Color.GRAY, Color.GREEN, Color.MAGENTA, Color.ORANGE, 
         Color.PINK, Color.RED, Color.YELLOW};
     
@@ -310,27 +310,21 @@ public class Board extends JPanel{
      */
     public void dropTetrimino() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
-        int dropVal = 0, tetriminoID = bottomLiveValidTetrimino.getID(), newRow;
-        int[][] coordinates = bottomLiveValidTetrimino.getCoordinates();
+        int dropVal = 0;
+        int[] rootCoord = bottomLiveValidTetrimino.getRootCoordinate();
         boolean maxFound = false;
         
         while (!maxFound) {
             dropVal++;
             
-            for (int[] coord : coordinates) {
-                newRow = coord[0] + dropVal;
-                
-                if (newRow >= mGrid.length
-                        || !(mGrid[newRow][coord[1]] == -1
-                        || mGrid[newRow][coord[1]] == tetriminoID)) {
-                    maxFound = true;
-                    break;
-                }
-            }            
+            if (hasCollision(bottomLiveValidTetrimino, 
+                    new int[]{rootCoord[0] + dropVal, rootCoord[1]})) {
+                maxFound = true;
+                break;
+            }          
         }
-        dropVal --; //One step back was maximum
+        dropVal--; //One step back was maximum
         
-        int[]rootCoord = bottomLiveValidTetrimino.getRootCoordinate();
         bottomLiveValidTetrimino.setRootCoordinate(new int[]{rootCoord[0] + dropVal,
                 rootCoord[1]});
         refreshGrid();
@@ -339,7 +333,12 @@ public class Board extends JPanel{
     }
     
     /** Stores the bottom-most Tetrimino that has not been previously stored. If a Tetrimino 
-     * already exists in storage, it will be placed back on the top of the grid and marked as live. 
+     * already exists in storage, it will be placed back on grid with the same root coordinate,
+     * unless a collision is detected. If a collision is detected, all adjacent root coordinates
+     * with equal or lesser row will be attempted. If all attempts fail, the storage will not occur.
+     * 
+     *  The attempt priority for root coordinate is: same > up > up-left > up-right > left > right.
+     * 
      * @throws GameOverException thrown if the space where the new, previously stored Tetrimino
      * is already occupied. This should not happen by game design.
      */
@@ -347,6 +346,7 @@ public class Board extends JPanel{
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
         
         if (!bottomLiveValidTetrimino.hasBeenStored()) {
+            int[] rootCoordinate = bottomLiveValidTetrimino.getRootCoordinate();
             removeTetrimino(bottomLiveValidTetrimino);
             
             Tetrimino tmp = mStoredTetrimino;
@@ -354,18 +354,33 @@ public class Board extends JPanel{
             mStoredTetrimino = bottomLiveValidTetrimino;
             mStoredTetrimino.markStored();
             
-            if (tmp != null) {
-                putTetrimino(tmp);
+            if (tmp != null) { //Attempt to put
+                if (!hasCollision(tmp, rootCoordinate)) {
+                    putTetrimino(tmp, rootCoordinate);
+                } else if (rootCoordinate[0] - 1 > 0
+                        && !hasCollision(tmp, new int[]{rootCoordinate[0] - 1, rootCoordinate[1]})) {
+                    putTetrimino(tmp, new int[]{rootCoordinate[0] - 1, rootCoordinate[1]});
+                } else if (rootCoordinate[0] - 1 > 0
+                        && rootCoordinate[1] - 1 > 0
+                        && !hasCollision(tmp, new int[]{rootCoordinate[0] - 1, rootCoordinate[1] - 1})) {
+                    putTetrimino(tmp, new int[]{rootCoordinate[0] - 1, rootCoordinate[1] - 1});
+                } else if (rootCoordinate[0] - 1 > 0
+                        && rootCoordinate[1] + 1 > 0
+                        && !hasCollision(tmp, new int[]{rootCoordinate[0] - 1, rootCoordinate[1] + 1})) {
+                    putTetrimino(tmp, new int[]{rootCoordinate[0] - 1, rootCoordinate[1] + 1});
+                } else if (rootCoordinate[0] > 0
+                        && rootCoordinate[1] - 1 > 0
+                        && !hasCollision(tmp, new int[]{rootCoordinate[0], rootCoordinate[1] - 1})) {
+                    putTetrimino(tmp, new int[]{rootCoordinate[0], rootCoordinate[1] - 1});
+                } else if (rootCoordinate[0] > 0
+                        && rootCoordinate[1] + 1 > 0
+                        && !hasCollision(tmp, new int[]{rootCoordinate[0], rootCoordinate[1] + 1})) {
+                    putTetrimino(tmp, new int[]{rootCoordinate[0], rootCoordinate[1] + 1});
+                } else {
+                    Debug.print(1, "Tetrimino storage rejected.");
+                }
             }
-
-            refreshGrid();
-            
-            repaint();
-            Debug.print(1, "Tetrimino stored.");
-        } else {
-            //Do nothing
-            Debug.print(1, "Tetrimino storage rejected.");
-        }
+        } 
     }
     
     /** If possible, rotates the bottom-most live Tetrimino clockwise. If a collision is detected
@@ -374,25 +389,8 @@ public class Board extends JPanel{
     public void rotateTetriminoClockwise() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
         bottomLiveValidTetrimino.rotateClockwise();
-
-        int[][] coordinates = bottomLiveValidTetrimino.getCoordinates();
-        int row, col, tetriminoID = bottomLiveValidTetrimino.getID();
-        boolean rotationFailed = false;
-        for (int[] coord : coordinates) {
-            row = coord[0];
-            col = coord[1];
-            
-            if (row < 0
-                    || row >= mGrid.length
-                    || col < 0
-                    || col >= mGrid[0].length
-                    || !(mGrid[row][col] == -1
-                    || mGrid[row][col] == tetriminoID)) {
-                rotationFailed = true;
-                break;
-            }
-        }
-        if (rotationFailed) {
+        
+        if (hasCollision(bottomLiveValidTetrimino, bottomLiveValidTetrimino.getRootCoordinate())) {
             bottomLiveValidTetrimino.rotateCounterClockwise(); //undo rotation
         } else {
             refreshGrid();
@@ -406,25 +404,8 @@ public class Board extends JPanel{
     public void rotateTetriminoCounterClockwise() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
         bottomLiveValidTetrimino.rotateCounterClockwise();
-
-        int[][] coordinates = bottomLiveValidTetrimino.getCoordinates();
-        int row, col, tetriminoID = bottomLiveValidTetrimino.getID();
-        boolean rotationFailed = false;
-        for (int[] coord : coordinates) {
-            row = coord[0];
-            col = coord[1];
-            
-            if (row < 0
-                    || row >= mGrid.length
-                    || col < 0
-                    || col >= mGrid[0].length
-                    || !(mGrid[row][col] == -1
-                    || mGrid[row][col] == tetriminoID)) {
-                rotationFailed = true;
-                break;
-            }
-        }
-        if (rotationFailed) {
+        
+        if (hasCollision(bottomLiveValidTetrimino, bottomLiveValidTetrimino.getRootCoordinate())) {
             bottomLiveValidTetrimino.rotateClockwise(); //undo rotation
         } else {
             refreshGrid();
@@ -508,6 +489,10 @@ public class Board extends JPanel{
         mTetriminoQueue.add(tetrimino);
     }
     
+    public void clearTetriminoQueue() {
+        mTetriminoQueue.clear();
+    }
+    
     /** Removes a Tetrimino from the Queue and adds it to the grid. When
      * a Tetrimino is added to the grid, the root coordinate is chosen via
      * {@link Board#getPlacementCoordinate(Tetrimino)}.
@@ -542,31 +527,19 @@ public class Board extends JPanel{
      * @throws GameOverException thrown when the target grid spaces are already occupied.
      */
     public void putTetrimino(Tetrimino tetrimino, int[] rootCoordinate) throws GameOverException {
-        tetrimino.setRootCoordinate(rootCoordinate);
-        
-        int[][] coordinates = tetrimino.getCoordinates();
-        
-        for (int[] coord : coordinates) {
-            try {
-                if (mGrid[coord[0]][coord[1]] != -1) {
-                    Debug.print(3, "Board#getPlacementCoordinate could not be found. Game is over.");
-                    
-                    throw new GameOverException("Grid element (" + coord[0] + ", " + coord[1] + ") was "
-                            + "already occupied. Game over.");
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                throw new GameOverException("Grid element (" + coord[0] + ", " + coord[1] + ") exceeded "
-                        + "grid. Tetrimino too large. Game over.");
-            }
+        if (hasCollision(tetrimino, rootCoordinate)) {
+            System.out.println("Collision detected.");
+            throw new GameOverException("Collision detected. Game over.");
+        } else {
+            tetrimino.setRootCoordinate(rootCoordinate);
             
+            mLiveTetriminoes.add(tetrimino);
+            
+            refreshGrid();
+            repaint();
+            
+            Debug.print(2, "New Tetrimino placed on the grid.");
         }
-        
-        mLiveTetriminoes.add(tetrimino);
-        
-        refreshGrid();
-        repaint();
-        
-        Debug.print(2, "New Tetrimino placed on the grid.");
     }
     
     /**
@@ -629,6 +602,36 @@ public class Board extends JPanel{
                 
         Debug.print(3, "Board string generated.");
         return result.toString();
+    }
+    
+    /** Checks if a collision would occur if the Tetrimino were placed on this board at the
+     * given root coordinate. 
+     * 
+     * @param tetrimino The Tetrimino to be placed.
+     * @param rootCoordinate The desired root coordinate of the Tetrimino.
+     * @return True IFF no collision would occur. 
+     */
+    private boolean hasCollision(Tetrimino tetrimino, int[] rootCoordinate) {
+        if (tetrimino == null) {
+            return false;
+        }
+        
+        Tetrimino dummyTetrimino = new Tetrimino(tetrimino.getShape(), tetrimino.getID());
+        dummyTetrimino.setRootCoordinate(rootCoordinate);
+        
+        int[][] coordinates = dummyTetrimino.getCoordinates();
+        for (int[] coord : coordinates) {
+            if (coord[0] < 0
+                    || coord[0] >= mGrid.length
+                    || coord[1] < 0
+                    || coord[1] >= mGrid[0].length
+                    || !(mGrid[coord[0]][coord[1]] == -1 
+                    || mGrid[coord[0]][coord[1]] == dummyTetrimino.getID())) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     public float squareHeight() {
