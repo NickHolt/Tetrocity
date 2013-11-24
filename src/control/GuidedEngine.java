@@ -34,7 +34,7 @@ public class GuidedEngine extends JFrame{
     public static final int STANDARD_WIDTH_RATIO = 30;
     
     private int mLevel;
-    private boolean mIsPaused;
+    private boolean mIsPaused, mIsHalted;
     private Board mBoard;
     private TetriminoFactory mTetriminoFactory;
     private Player mPlayer;    
@@ -200,13 +200,25 @@ public class GuidedEngine extends JFrame{
     }
     
     private void restart() {
-        //TODO
+        setVisible(false);
+        new GuidedEngine().begin();
+    }
+    
+    private void halt() {
+        removeKeyListener(mPlayer);
+        addKeyListener(new HaltKeyListener());
+        mIsHalted = true;
+        while(mIsHalted) {
+            //Loop forever
+            System.out.print("");
+        }
+        
+        restart();
     }
     
     private void gameOver() {
-        //TODO
-        System.out.println("GAME OVER. Your score: " + mPlayer.getScore());
-        System.exit(0);
+        mScoreBar.setText("GAME OVER. Your score: " + mPlayer.getScore() + ". Press 'r' to play again!");
+        halt();
     }
     
     private class PausedKeyListener implements KeyListener {
@@ -215,6 +227,25 @@ public class GuidedEngine extends JFrame{
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 mIsPaused = false;
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+        }
+    }
+    
+    private class HaltKeyListener implements KeyListener {
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_R) {
+                mIsHalted = false;
             }
         }
 
@@ -252,20 +283,20 @@ public class GuidedEngine extends JFrame{
 
         public GuidedLevelParameters() {
             mLevelParameters = new float[14][5];
-            mLevelParameters[0] = new float[]{1, 26, 2, 3, 5};
-            mLevelParameters[1] = new float[]{2, 26, 2, 3, 10};
-            mLevelParameters[2] = new float[]{3, 26, 2, 4, 50};
-            mLevelParameters[3] = new float[]{4, 21, 2, 4, 90};
-            mLevelParameters[4] = new float[]{4, 21, 3, 4, 140};
-            mLevelParameters[5] = new float[]{5, 16, 3, 4, 200};
-            mLevelParameters[6] = new float[]{5, 16, 3, 5, 270};
-            mLevelParameters[7] = new float[]{6, 16, 3, 5, 350};
-            mLevelParameters[8] = new float[]{6, 12, 3, 5, 440};
-            mLevelParameters[9] = new float[]{7, 12, 3, 5, 540};
-            mLevelParameters[10] = new float[]{7, 10, 3, 5, 550};
-            mLevelParameters[11] = new float[]{8, 10, 3, 5, 670};
-            mLevelParameters[12] = new float[]{8, 6, 3, 5, 800};
-            mLevelParameters[13] = new float[]{9, 6, 3, 5, 940};
+            mLevelParameters[0] = new float[]{1, 26, 2, 3, 2};
+            mLevelParameters[1] = new float[]{2, 26, 2, 3, 5};
+            mLevelParameters[2] = new float[]{3, 26, 2, 4, 20};
+            mLevelParameters[3] = new float[]{4, 21, 2, 4, 60};
+            mLevelParameters[4] = new float[]{4, 21, 3, 4, 110};
+            mLevelParameters[5] = new float[]{5, 16, 3, 4, 170};
+            mLevelParameters[6] = new float[]{5, 21, 3, 5, 240};
+            mLevelParameters[7] = new float[]{6, 16, 3, 5, 320}; //maybe put something here
+            mLevelParameters[8] = new float[]{6, 12, 3, 5, 410};
+            mLevelParameters[9] = new float[]{7, 12, 3, 5, 510};
+            mLevelParameters[10] = new float[]{7, 10, 3, 5, 520};
+            mLevelParameters[11] = new float[]{8, 10, 3, 5, 640};
+            mLevelParameters[12] = new float[]{8, 6, 3, 5, 770};
+            mLevelParameters[13] = new float[]{9, 6, 3, 5, 910};
         }
         
         public float getLevelDropFactor(int level) {
