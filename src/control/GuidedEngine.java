@@ -197,14 +197,14 @@ public class GuidedEngine extends JFrame{
     
     private void pause() {
         mIsPaused = true;
-        PausedKeyListener pausedKeyListener = new PausedKeyListener();
+        LoopKeyListener pausedKeyListener = new LoopKeyListener(true);
         removeKeyListener(mPlayer);
         addKeyListener(pausedKeyListener);
         
         mScoreBar.setText("PAUSED.");
         
         while (mIsPaused) {
-            System.out.print(""); //This fixes a bug and I don't know why. 
+            System.out.println(""); //This fixes a bug and I don't know why. 
         }
         
         removeKeyListener(pausedKeyListener);
@@ -214,13 +214,14 @@ public class GuidedEngine extends JFrame{
     }
     
     private void restart() {
+        //TODO This is clumsy. Make it better.
         setVisible(false);
         new GuidedEngine().begin();
     }
     
     private void halt() {
         removeKeyListener(mPlayer);
-        addKeyListener(new HaltKeyListener());
+        addKeyListener(new LoopKeyListener(false));
         mIsHalted = true;
         while(mIsHalted) {
             //Loop forever
@@ -235,37 +236,24 @@ public class GuidedEngine extends JFrame{
         halt();
     }
     
-    private class PausedKeyListener implements KeyListener {
+    private class LoopKeyListener implements KeyListener {
+        boolean mIsPausedListener; //else is HaltListener
+        
+        public LoopKeyListener(boolean isPausedListener) {
+            mIsPausedListener = isPausedListener;
+        }
 
         @Override
         public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            if (mIsPausedListener && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 mIsPaused = false;
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            
-        }
-
-        @Override
-        public void keyTyped(KeyEvent e) {
-        }
-    }
-    
-    private class HaltKeyListener implements KeyListener {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_R) {
+            } else if (e.getKeyCode() == KeyEvent.VK_R) {
                 mIsHalted = false;
             }
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
-            
         }
 
         @Override
