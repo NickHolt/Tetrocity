@@ -131,6 +131,13 @@ public class Tetrimino {
     }
     
     /**
+     * @return The smallest occupied row of this Tetrimino.
+     */
+    public int getTopRow() {
+        return mRootCoordinate[0];
+    }
+    
+    /**
      * @return True IFF there are no more blocks in this Tetrimino. 
      */
     public boolean isEmpty() {
