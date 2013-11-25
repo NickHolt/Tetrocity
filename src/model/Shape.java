@@ -3,7 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import testing.Debug;
+import util.Debug;
 import util.Matrices;
 
 /** 
@@ -65,6 +65,7 @@ public class Shape {
     private int mLength;
     private int mWidth;
     private int mHeight;
+    private boolean mIsLineShape;
     
     /** A new Shape object whose block matrix, as per the documentation, is give
      * by the matrix. This method is less efficient than {@link Shape#Shape(int[][], int)}.
@@ -127,15 +128,9 @@ public class Shape {
      * the shape matrix to match the current coordinate set. 
      */
     private void measure() {
-        /* Performs three passes over the current coordinate set:
-         * 1) Calculate dimensional data
-         * 2) Calculate new matrix
-         * 3) Calculate anchor blocks
-         * 
-         * This method runs in O(3N), where N is the number of coordinates. Note that
-         * before the introduction of the matrix calculation, this method ran in O(N^2).
-         */
         mLength = mHeight = mWidth = 0; 
+        int firstRow = mCoordinates[0][0], firstCol = mCoordinates[0][1];
+        boolean rowsMatch = true, colsMatch = true;
         
         for (int[] coord : mCoordinates) {
             mLength++;
@@ -145,9 +140,17 @@ public class Shape {
             if (coord[1] > mWidth) {
                 mWidth = coord[1];
             }
+            if (rowsMatch && coord[0] != firstRow) {
+                rowsMatch = false;
+            }
+            if (colsMatch && coord[1] != firstCol) {
+                colsMatch = false;
+            }
         }
         mHeight++; //adjust for 0-indexing
         mWidth++; 
+        
+        mIsLineShape = rowsMatch || colsMatch;
         
         Debug.print(2, "Shape measured.");
     }
@@ -234,6 +237,10 @@ public class Shape {
      */
     public int getHeight() {
         return mHeight;
+    }
+    
+    public boolean isLineShape() {
+        return mIsLineShape;
     }
     
     /** Checks if the shape matrix is a valid description of a Tetrimino 
