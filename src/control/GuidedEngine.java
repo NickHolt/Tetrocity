@@ -27,6 +27,8 @@ public class GuidedEngine extends JFrame{
     public static final float ROW_RATIO = 5.0f, COLUMN_RATIO = 2.5f;
     /* The initial Tetrimino drop speed. */
     public static final float INITIAL_DROP_SPEED = 1.1f; //blocks / second
+    /* The expected number of Tetriminoes between any two max-length straight line pieces. */
+    public static final int STRAIGHT_LINE_EXPECTED_SPACING = 10;
     /* The factor by which the drop speed is multiplied as levels increase */
     public static final float DROP_SPEED_INCREASE_FACTOR = 1.15f;
     /* The base width of the JFrame is given by 20*ROW_RATIO*Max_tetrimino_length. 
@@ -49,7 +51,8 @@ public class GuidedEngine extends JFrame{
         mLevel = 1;
         mIsPaused = false;
         mTetriminoFactory = new TetriminoFactory(mGuidedLevelParameters.
-                getLevelLiveTetriminoLengthRange(1), (int) System.currentTimeMillis());
+                getLevelLiveTetriminoLengthRange(1), (int) System.currentTimeMillis(),
+                STRAIGHT_LINE_EXPECTED_SPACING);
         
         mPlayer = new Player();
         

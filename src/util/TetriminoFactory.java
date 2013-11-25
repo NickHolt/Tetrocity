@@ -29,6 +29,7 @@ import model.Tetrimino;
 public class TetriminoFactory {
     private int [] mLengthRange;
     private Random mRandom;
+    private int mStraightLineSpacing;
     /* TetriminoFactories use length 32 bit-strings to maintain instance unique IDs.
      * In short, if the ith bit (little-endian)  is 1, then i is an available
      * ID. If a new ID is requested and all bit-strings are 0, a new bit-string
@@ -38,16 +39,31 @@ public class TetriminoFactory {
      */
     private ArrayList<Integer> mIDs; 
 
-    /** A new TetriminoFactory. 
+    /** A new TetriminoFactory. This TetriminoFactory will not consider straight-line
+     * spacing during Tetrimino generation.
      * 
      * @param lengthRange The range of Tetrimino lengths which this TetriminoFactory 
      * will generate.
      * @param seed The seed of all pseudorandom operations of this TetriminoFactory.
      */
     public TetriminoFactory(int[] lengthRange, int seed) {
+        this(lengthRange, seed, -1);
+    }
+    
+    /** A new TetriminoFactory. This TetriminoFactory will consider straight-line
+     * spacing during Tetrimino generation.
+     * 
+     * @param lengthRange The range of Tetrimino lengths which this TetriminoFactory 
+     * will generate.
+     * @param seed The seed of all pseudorandom operations of this TetriminoFactory.
+     * @param straightLineSpacing The MINIMIM expected number of Tetriminoes in between 
+     * straight-line pieces. 
+     */
+    public TetriminoFactory(int[] lengthRange, int seed, int straightLineSpacing) {
         mLengthRange = lengthRange;
         mRandom = new Random(seed);
         mIDs = new ArrayList<Integer>();
+        mStraightLineSpacing = straightLineSpacing;
         
         Debug.print(1, "New TetriminoFactory instantiated.");
     }
@@ -201,9 +217,14 @@ public class TetriminoFactory {
      * @return The new Tetrimino object. 
      */
     public Tetrimino getRandomTetrimino() {
-        
         Debug.print(1, "New Tetrimino requeted from Factory.");
-        return new Tetrimino(getRandomShape(), getUniqueID()); 
+
+        if (mStraightLineSpacing > 0
+                && mRandom.nextInt(mStraightLineSpacing) == 0) {
+            return getRandomMaxLengthStraightLineTetrimino();
+        } else {
+            return new Tetrimino(getRandomShape(), getUniqueID()); 
+        }
     }
     
     /**
@@ -211,11 +232,11 @@ public class TetriminoFactory {
      * will be chosen randomly. 
      */
     public Tetrimino getRandomMaxLengthStraightLineTetrimino() {
-        int[][] matrix = new int[mLengthRange[1]][1]; //Straight line in a row
+        int[][] matrix = new int[1][mLengthRange[1]]; //Straight line in a row
         for (int i = 0; i < matrix[0].length; i++) {
             matrix[0][i] = 1;
         }
-        
+                
         Tetrimino straightLineTetrimino = new Tetrimino(new Shape(matrix), getUniqueID());
         
         if (mRandom.nextInt() % 2 == 1) { //Make it a column with .5 probability
