@@ -6,7 +6,6 @@ import java.util.Random;
 
 import model.Shape;
 import model.Tetrimino;
-import testing.Debug;
 
 /** A pseudo-random generator of {@link Tetrimino} piece information for a game of Tetrocity. To 
  * instantiate a TetriminoFactory, a seed and Tetrimino block-length range must be
@@ -103,14 +102,17 @@ public class TetriminoFactory {
         eligibleCoords.add(new int[]{length + 1, length});
         eligibleCoords.add(new int[]{length, length - 1});
         
-        int row = 0, col = 0, randomIndex;
+        int row = 0, col = 0;
         int[] randomCoord, top, right, bottom, left;
         while (blocksLeft > 0) {
             /* Find a random coordinate. */
-            randomIndex = (int) (Math.random() % eligibleCoords.size());
+            random = mRandom.nextInt();
+            random <<= 1; random >>>= 1; //make positive
+            
+            random = (int) (random % eligibleCoords.size());
             randomCoord = 
-                    eligibleCoords.get(randomIndex);
-            eligibleCoords.remove(randomIndex);
+                    eligibleCoords.get(random);
+            eligibleCoords.remove(random);
             
             row = randomCoord[0]; 
             col = randomCoord[1];
@@ -146,6 +148,11 @@ public class TetriminoFactory {
         
         Debug.print(2, "New random shape matrix generated.");
         return matrix;
+    }
+    
+    public Tetrimino getMaxLengthStraightLineTetrimino() {
+        //TODO
+        return null;
     }
     
     /**
@@ -199,16 +206,23 @@ public class TetriminoFactory {
         return new Tetrimino(getRandomShape(), getUniqueID()); 
     }
     
-    /** Returns a Tetrimino with a pseudorandom shape and instance unique ID positioned
-     * at the provided root coordinate.
-     * 
-     * @param rootCoordinate The root coordinate of the Tetrimino object. 
-     * @return The new Tetrimino object. 
+    /**
+     * @return A straight line Tetrimino of maximum length. The Tetrimino's orientation
+     * will be chosen randomly. 
      */
-    public Tetrimino getRandomTetrimino(int[] rootCoordinate) {
+    public Tetrimino getRandomMaxLengthStraightLineTetrimino() {
+        int[][] matrix = new int[mLengthRange[1]][1]; //Straight line in a row
+        for (int i = 0; i < matrix[0].length; i++) {
+            matrix[0][i] = 1;
+        }
         
-        Debug.print(1, "New Tetrimino requeted from Factory.");
-        return new Tetrimino(getRandomShape(), getUniqueID(), rootCoordinate); 
+        Tetrimino straightLineTetrimino = new Tetrimino(new Shape(matrix), getUniqueID());
+        
+        if (mRandom.nextInt() % 2 == 1) { //Make it a column with .5 probability
+            straightLineTetrimino.rotateClockwise();
+        }
+        
+        return straightLineTetrimino;
     }
     
     /** Marks an ID as free to use, so that it may be assigned to future 
