@@ -65,7 +65,6 @@ public class Shape {
     private int mLength;
     private int mWidth;
     private int mHeight;
-    private boolean mIsLineShape;
     
     /** A new Shape object whose block matrix, as per the documentation, is give
      * by the matrix. This method is less efficient than {@link Shape#Shape(int[][], int)}.
@@ -129,8 +128,6 @@ public class Shape {
      */
     private void measure() {
         mLength = mHeight = mWidth = 0; 
-        int firstRow = mCoordinates[0][0], firstCol = mCoordinates[0][1];
-        boolean rowsMatch = true, colsMatch = true;
         
         for (int[] coord : mCoordinates) {
             mLength++;
@@ -140,18 +137,10 @@ public class Shape {
             if (coord[1] > mWidth) {
                 mWidth = coord[1];
             }
-            if (rowsMatch && coord[0] != firstRow) {
-                rowsMatch = false;
-            }
-            if (colsMatch && coord[1] != firstCol) {
-                colsMatch = false;
-            }
         }
         mHeight++; //adjust for 0-indexing
         mWidth++; 
-        
-        mIsLineShape = rowsMatch || colsMatch;
-        
+                
         Debug.print(2, "Shape measured.");
     }
     
@@ -237,10 +226,6 @@ public class Shape {
      */
     public int getHeight() {
         return mHeight;
-    }
-    
-    public boolean isLineShape() {
-        return mIsLineShape;
     }
     
     /** Checks if the shape matrix is a valid description of a Tetrimino 
