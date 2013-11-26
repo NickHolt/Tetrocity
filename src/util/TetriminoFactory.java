@@ -30,6 +30,8 @@ public class TetriminoFactory {
     private int [] mLengthRange;
     private Random mRandom;
     private int mStraightLineSpacing;
+    private int mLastStraightLinePieceProduced;
+    
     /* TetriminoFactories use length 32 bit-strings to maintain instance unique IDs.
      * In short, if the ith bit (little-endian)  is 1, then i is an available
      * ID. If a new ID is requested and all bit-strings are 0, a new bit-string
@@ -64,6 +66,7 @@ public class TetriminoFactory {
         mRandom = new Random(seed);
         mIDs = new ArrayList<Integer>();
         mStraightLineSpacing = straightLineSpacing;
+        mLastStraightLinePieceProduced = 0;
         
         Debug.print(1, "New TetriminoFactory instantiated.");
     }
@@ -166,11 +169,6 @@ public class TetriminoFactory {
         return matrix;
     }
     
-    public Tetrimino getMaxLengthStraightLineTetrimino() {
-        //TODO
-        return null;
-    }
-    
     /**
      * @return A new {@link Shape} instance randomly generated using this
      * TetriminoFactory's length range and seed.
@@ -212,19 +210,33 @@ public class TetriminoFactory {
         return (mIDs.size() - 1)* 32; //The ID we just said we were going to use
     }
     
-    /** Returns a Tetrimino with a pseudorandom shape and instance unique ID. 
+    /** Returns a Tetrimino with a pseudorandom shape and instance unique ID. If 
+     * the straight-line Tetrimino spacing was specified, this method will first ensure
+     * that a straight-line piece was returned in the last straight_line_spacing * 1.25
+     * Tetrimino productions. If not, a straight line piece will be returned with 100% certainty.
+     * This functionality addresses the large standard deviation observed when the straight-line
+     * production is left to probability alone. 
+     * 
+     *  If so, a straight line piece will be produced with probability 1 / straight_line_spacing.
+     * Otherwise, a random Tetrimino piece (including a potentially straight-line Tetrimino) will
+     * be produced.
      * 
      * @return The new Tetrimino object. 
      */
     public Tetrimino getRandomTetrimino() {
         Debug.print(1, "New Tetrimino requeted from Factory.");
-
-        if (mStraightLineSpacing > 0
-                && mRandom.nextInt(mStraightLineSpacing) == 0) {
-            return getRandomMaxLengthStraightLineTetrimino();
-        } else {
-            return new Tetrimino(getRandomShape(), getUniqueID()); 
+        
+        if (mStraightLineSpacing > 0) {
+            if (mLastStraightLinePieceProduced >= mStraightLineSpacing * 1.25
+                    || mRandom.nextInt(mStraightLineSpacing) == 0) {
+                mLastStraightLinePieceProduced = 0;
+                return getRandomMaxLengthStraightLineTetrimino();
+            }
         }
+        
+        mLastStraightLinePieceProduced++;
+        
+        return new Tetrimino(getRandomShape(), getUniqueID()); 
     }
     
     /**
@@ -286,8 +298,12 @@ public class TetriminoFactory {
      * @param mLengthRange The range of Shape lengths to be used by this 
      * TetriminoFactory.
      */
-    public void setLengthRange(int [] lengthRange) {
+    public void setLengthRange(int[] lengthRange) {
         mLengthRange = lengthRange;
+    }
+    
+    public void setStraightLineSpacing(int straightLineSpacing) {
+        mStraightLineSpacing = straightLineSpacing;
     }
     
     /** Checks if an ArrayList of coordinates contains a given coordinate. Coordinates
