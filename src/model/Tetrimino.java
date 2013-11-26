@@ -1,6 +1,6 @@
 package model;
 
-import testing.Debug;
+import util.Debug;
 import util.Direction;
 
 /** A singular game piece for a game of Tetrocity. A Tetrimino is a 
@@ -168,6 +168,14 @@ public class Tetrimino {
     
     public void setRootCoordinate(int[] rootCoordinate) {
         mRootCoordinate = rootCoordinate;
+    }
+    
+    public void setRootRow(int row) {
+        mRootCoordinate[0] = row;
+    }
+    
+    public void setRootColumn(int column) {
+        mRootCoordinate[1] = column;
     }
 
     /**
