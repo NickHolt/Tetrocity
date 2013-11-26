@@ -122,8 +122,8 @@ public class GuidedEngine extends JFrame{
     }
     
     private void constructGUI() {
-        int rows = (int) (GuidedLevelParameters.MAX_TETRIMINO_LENGTH * ROW_RATIO),
-                cols = (int) (GuidedLevelParameters.MAX_TETRIMINO_LENGTH * COLUMN_RATIO),
+        int rows = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * ROW_RATIO),
+                cols = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * COLUMN_RATIO),
                 buffer = GuidedLevelParameters.MAX_TETRIMINO_LENGTH;
         mBoard = new Board(rows, cols, buffer);
                 add(mBoard, BorderLayout.CENTER);
@@ -272,7 +272,7 @@ public class GuidedEngine extends JFrame{
     }
     
     private void gameOver() {
-        mScoreBar.setText("GAME OVER. Your score: " + mPlayer.getScore() + ". Press 'r' to play again!");
+        mScoreBar.setText("GAME OVER! Level: " + mLevel + ", Score: " + mPlayer.getScore());
         halt();
     }
     
@@ -321,7 +321,7 @@ public class GuidedEngine extends JFrame{
      * @author Nick Holt
      */
     private class GuidedLevelParameters {
-        public static final int MAX_TETRIMINO_LENGTH = 5;
+        public static final int MAX_TETRIMINO_LENGTH = 6;
         
         private float[][] mLevelParameters;
 
