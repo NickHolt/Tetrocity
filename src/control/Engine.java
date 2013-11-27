@@ -1,9 +1,7 @@
 package control;
 
-import gui.StorePanel;
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -24,7 +22,7 @@ import util.TetriminoFactory;
  * @author Nick Holt
  *
  */
-public class GuidedEngine extends JFrame{
+public class Engine extends JFrame{
     private static final long serialVersionUID = 1L;
     public static final int LOGICAL_FPS = 60;
     /* E.g. number of grid rows = max_length * ROW_RATIO */
@@ -37,35 +35,33 @@ public class GuidedEngine extends JFrame{
     public static final float DROP_SPEED_INCREASE_FACTOR = 1.15f;
     /* The base width of the JFrame is given by 20*ROW_RATIO*Max_tetrimino_length. 
      * In a normal game of Tetris, width = 400. */
-    public static final int STANDARD_WIDTH_RATIO = 30;
+    public static final int STANDARD_WIDTH_RATIO = 25;
+    /* The length that String should be before it is placed in the JLabel, to avoid
+     * layout issues. */
+    public static final int LABEL_STRING_LENGTH = 0; //I know this is lame but I'm terrible at Swing...
     
     private int mLevel, mLinesClearedThisLevel;
     private boolean mIsPaused, mIsHalted;
     private Board mBoard;
     private TetriminoFactory mTetriminoFactory;
     private Player mPlayer;    
-    private GuidedLevelParameters mGuidedLevelParameters;
+    private GuidedLevelParameters mLevelParameters;
+    private Board.SidePanel mSidePanel;
     private JLabel mScoreBar;
-    private StorePanel mStorePanel;
     
     /** A new GuidedEngine for a game of Tetrocity. Instantiating an Engine will set the game parameters.
      * @throws GameOverException 
      */
-    public GuidedEngine() {
-        mGuidedLevelParameters = new GuidedLevelParameters();
+    public Engine() {
+        mLevelParameters = new GuidedLevelParameters();
 
         mLevel = 1;
         mLinesClearedThisLevel = 0;
         mIsPaused = false;
         
-        try {
-            mTetriminoFactory = new TetriminoFactory(mGuidedLevelParameters.
-                    getLevelLiveTetriminoLengthRange(1), (int) System.currentTimeMillis(),
-                    STRAIGHT_LINE_EXPECTED_SPACING);
-        } catch (GameOverException e) {
-            System.out.println("FATAL ERROR.");
-            System.exit(0);
-        }
+        mTetriminoFactory = new TetriminoFactory(mLevelParameters.
+                getLevelLiveTetriminoLengthRange(mLevel), (int) System.currentTimeMillis(),
+                STRAIGHT_LINE_EXPECTED_SPACING);
         
         
         mPlayer = new Player();
@@ -77,13 +73,14 @@ public class GuidedEngine extends JFrame{
     /** Begin the game of Tetrocity. The game will continue until either the JFrame is closed or 
      * a GameOverException is raised (to be changed, obviously).
      */
-    public void begin() {
+    public void run() {
         constructGUI();
         
         /* Run the game. */
-        float dropPeriod = (1 / (float) INITIAL_DROP_SPEED) * 1000, //in milliseconds
+        float dropPeriod = (1 / 
+                ((float) INITIAL_DROP_SPEED * mLevelParameters.getLevelDropFactor(mLevel))) * 1000,
                 logicPeriod = (1 / (float) LOGICAL_FPS) * 1000;
-                
+                        
         double dropTime = 0, 
                 logicTime = 0; //The last system time these operations ran
         
@@ -93,20 +90,16 @@ public class GuidedEngine extends JFrame{
                 dropTime = System.currentTimeMillis();
             }
             if (System.currentTimeMillis() >= logicTime + logicPeriod) {
-                if (mLinesClearedThisLevel >= mGuidedLevelParameters.getNextLevelLinesCleared(mLevel)) {
-                    try {
-                        mLinesClearedThisLevel = 0;
-                        mLevel++; //update level
-                        dropPeriod = (1 / (float) (INITIAL_DROP_SPEED * 
-                                Math.pow(DROP_SPEED_INCREASE_FACTOR, 
-                                        mGuidedLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
-                        mTetriminoFactory.
-                            setLengthRange(mGuidedLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));
-                        
-                        mBoard.clearTetriminoQueue();
-                    } catch (GameOverException e) {
-                        gameOver();
-                    }
+                if (mLinesClearedThisLevel >= mLevelParameters.getNextLevelLinesCleared(mLevel)) {
+                    mLinesClearedThisLevel = 0;
+                    mLevel++; //update level
+                    dropPeriod = (1 / (float) (INITIAL_DROP_SPEED * 
+                            Math.pow(DROP_SPEED_INCREASE_FACTOR, 
+                                    mLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
+                    mTetriminoFactory.
+                        setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));
+                    
+                    mBoard.clearTetriminoQueue();
                 } 
                 
                 try {
@@ -115,7 +108,7 @@ public class GuidedEngine extends JFrame{
                     gameOver();
                 }
                 
-                mScoreBar.setText("Level: " + mLevel + ", Score: " + String.valueOf(mPlayer.getScore()));
+                mScoreBar.setText("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
                 logicTime = System.currentTimeMillis();
             }
         }
@@ -125,28 +118,47 @@ public class GuidedEngine extends JFrame{
         int rows = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * ROW_RATIO),
                 cols = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * COLUMN_RATIO),
                 buffer = GuidedLevelParameters.MAX_TETRIMINO_LENGTH;
-        mBoard = new Board(rows, cols, buffer);
-                add(mBoard, BorderLayout.CENTER);
-        
-        mScoreBar = new JLabel("Level: 1, Score: " + String.valueOf(mPlayer.getScore()));
-        add(mScoreBar, BorderLayout.SOUTH);
-        
-        mStorePanel = new StorePanel(mTetriminoFactory.getLengthRange()[1], mBoard);
+        mBoard = new Board(rows, cols, buffer, GuidedLevelParameters.MAX_TETRIMINO_LENGTH);
                 
-        float width = STANDARD_WIDTH_RATIO * cols,
-                height = (int) (width * rows / cols);
+        mSidePanel = mBoard.getSidePanel();        
         
-        mStorePanel.setPreferredSize(
-                new Dimension((int) GuidedLevelParameters.MAX_TETRIMINO_LENGTH * STANDARD_WIDTH_RATIO
-                        , (int) height));
-        //add(mStorePanel);
-
+        mScoreBar = new JLabel("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
                         
-        setSize((int) width, (int) height);
+        float width = 2 * STANDARD_WIDTH_RATIO * cols,
+                height = (int) (width * rows / cols);
+                        
+        setSize((int) width, (int) height); //number tweaking. Forgive me Java gods
         setTitle("Tetrocity");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setVisible(true);
+        setResizable(false);
+        
+        setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        
+        c.weighty = 1;
+        c.anchor = GridBagConstraints.LINE_START;
+                
+        c.fill = GridBagConstraints.BOTH;
+        c.gridy = 0;
+        c.gridx = 0;
+        c.weightx = 0.34;
+        add(mSidePanel, c);
+        
+        c.gridy = 0;
+        c.gridx = 1;
+        c.weightx = 0.66;
+        add(mBoard, c);
+        
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridwidth = 2;
+        c.weighty = 0;
+        c.weightx = 0;
+        c.anchor = GridBagConstraints.PAGE_END;
+        c.gridy = 1;
+        c.gridx = 0;
+        add(mScoreBar, c);
     }
     
     private void doGameLogic() throws GameOverException {
@@ -162,7 +174,7 @@ public class GuidedEngine extends JFrame{
         if (topLiveTetrimino == null ||
                 (mBoard.numLiveTetriminoes() != 0 &&
                 topLiveTetrimino.getRootCoordinate()[0] - mBoard.getBuffer() >=
-                mGuidedLevelParameters.getLevelLiveTetriminoSpacing(mLevel))) {
+                mLevelParameters.getLevelLiveTetriminoSpacing(mLevel))) {
             try {
                 mBoard.putTetrimino();
             } catch (GameOverException e) {
@@ -176,7 +188,7 @@ public class GuidedEngine extends JFrame{
             } catch (GameOverException e) {
                 gameOver();
             }
-        }        
+        }               
     }
     
     /** Interpret a KeyEvent keyCode and respond as dictated by the game rules.
@@ -184,26 +196,24 @@ public class GuidedEngine extends JFrame{
      * @param keyCode The key code to interpret. 
      */
     public void interpretInput(int keyCode) {
-        if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_KP_UP) {
-            //do nothing (for now)
-        } else if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
+        if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
             mBoard.shiftTetrimino(Direction.EAST);
         } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_KP_DOWN) {
             mBoard.shiftTetrimino(Direction.SOUTH);
         } else if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_KP_LEFT) {
             mBoard.shiftTetrimino(Direction.WEST);
         } else if (keyCode == KeyEvent.VK_SPACE) {
-            mBoard.dropTetrimino();
+            mPlayer.addToScore(scoreLinesDropped(mBoard.dropTetrimino()));
         } else if (keyCode == KeyEvent.VK_SHIFT) {
             try {
                 mBoard.storeTetrimino();
-                //mStorePanel.updateGrid();
             } catch (GameOverException e) {
                 gameOver();
             }
         } else if (keyCode == KeyEvent.VK_Z) {
             mBoard.rotateTetriminoCounterClockwise();
-        } else if (keyCode == KeyEvent.VK_X) {
+        } else if (keyCode == KeyEvent.VK_X || keyCode == KeyEvent.VK_UP 
+                || keyCode == KeyEvent.VK_KP_UP) {
             mBoard.rotateTetriminoClockwise();
         } else if (keyCode == KeyEvent.VK_ESCAPE) {
             pause();
@@ -212,14 +222,40 @@ public class GuidedEngine extends JFrame{
         }            
     }
 
-    /** Uses current game information to interpret the corresponding increase in score. 
+    /** Uses current game information to interpret the corresponding increase in score after
+     * a number of lines have been cleared.
+     * 
+     *  The equation used is linesCleared^1.3 * e^(3*level/max_level). 
+     *  
+     *  The first term rewards multiple lines cleared at once with an exponentially weighted 
+     * bonus. The second term causes higher levels to reward exponentially higher scores in 
+     * a similar fashion. The particular constants used in this equation were determined via
+     * a informal analysis. 
      * 
      * @param linesCleared The number of lines cleared.
      * @return The amount of score to add. 
      */
-    public long interpretScore(int linesCleared) {
-        return (long) (Math.pow(linesCleared, 1.3) * mLevel); //1.3 ~ log_4_(6)
+    public double scoreLinesCleared(int linesCleared) {
+        return Math.pow(linesCleared, 1.3) 
+                * Math.exp(3 * mLevel / (float) GuidedLevelParameters.MAX_LEVEL);
     }
+    
+    /** Uses current game information to interpret the corresponding increase in score after
+     * a Tetrimino piece was dropped a number of lines. 
+     * 
+     *  The equation used is linesDropped / (total_rows - max_length) * e^(level / max_level).
+     * This equation was determined by an informal analysis. See 
+     * {@link Engine#scoreLinesCleared} for a similar explanation of reasoning. 
+     * 
+     * @param linesDropped The number of lines dropped.
+     * @return The amount of score to add. 
+     */
+    public double scoreLinesDropped(int linesDropped) {
+        return linesDropped / (double) (mBoard.getGridDimensions()[0] 
+                        - GuidedLevelParameters.MAX_TETRIMINO_LENGTH)
+                * Math.exp(mLevel / (double) GuidedLevelParameters.MAX_LEVEL);
+    }
+    
     
     public void fillBoardQueue() {
         while (mBoard.queueTooSmall()) {
@@ -232,7 +268,7 @@ public class GuidedEngine extends JFrame{
      * @param linesCleared The number of lines cleared.
      */
     private void updateScore(int linesCleared) {
-        mPlayer.addToScore(interpretScore(linesCleared));
+        mPlayer.addToScore(scoreLinesCleared(linesCleared));
     }
     
     private void pause() {
@@ -241,7 +277,7 @@ public class GuidedEngine extends JFrame{
         removeKeyListener(mPlayer);
         addKeyListener(pausedKeyListener);
         
-        mScoreBar.setText("PAUSED.");
+        mScoreBar.setText("Paused.");
         
         while (mIsPaused) {
             System.out.print(""); //This fixes a bug and I don't know why. 
@@ -249,14 +285,12 @@ public class GuidedEngine extends JFrame{
         
         removeKeyListener(pausedKeyListener);
         addKeyListener(mPlayer);
-        
-        mScoreBar.setText(String.valueOf(mPlayer.getScore()));
     }
     
     private void restart() {
         //TODO This is clumsy. Make it better.
         setVisible(false);
-        new GuidedEngine().begin();
+        new Engine().run();
     }
     
     private void halt() {
@@ -272,7 +306,7 @@ public class GuidedEngine extends JFrame{
     }
     
     private void gameOver() {
-        mScoreBar.setText("GAME OVER! Level: " + mLevel + ", Score: " + mPlayer.getScore());
+        mScoreBar.setText("GAME OVER! Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
         halt();
     }
     
@@ -322,88 +356,91 @@ public class GuidedEngine extends JFrame{
      */
     private class GuidedLevelParameters {
         public static final int MAX_TETRIMINO_LENGTH = 6;
+        public static final int MAX_LEVEL = 50;
         
         private float[][] mLevelParameters;
 
         public GuidedLevelParameters() {
-            mLevelParameters = new float[50][5];
+            mLevelParameters = new float[MAX_LEVEL][5];
             mLevelParameters[0] = new float[]{1, 26, 3, 3, 2};
             mLevelParameters[1] = new float[]{1, 26, 3, 4, 2};
-            mLevelParameters[2] = new float[]{2, 24, 3, 4, 2};
+            mLevelParameters[2] = new float[]{1, 24, 3, 4, 2};
             mLevelParameters[3] = new float[]{2, 24, 3, 4, 3};
-            mLevelParameters[4] = new float[]{3, 23, 3, 4, 3};
+            mLevelParameters[4] = new float[]{2, 23, 3, 4, 3};
             mLevelParameters[5] = new float[]{3, 23, 3, 4, 3};
-            mLevelParameters[6] = new float[]{4, 21, 3, 4, 4};
-            mLevelParameters[7] = new float[]{4, 21, 3, 4, 4};
-            mLevelParameters[8] = new float[]{5, 20, 3, 4, 4};
-            mLevelParameters[9] = new float[]{5, 20, 3, 4, 4};
+            mLevelParameters[6] = new float[]{3, 21, 3, 4, 4};
+            mLevelParameters[7] = new float[]{3, 21, 3, 4, 4};
+            mLevelParameters[8] = new float[]{4, 20, 3, 4, 4};
+            mLevelParameters[9] = new float[]{4, 20, 3, 4, 4};
             
-            mLevelParameters[10] = new float[]{3, 25, 3, 5, 5};
-            mLevelParameters[11] = new float[]{3, 25, 3, 5, 5};
-            mLevelParameters[12] = new float[]{4, 23, 3, 5, 5};
-            mLevelParameters[13] = new float[]{4, 23, 3, 5, 6};
-            mLevelParameters[14] = new float[]{5, 21, 3, 5, 6};
-            mLevelParameters[15] = new float[]{5, 21, 3, 5, 6};
-            mLevelParameters[16] = new float[]{6, 19, 3, 5, 7};
-            mLevelParameters[17] = new float[]{6, 19, 3, 5, 7};
-            mLevelParameters[18] = new float[]{7, 18, 3, 5, 7};
-            mLevelParameters[19] = new float[]{7, 18, 3, 5, 7};
+            mLevelParameters[10] = new float[]{2, 25, 3, 5, 5};
+            mLevelParameters[11] = new float[]{2, 25, 3, 5, 5};
+            mLevelParameters[12] = new float[]{2, 23, 3, 5, 5};
+            mLevelParameters[13] = new float[]{3, 23, 3, 5, 6};
+            mLevelParameters[14] = new float[]{3, 21, 3, 5, 6};
+            mLevelParameters[15] = new float[]{4, 21, 3, 5, 6};
+            mLevelParameters[16] = new float[]{4, 19, 3, 5, 7};
+            mLevelParameters[17] = new float[]{4, 19, 3, 5, 7};
+            mLevelParameters[18] = new float[]{5, 18, 3, 5, 7};
+            mLevelParameters[19] = new float[]{5, 18, 3, 5, 7};
             
-            mLevelParameters[20] = new float[]{5, 24, 4, 5, 8};
-            mLevelParameters[21] = new float[]{5, 24, 4, 5, 8};
-            mLevelParameters[22] = new float[]{6, 22, 4, 5, 8};
-            mLevelParameters[23] = new float[]{6, 22, 4, 5, 9};
-            mLevelParameters[24] = new float[]{7, 20, 4, 5, 9};
-            mLevelParameters[25] = new float[]{7, 20, 4, 5, 9};
-            mLevelParameters[26] = new float[]{8, 18, 4, 5, 10};
-            mLevelParameters[27] = new float[]{8, 18, 4, 5, 10};
-            mLevelParameters[28] = new float[]{9, 16, 4, 5, 10};
-            mLevelParameters[29] = new float[]{9, 16, 4, 5, 10};
+            mLevelParameters[20] = new float[]{3, 24, 4, 5, 8};
+            mLevelParameters[21] = new float[]{3, 24, 4, 5, 8};
+            mLevelParameters[22] = new float[]{3, 22, 4, 5, 8};
+            mLevelParameters[23] = new float[]{4, 22, 4, 5, 9};
+            mLevelParameters[24] = new float[]{4, 20, 4, 5, 9};
+            mLevelParameters[25] = new float[]{5, 20, 4, 5, 9};
+            mLevelParameters[26] = new float[]{5, 18, 4, 5, 10};
+            mLevelParameters[27] = new float[]{5, 18, 4, 5, 10};
+            mLevelParameters[28] = new float[]{6, 16, 4, 5, 10};
+            mLevelParameters[29] = new float[]{6, 16, 4, 5, 10};
             
-            mLevelParameters[30] = new float[]{7, 22, 5, 5, 11};
-            mLevelParameters[31] = new float[]{7, 22, 5, 5, 11};
-            mLevelParameters[32] = new float[]{8, 20, 5, 5, 11};
-            mLevelParameters[33] = new float[]{8, 20, 5, 5, 11};
-            mLevelParameters[34] = new float[]{9, 19, 5, 5, 11};
-            mLevelParameters[35] = new float[]{9, 19, 5, 5, 12};
-            mLevelParameters[36] = new float[]{10, 17, 5, 5, 12};
-            mLevelParameters[37] = new float[]{10, 17, 5, 5, 12};
-            mLevelParameters[38] = new float[]{11, 15, 5, 5, 12};
-            mLevelParameters[39] = new float[]{11, 15, 5, 5, 12};
+            mLevelParameters[30] = new float[]{4, 22, 5, 5, 11};
+            mLevelParameters[31] = new float[]{4, 22, 5, 5, 11};
+            mLevelParameters[32] = new float[]{4, 20, 5, 5, 11};
+            mLevelParameters[33] = new float[]{5, 20, 5, 5, 11};
+            mLevelParameters[34] = new float[]{5, 19, 5, 5, 11};
+            mLevelParameters[35] = new float[]{6, 19, 5, 5, 12};
+            mLevelParameters[36] = new float[]{6, 17, 5, 5, 12};
+            mLevelParameters[37] = new float[]{6, 17, 5, 5, 12};
+            mLevelParameters[38] = new float[]{7, 15, 5, 5, 12};
+            mLevelParameters[39] = new float[]{7, 15, 5, 5, 12};
             
-            mLevelParameters[40] = new float[]{9, 20, 6, 6, 13};
-            mLevelParameters[41] = new float[]{9, 20, 6, 6, 13};
-            mLevelParameters[42] = new float[]{10, 18, 6, 6, 13};
-            mLevelParameters[43] = new float[]{10, 18, 6, 6, 13};
-            mLevelParameters[44] = new float[]{11, 17, 6, 6, 13};
-            mLevelParameters[45] = new float[]{11, 17, 6, 6, 14};
-            mLevelParameters[46] = new float[]{12, 15, 6, 6, 14};
-            mLevelParameters[47] = new float[]{12, 15, 6, 6, 14};
-            mLevelParameters[48] = new float[]{13, 13, 6, 6, 14};
-            mLevelParameters[49] = new float[]{13, 13, 6, 6, 14};
+            mLevelParameters[40] = new float[]{5, 20, 6, 6, 13};
+            mLevelParameters[41] = new float[]{5, 20, 6, 6, 13};
+            mLevelParameters[42] = new float[]{5, 18, 6, 6, 13};
+            mLevelParameters[43] = new float[]{6, 18, 6, 6, 13};
+            mLevelParameters[44] = new float[]{6, 17, 6, 6, 13};
+            mLevelParameters[45] = new float[]{7, 17, 6, 6, 14};
+            mLevelParameters[46] = new float[]{7, 15, 6, 6, 14};
+            mLevelParameters[47] = new float[]{7, 15, 6, 6, 14};
+            mLevelParameters[48] = new float[]{8, 13, 6, 6, 14};
+            mLevelParameters[49] = new float[]{8, 13, 6, 6, 14};
         }
         
-        public float getLevelDropFactor(int level) throws GameOverException {
-            if (level > mLevelParameters.length || level < 1) {
-                throw new GameOverException("Level (" + level + ") not valid.");
-            } else {
+        public float getLevelDropFactor(int level) {
+            if (level <= MAX_LEVEL) {
                 return mLevelParameters[level - 1][0];
+            } else {
+                return mLevelParameters[MAX_LEVEL - 1][0];
             }
         }
         
-        public int getLevelLiveTetriminoSpacing(int level) throws GameOverException {
-            if (level > mLevelParameters.length || level < 1) {
-                throw new GameOverException("Level (" + level + ") not valid.");
-            } else {
+        public int getLevelLiveTetriminoSpacing(int level) {
+            if (level <= MAX_LEVEL) {
                 return (int) mLevelParameters[level - 1][1];
+            } else {
+                return (int) mLevelParameters[MAX_LEVEL - 1][1];
             }
         }
         
-        public int[] getLevelLiveTetriminoLengthRange(int level) throws GameOverException {
-            if (level > mLevelParameters.length || level < 1) {
-                throw new GameOverException("Level (" + level + ") not valid.");
+        public int[] getLevelLiveTetriminoLengthRange(int level) {
+            if (level <= MAX_LEVEL) {
+                return new int[]{(int) mLevelParameters[level - 1][2],
+                        (int) mLevelParameters[level - 1][3]};
             } else {
-                return new int[]{(int) mLevelParameters[level - 1][2], (int) mLevelParameters[level - 1][3]};
+                return new int[]{(int) mLevelParameters[MAX_LEVEL - 1][2],
+                        (int) mLevelParameters[MAX_LEVEL - 1][3]};
             }
         }
         
@@ -412,10 +449,10 @@ public class GuidedEngine extends JFrame{
          * to the next level.
          */
         public int getNextLevelLinesCleared(int level) {
-            if (level > mLevelParameters.length || level < 1) {
-                throw new IllegalArgumentException("Level (" + level + ") not valid.");
-            } else {
+            if (level <= MAX_LEVEL) {
                 return (int) mLevelParameters[level - 1][4];
+            } else {
+                return Integer.MAX_VALUE;
             }
         }
     }
