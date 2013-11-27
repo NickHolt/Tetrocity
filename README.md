@@ -1,13 +1,13 @@
 Tetrocity
 =========
 
-Tetrocity is an intense take on Tetris with a faster pace and a slew of new game features. Attempt to stay alive as the 
-Tetriminoes become faster and more complex. You may even have to control more than one at a time.
+Tetrocity is an intense take on Tetris with a faster pace and a slew of new game features. Attempt to stay alive as the Tetriminoes become faster and more complex. You may even have to deal with more than one at a time. Come for the challenge, stay for the addiction. 
 
 How To Run
 =========
 
-Tetrocity is nearing completion. An alpha build of the game can be run by executing the jar file located in this repository. 
+Tetrocity is nearing completion. A beta build of the game can be run by executing the jar file located in this repository. Once completed, a link will be provided to a working online build of the game.
+
 Alternatively, you can download the full source code and compile it yourself. The entry point is src/control/Tetrocity.java.
 
 Rules
@@ -18,13 +18,13 @@ If you've played Tetris before, you know the rules of Tetrocity. If not: where h
 Controls
 =========
 
-Left Arrow / Down Arrow / Right Arrow : Shift Tetrimino(es).
+Left Arrow / Down Arrow / Right Arrow : Shift.
 
-Space : Drop Tetrimino.
+Space : Drop.
 
-Shift : Store Tetrimino.
+Shift : Store.
 
-z / c : Rotate Tetrimino counter-clockwise / clockwise. 
+z / (c / Up Arrow): Rotate counter-clockwise / clockwise. 
 
 Escape : Pause.
 
