@@ -159,6 +159,29 @@ public class Board extends JPanel{
         repaint();
     }
     
+    /** Restarting this board has the effect of emptying all grid coordinates, live Tetriminoes,
+     * queue Tetriminoes, and the storage piece.
+     * 
+     */
+    public void restartBoard() {
+        mLiveTetriminoCoordinates = new HashMap<Integer, int[][]>();
+        mLiveTetriminoes = new ArrayList<Tetrimino>();
+        mTetriminoQueue = new ArrayBlockingQueue<Tetrimino>(FULL_QUEUE_SIZE);
+        mStoredTetrimino = null;
+        
+        for (int i = 0; i < mGrid.length; i++) {
+            for (int j = 0; j < mGrid[0].length; j++) {
+                mGrid[i][j] = -1;
+            }
+        }
+
+        refreshGrid();
+        repaint();
+        
+        mSidePanel.updateQueuePieces();
+        mSidePanel.updateStoragePiece();
+    }
+    
     /** Attempt to clear filled rows. 
      * 
      *  A row is filled when there exists a dead block in every position on that row. 
