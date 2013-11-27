@@ -286,9 +286,15 @@ public class Engine extends JFrame{
     }
     
     private void restart() {
-        //TODO This is clumsy. Make it better.
-        setVisible(false);
-        new Engine().run();
+        mLevel = 1;
+        mLinesClearedThisLevel = 0;
+        mPlayer.resetScore();
+        mBoard.restartBoard();
+        mTetriminoFactory.
+            setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel)); 
+        fillBoardQueue();
+        
+        mIsPaused = false;
     }
     
     private void halt() {
