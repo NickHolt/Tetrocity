@@ -8,10 +8,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import javax.swing.JPanel;
 
-import util.Debug;
 import util.Direction;
 import util.GameOverException;
-import control.GuidedEngine;
+import control.Engine;
 
 /** A game board in a game of Tetrocity. A Board knows only of the {@link Tetrimino}
  * pieces currently in play. This includes the dead Tetriminoes and the live
@@ -26,7 +25,7 @@ import control.GuidedEngine;
  *  
  *   A Board is responsible for tracking the Tetrimino queue, as well as the
  *  stored Tetrimino. It is not responsible for tracking player score. It will
- *  communicate the relevant information to the {@link GuidedEngine}, which will then
+ *  communicate the relevant information to the {@link Engine}, which will then
  *  deal with it. 
  * 
  *  When prompted to do so, a Board is capable of examining its state and reacting
@@ -42,7 +41,7 @@ public class Board extends JPanel{
     private static final long serialVersionUID = 1L;
 
     /* The capacity of the Queue this Board will use to track upcoming Tetriminoes. */
-    public static final int FULL_QUEUE_SIZE = 6;
+    public static final int FULL_QUEUE_SIZE = 3;
     
     /* A grid of Tetrimino IDs representing the game board. -1 is an empty space. */
     private int[][] mGrid;
@@ -59,11 +58,14 @@ public class Board extends JPanel{
     private Tetrimino mStoredTetrimino;
     /* The Queue of upcoming Tetriminoes. Live Tetriminoes are taken from the Queue. */
     private ArrayBlockingQueue<Tetrimino> mTetriminoQueue;
+    /* This Board's side panel. */
+    private SidePanel mSidePanel;
     
     /* A set of Tetrimino colors. */
     public static final Color[] sColorSet = new Color[]{Color.BLUE, Color.CYAN,
         Color.DARK_GRAY, Color.GRAY, Color.GREEN, Color.MAGENTA, Color.ORANGE, 
         Color.PINK, Color.RED, Color.YELLOW};
+
     
     /** A new Board for a game of Tetrocity. A board is a (BUFFER + ROWS) x COLS matrix 
      * (grid) on which the game is played. A buffer is used to provide a number of
@@ -74,7 +76,7 @@ public class Board extends JPanel{
      * @param cols The number of visible columns in this Board.
      * @param buffer The number of non-visible rows in this Board. 
      */
-    public Board(int rows, int cols, int buffer) {
+    public Board(int rows, int cols, int buffer, int panelWidth) {
         if (rows < 1
                 || cols < 1
                 || buffer < 0) {
@@ -94,10 +96,11 @@ public class Board extends JPanel{
         mLiveTetriminoes = new ArrayList<Tetrimino>();
         mLiveTetriminoCoordinates = new HashMap<Integer, int[][]>();
         mTetriminoQueue = new ArrayBlockingQueue<Tetrimino>(FULL_QUEUE_SIZE);
+        
+        mSidePanel = new SidePanel(panelWidth, this);
                 
         setVisible(true);
-        
-        Debug.print(1, "New Board instantiated.");
+        repaint();        
     }
     
     /** Given the Tetrimino, returns a grid coordinate such that the root coordinate of the
@@ -125,7 +128,6 @@ public class Board extends JPanel{
             row = mBuffer - tetrimino.getShape().getHeight();
         }
                 
-        Debug.print(3, "Board#getPlacementCoordinate successfully generated.");
         return new int[]{row, col};
     }
     
@@ -155,7 +157,6 @@ public class Board extends JPanel{
         }
         
         repaint();
-        Debug.print(3, "Grid updated.");
     }
     
     /** Attempt to clear filled rows. 
@@ -191,7 +192,6 @@ public class Board extends JPanel{
             }
         }
         
-        Debug.print(1, rowsCleared + " rows cleared.");
         repaint();
         return rowsCleared;
     }
@@ -235,7 +235,6 @@ public class Board extends JPanel{
         }
         
         repaint();
-        Debug.print(2, "Grid dropped.");
     }
     
     /** Attempt to shift all live Tetriminoes one coordinate position towards the
@@ -300,7 +299,6 @@ public class Board extends JPanel{
                 
         refreshGrid();
         repaint();
-        Debug.print(1, "Live Tetriminoes shifted " + shiftDirection);
     }
     
     /** Attempt to shift all live Tetriminoes one coordinate position towards the
@@ -360,7 +358,6 @@ public class Board extends JPanel{
                     
             refreshGrid();
             repaint();
-            Debug.print(1, "Tetrimino shifted " + shiftDirection);
         }
     }
     
@@ -369,11 +366,11 @@ public class Board extends JPanel{
      * 
      *  Once the Tetrimino is dropped, it is killed.
      */
-    public void dropTetrimino() {
+    public int dropTetrimino() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
-        
+        int dropVal = 0;
+
         if (bottomLiveValidTetrimino != null) {
-            int dropVal = 0;
             int[] rootCoord = bottomLiveValidTetrimino.getRootCoordinate();
             boolean maxFound = false;
             
@@ -393,7 +390,9 @@ public class Board extends JPanel{
             refreshGrid();
             killTetrimino(bottomLiveValidTetrimino);   
             repaint();
-        } 
+        }
+        
+        return dropVal;
     }
     
     /** Stores the bottom-most Tetrimino that has not been previously stored. If a Tetrimino 
@@ -441,24 +440,58 @@ public class Board extends JPanel{
                         && rootCoordinate[1] + 1 > 0
                         && !hasCollision(tmp, new int[]{rootCoordinate[0], rootCoordinate[1] + 1})) {
                     putTetrimino(tmp, new int[]{rootCoordinate[0], rootCoordinate[1] + 1});
-                } else {
-                    Debug.print(1, "Tetrimino storage rejected.");
                 }
             }
+            
+            mSidePanel.updateStoragePiece();
         } 
     }
     
-    /** If possible, rotates the bottom-most live Tetrimino clockwise. If a collision is detected
-     * the piece will not rotate. 
+    /** Replace the Tetrimino currently in storage with the input Tetrimino. This will
+     * completely delete the stored Tetrimino.
      */
+    public void storeTetrimino(Tetrimino tetrimino) {
+        mStoredTetrimino = tetrimino;
+        mSidePanel.updateStoragePiece();
+    }
+    
+    /** Attempts to rotate the bottom live Tetrimino piece clockwise. This method implements fluid
+     * rotation. If a collision is detected after rotation, this method will attempt to shift the
+     * Tetrimino piece West an check if there is still a collision. It will do this a number
+     * of times equal to the width of the Tetrimino piece. If there are still collisions after
+     * the full number of shifts has been exhausted, the rotation will fail and piece will not
+     * be moved (or rather, it will be moved back to its original location). 
+     * 
+     *  Fluid rotation causes the Tetrimino piece to be "pushed" to the left in the event that
+     * an eastward collision occurs. This prevents "piece locking" and greatly improves the
+     * fluidity and intuitiveness of the controls. 
+     * 
+     *  It should be noted that because of how the rotation algorithm works (see 
+     * {@link Shape#rotateClockwise()}), it is only ever necessary to push a Tetrimino to the left.
+     */    
     public void rotateTetriminoClockwise() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
-        
+
         if (bottomLiveValidTetrimino != null) {
             bottomLiveValidTetrimino.rotateClockwise();
             
-            if (hasCollision(bottomLiveValidTetrimino, bottomLiveValidTetrimino.getRootCoordinate())) {
-                bottomLiveValidTetrimino.rotateCounterClockwise(); //undo rotation
+            int width = bottomLiveValidTetrimino.getShape().getWidth(),
+                    shiftVal = 0;
+            boolean shiftSuccess = false;
+            while (shiftVal < width) {
+                if (!hasCollision(bottomLiveValidTetrimino)) {
+                    shiftSuccess = true;
+                    break;
+                } else {
+                    shiftVal++;
+                    bottomLiveValidTetrimino.shift(Direction.WEST);
+                }
+            }
+            
+            if (!shiftSuccess) {
+                bottomLiveValidTetrimino.setRootColumn(bottomLiveValidTetrimino.getRootCoordinate()[1]
+                        + shiftVal); //shift it back
+                bottomLiveValidTetrimino.rotateCounterClockwise(); //rotate it back
             } else {
                 refreshGrid();
                 repaint();
@@ -466,17 +499,44 @@ public class Board extends JPanel{
         }
     }
     
-    /** If possible, rotates the bottom-most live Tetrimino counter-clockwise. If a collision is detected
-     * the piece will not rotate. 
-     */
+    /** Attempts to rotate the bottom live Tetrimino piece counter-clockwise. This method implements 
+     * fluid rotation. If a collision is detected after rotation, this method will attempt to shift the
+     * Tetrimino piece West an check if there is still a collision. It will do this a number
+     * of times equal to the width of the Tetrimino piece. If there are still collisions after
+     * the full number of shifts has been exhausted, the rotation will fail and piece will not
+     * be moved (or rather, it will be moved back to its original location). 
+     * 
+     *  Fluid rotation causes the Tetrimino piece to be "pushed" to the left in the event that
+     * an eastward collision occurs. This prevents "piece locking" and greatly improves the
+     * fluidity and intuitiveness of the controls. 
+     * 
+     *  It should be noted that because of how the rotation algorithm works (see 
+     * {@link Shape#rotateCounterClockwise()}), it is only ever necessary to push a Tetrimino to the 
+     * left.
+     */      
     public void rotateTetriminoCounterClockwise() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
-        
+
         if (bottomLiveValidTetrimino != null) {
             bottomLiveValidTetrimino.rotateCounterClockwise();
             
-            if (hasCollision(bottomLiveValidTetrimino, bottomLiveValidTetrimino.getRootCoordinate())) {
-                bottomLiveValidTetrimino.rotateClockwise(); //undo rotation
+            int width = bottomLiveValidTetrimino.getShape().getWidth(),
+                    shiftVal = 0;
+            boolean shiftSuccess = false;
+            while (shiftVal < width) {
+                if (!hasCollision(bottomLiveValidTetrimino)) {
+                    shiftSuccess = true;
+                    break;
+                } else {
+                    shiftVal++;
+                    bottomLiveValidTetrimino.shift(Direction.WEST);
+                }
+            }
+            
+            if (!shiftSuccess) {
+                bottomLiveValidTetrimino.setRootColumn(bottomLiveValidTetrimino.getRootCoordinate()[1]
+                        + shiftVal); //shift it back
+                bottomLiveValidTetrimino.rotateClockwise(); //rotate it back
             } else {
                 refreshGrid();
                 repaint();
@@ -570,10 +630,18 @@ public class Board extends JPanel{
      */
     public void enqueueTetrimino(Tetrimino tetrimino) {
         mTetriminoQueue.add(tetrimino);
+        
+        mSidePanel.updateQueuePieces();
     }
     
     public void clearTetriminoQueue() {
         mTetriminoQueue.clear();
+        
+        mSidePanel.updateQueuePieces();
+    }
+    
+    private ArrayBlockingQueue<Tetrimino> getTetriminoQueue() {
+        return mTetriminoQueue;
     }
     
     /** Removes a Tetrimino from the Queue and adds it to the grid. When
@@ -618,9 +686,7 @@ public class Board extends JPanel{
             mLiveTetriminoes.add(tetrimino);
             
             refreshGrid();
-            repaint();
-            
-            Debug.print(2, "New Tetrimino placed on the grid.");
+            repaint();            
         }
     }
     
@@ -682,8 +748,33 @@ public class Board extends JPanel{
             result.append('*');
         }
                 
-        Debug.print(3, "Board string generated.");
         return result.toString();
+    }
+    
+    /** Checks if a collision would occur if the Tetrimino were placed on this board at its
+     * existing root coordinate.
+     * 
+     * @param tetrimino The Tetrimino to be placed.
+     * @return True IFF no collision would occur. 
+     */
+    public boolean hasCollision(Tetrimino tetrimino) {
+        if (tetrimino == null) {
+            return false;
+        }
+        
+        int[][] coordinates = tetrimino.getCoordinates();
+        for (int[] coord : coordinates) {
+            if (coord[0] < 0
+                    || coord[0] >= mGrid.length
+                    || coord[1] < 0
+                    || coord[1] >= mGrid[0].length
+                    || !(mGrid[coord[0]][coord[1]] == -1 
+                    || mGrid[coord[0]][coord[1]] == tetrimino.getID())) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /** Checks if a collision would occur if the Tetrimino were placed on this board at the
@@ -693,7 +784,7 @@ public class Board extends JPanel{
      * @param rootCoordinate The desired root coordinate of the Tetrimino.
      * @return True IFF no collision would occur. 
      */
-    private boolean hasCollision(Tetrimino tetrimino, int[] rootCoordinate) {
+    public boolean hasCollision(Tetrimino tetrimino, int[] rootCoordinate) {
         if (tetrimino == null) {
             return false;
         }
@@ -714,6 +805,10 @@ public class Board extends JPanel{
         }
         
         return false;
+    }
+    
+    public SidePanel getSidePanel() {
+        return mSidePanel;
     }
     
     public float squareHeight() {
@@ -749,6 +844,10 @@ public class Board extends JPanel{
         for (int i = 0; i < width / squareWidth(); i++) {
             g.drawLine((int) (squareWidth() * (i + 1)), 0, (int) (squareWidth() * (i + 1)), height);
         }
+        
+        g.setColor(Color.BLACK);
+        g.drawLine(0, (int) getSize().getHeight() - 1, (int) getSize().getWidth(),
+                (int) getSize().getHeight() - 1);
     }
     
     private void drawSquare(Graphics g, float x, float y, int tetriminoID) {
@@ -767,5 +866,245 @@ public class Board extends JPanel{
                 (int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1));
         g.drawLine((int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1), 
                 (int) (x + squareWidth() - 1), (int) y + 1);
+    }
+    
+    /** A Board's side panel in a game of Tetrocity. A SidePanel is JPanel that contains
+     * the storage and queue graphical information. A SidePanel can only be instantiated by its 
+     * hosting {@link Board}. 
+     * 
+     *  Internally, a SidePanel is a grid identical to one used by a Board. The grid is split
+     * into a number of equal-length subsections equal to the full queue size + 1. The bottom
+     * subsection is used for the storage piece, and the rest are used for the queue. The first
+     * piece in the queue will be placed in the top subsection. 
+     * 
+     *  It should be noted that if the width or Board height are not adequate to represent
+     * the full queue and storage piece on screen, which will have a 1:1 size ratio with the 
+     * pieces on the Board, then proper behavior is not guaranteed. In fact, it will almost
+     * certainly fail.
+     * 
+     * @author Nick Holt
+     *
+     */
+    public class SidePanel extends JPanel{
+        private static final long serialVersionUID = 1L;
+        int[][] mSideGrid;
+        int mSectionHeight;
+        Board mBoard;
+        
+        /** A new SidePanel for a Board in a game of Tetrocity. The constructor is private,
+         * ensuring only a Board is capable of instantiating it such that this object will
+         * have access to the proper information. 
+         * 
+         *  A SidePanel must have the same number of rows as its hosting Board. The width,
+         * however, is variable. 
+         * 
+         * @param gridDimensions The dimensions 
+         * @param board
+         */
+        private SidePanel(int width, Board board) {
+            mSideGrid = new int[board.getGrid().length - board.getBuffer()][width];
+            
+            for (int i = 0; i < mSideGrid.length; i++) {
+                for (int j = 0; j < mSideGrid[0].length; j++) {
+                    mSideGrid[i][j] = -1;
+                }
+            }
+            
+            mSectionHeight = mSideGrid.length / (FULL_QUEUE_SIZE + 1); //queue + storage piece
+            mBoard = board;
+            
+            setVisible(true);
+            repaint(); //paint grid
+        }
+        
+        /** Updates this SidePanel's grid with the current storage piece. 
+         */
+        public void updateStoragePiece() {
+            emptyStorageSideGridSegment();
+                        
+            Tetrimino storedTetrimino = mBoard.getStoredTetrimino();
+
+            if (storedTetrimino != null) {
+                int tetriminoHeight = storedTetrimino.getShape().getHeight(),
+                        tetriminoWidth = storedTetrimino.getShape().getWidth();
+                
+                int row = mSideGrid.length - (mSectionHeight + tetriminoHeight) / 2,
+                        col = (mSideGrid[0].length - tetriminoWidth) / 2;
+                
+                int tetriminoID = storedTetrimino.getID();
+                Tetrimino dummyTetrimino = new Tetrimino(storedTetrimino.getShape(),
+                        tetriminoID, new int[]{row, col});
+                
+                int[][] coordinates = dummyTetrimino.getCoordinates();
+                for (int[] coord : coordinates) {
+                    mSideGrid[coord[0]][coord[1]] = tetriminoID;
+                }
+            }
+            
+            repaint();
+        }
+        
+        public void updateQueuePieces() {
+            emptyQueueSideGridSegment();
+
+            ArrayBlockingQueue<Tetrimino> queue = copyTetriminoQueue(mBoard.getTetriminoQueue());
+            
+            Tetrimino tetrimino, dummyTetrimino;
+            int tetriminoHeight, tetriminoWidth, tetriminoID, row, col;
+            int[][] coordinates;
+            int queueSize = queue.size();
+            for (int i = 0; i < queueSize; i++) {
+                tetrimino = queue.poll();
+                
+                tetriminoHeight = tetrimino.getShape().getHeight();
+                tetriminoWidth = tetrimino.getShape().getWidth();
+                tetriminoID = tetrimino.getID();
+                
+                row = (i + 1) * mSectionHeight - (mSectionHeight + tetriminoHeight) / 2;
+                col = (mSideGrid[0].length - tetriminoWidth) / 2;
+                                
+                dummyTetrimino = new Tetrimino(tetrimino.getShape(), tetriminoID, new int[]{row, col});
+                
+                coordinates = dummyTetrimino.getCoordinates();
+                for (int[] coord : coordinates) {
+                    mSideGrid[coord[0]][coord[1]] = tetriminoID;
+                }
+            }
+            
+            repaint();
+        }
+        
+        public int[][] getSideGrid() {
+            return mSideGrid;
+        }
+        
+        public void emptyQueueSideGridSegment() {
+            for (int i = 0; i < (mSideGrid.length - 1) - mSectionHeight; i++) {
+                for (int j = 0; j < mSideGrid[0].length; j++) {
+                    mSideGrid[i][j] = -1;
+                }
+            }
+        }
+        
+        public void emptyStorageSideGridSegment() {
+            for (int i = (mSideGrid.length - 1) - mSectionHeight; i < mSideGrid.length; i++) {
+                for (int j = 0; j < mSideGrid[0].length; j++) {
+                    mSideGrid[i][j] = -1;
+                }
+            }
+        }
+        
+        /** Copies the input Tetrimino Queue to a new Queue, while leaving the input
+         * Queue in the same state it was passed in. 
+         * 
+         * @return The Queue to copy. 
+         */
+        private ArrayBlockingQueue<Tetrimino> copyTetriminoQueue(ArrayBlockingQueue<Tetrimino> queue) {
+            int queueSize = queue.size();
+            ArrayBlockingQueue<Tetrimino> copy = new ArrayBlockingQueue<Tetrimino>(queueSize);
+            
+            Tetrimino tetrimino;
+            for (int i = 0; i < queueSize; i++) {
+                tetrimino = queue.poll();
+                copy.add(tetrimino);
+                queue.add(tetrimino);
+            }
+            
+            return copy;
+        }
+        
+        /** Returns a string object representing the state of this Board. The
+         * string will contain the grid only. 
+         */
+        public String toString() {
+            StringBuffer result = new StringBuffer();
+            int gridHeight = mSideGrid.length,
+                    gridWidth = mSideGrid[0].length;
+            for (int i = 0; i < gridWidth + 2; i++) {
+                result.append('*');
+            }
+            result.append('\n');
+            
+            for (int i = 0; i < gridHeight; i++) {
+                result.append('*');
+                
+                for (int j = 0; j < gridWidth; j++) {
+                    if (mSideGrid[i][j] == -1) {
+                        result.append(' ');
+                    } else {
+                        result.append('#');
+                    }
+                }
+                result.append("*\n");
+            }
+            
+            for (int i = 0; i < gridWidth + 2; i++) {
+                result.append('*');
+            }
+                    
+            return result.toString();
+        }
+        
+        public float squareHeight() {
+            return  (float) getSize().getHeight() / (float) (mSideGrid.length);
+        }
+        
+        public float squareWidth() {
+            return (float) getSize().getWidth() / (float) mSideGrid[0].length;
+        }
+        
+        public void paint(Graphics g) {
+            super.paint(g);
+            drawGrid(g);
+                                
+            for (int i = 0; i < mSideGrid.length; i++) {
+                for (int j = 0; j < mSideGrid[0].length; j++) {
+                    if (mSideGrid[i][j] != -1) {
+                        drawSquare(g, j * squareWidth(),
+                                i  * squareHeight(), mSideGrid[i][j]);
+                    }
+                }
+            }
+        }
+        
+        private void drawGrid(Graphics g) {
+            g.setColor(Color.LIGHT_GRAY);
+                    
+            int width = (int) getSize().getWidth(),
+                    height = (int) getSize().getHeight();
+            for (int i = 0; i < height / squareHeight(); i++) {
+                g.drawLine(0, (int) (squareHeight() * (i + 1)), width, (int) (squareHeight() * (i + 1)));
+            }
+            for (int i = 0; i < width / squareWidth(); i++) {
+                g.drawLine((int) (squareWidth() * (i + 1)), 0, (int) (squareWidth() * (i + 1)), height);
+            }
+            
+            g.setColor(Color.BLACK);
+            g.drawLine((int) getSize().getWidth() - 1, 0,
+                    (int) getSize().getWidth() - 1, (int) getSize().getHeight() - 1);
+            g.drawLine(0, (int) (getSize().getHeight() - mSectionHeight * squareHeight()), 
+                    (int) getSize().getWidth() - 1, 
+                    (int) (getSize().getHeight() - mSectionHeight * squareHeight()));
+            g.drawLine(0, (int) getSize().getHeight() - 1, (int) getSize().getWidth(),
+                    (int) getSize().getHeight() - 1);
+        }
+        
+        private void drawSquare(Graphics g, float x, float y, int tetriminoID) {
+            Color color;
+            color = sColorSet[tetriminoID % sColorSet.length];
+            
+            g.setColor(color);
+            g.fillRect((int) x + 1, (int) y + 1, (int) (squareWidth() - 1), (int) (squareHeight() - 1));
+            
+            g.setColor(color.brighter());
+            g.drawLine((int) x, (int) (y + squareHeight() - 1), (int) x, (int) y);
+            g.drawLine((int) x, (int) y, (int) (x + squareWidth() - 1), (int) y);
+            
+            g.setColor(color.darker());
+            g.drawLine((int) x + 1, (int) (y + squareHeight() - 1),
+                    (int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1));
+            g.drawLine((int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1), 
+                    (int) (x + squareWidth() - 1), (int) y + 1);
+        }
     }
 }
