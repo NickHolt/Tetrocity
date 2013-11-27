@@ -634,12 +634,6 @@ public class Board extends JPanel{
         mSidePanel.updateQueuePieces();
     }
     
-    public void clearTetriminoQueue() {
-        mTetriminoQueue.clear();
-        
-        mSidePanel.updateQueuePieces();
-    }
-    
     private ArrayBlockingQueue<Tetrimino> getTetriminoQueue() {
         return mTetriminoQueue;
     }
@@ -1001,14 +995,21 @@ public class Board extends JPanel{
          */
         private ArrayBlockingQueue<Tetrimino> copyTetriminoQueue(ArrayBlockingQueue<Tetrimino> queue) {
             int queueSize = queue.size();
-            ArrayBlockingQueue<Tetrimino> copy = new ArrayBlockingQueue<Tetrimino>(queueSize);
+            ArrayBlockingQueue<Tetrimino> copy;
             
-            Tetrimino tetrimino;
-            for (int i = 0; i < queueSize; i++) {
-                tetrimino = queue.poll();
-                copy.add(tetrimino);
-                queue.add(tetrimino);
+            if (queueSize != 0) {
+                copy = new ArrayBlockingQueue<Tetrimino>(queueSize);
+                
+                Tetrimino tetrimino;
+                for (int i = 0; i < queueSize; i++) {
+                    tetrimino = queue.poll();
+                    copy.add(tetrimino);
+                    queue.add(tetrimino);
+                }
+            } else {
+                copy = queue;
             }
+            
             
             return copy;
         }

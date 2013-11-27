@@ -97,9 +97,7 @@ public class Engine extends JFrame{
                             Math.pow(DROP_SPEED_INCREASE_FACTOR, 
                                     mLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
                     mTetriminoFactory.
-                        setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));
-                    
-                    mBoard.clearTetriminoQueue();
+                        setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));                    
                 } 
                 
                 try {
@@ -362,7 +360,7 @@ public class Engine extends JFrame{
 
         public GuidedLevelParameters() {
             mLevelParameters = new float[MAX_LEVEL][5];
-            mLevelParameters[0] = new float[]{1, 26, 3, 3, 2};
+            mLevelParameters[0] = new float[]{1, 26, 3, 3, 1};
             mLevelParameters[1] = new float[]{1, 26, 3, 4, 2};
             mLevelParameters[2] = new float[]{1, 24, 3, 4, 2};
             mLevelParameters[3] = new float[]{2, 24, 3, 4, 3};
