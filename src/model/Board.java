@@ -162,6 +162,19 @@ public class Board extends JPanel{
         repaint();
     }
     
+    /** Removes all dead Tetriminoes from the grid.
+     */
+    public void emptyGrid() {
+        for (int i = 0; i < mGrid.length; i++) {
+            for (int j = 0; j < mGrid[0].length; j++) {
+                mGrid[i][j] = -1;
+            }
+        }
+        
+        refreshGrid();
+        repaint();
+    }
+    
     /** Restarting this board has the effect of emptying all grid coordinates, live Tetriminoes,
      * queue Tetriminoes, and the storage piece.
      * 
@@ -874,11 +887,11 @@ public class Board extends JPanel{
     }
     
     public float squareHeight() {
-        return  (float) getSize().getHeight() / (float) (mGrid.length - mBuffer);
+        return  (float) getHeight() / (float) (mGrid.length - mBuffer);
     }
     
     public float squareWidth() {
-        return (float) getSize().getWidth() / (float) mGrid[0].length;
+        return (float) getWidth() / (float) mGrid[0].length;
     }
     
     public void paint(Graphics g) {
@@ -903,8 +916,8 @@ public class Board extends JPanel{
     private void drawGrid(Graphics g) {
         g.setColor(Color.LIGHT_GRAY);
                 
-        int width = (int) getSize().getWidth(),
-                height = (int) getSize().getHeight();
+        int width = (int) getWidth(),
+                height = (int) getHeight();
         for (int i = 0; i < height / squareHeight(); i++) {
             g.drawLine(0, (int) (squareHeight() * (i + 1)), width, (int) (squareHeight() * (i + 1)));
         }
@@ -913,8 +926,8 @@ public class Board extends JPanel{
         }
         
         g.setColor(Color.BLACK);
-        g.drawLine(0, (int) getSize().getHeight() - 1, (int) getSize().getWidth(),
-                (int) getSize().getHeight() - 1);
+        g.drawLine(0, (int) getHeight() - 1, (int) getWidth(),
+                (int) getHeight() - 1);
     }
     
     private void drawSquare(Graphics g, float x, float y, int tetriminoID) {
@@ -1136,17 +1149,17 @@ public class Board extends JPanel{
         }
         
         public float squareHeight() {
-            return  (float) getSize().getHeight() / (float) (mSideGrid.length);
+            return  (float) getHeight() / (float) (mSideGrid.length);
         }
         
         public float squareWidth() {
-            return (float) getSize().getWidth() / (float) mSideGrid[0].length;
+            return (float) getWidth() / (float) mSideGrid[0].length;
         }
         
         public void paint(Graphics g) {
             super.paint(g);
             drawGrid(g);
-                                
+
             for (int i = 0; i < mSideGrid.length; i++) {
                 for (int j = 0; j < mSideGrid[0].length; j++) {
                     if (mSideGrid[i][j] != -1) {
@@ -1160,8 +1173,8 @@ public class Board extends JPanel{
         private void drawGrid(Graphics g) {
             g.setColor(Color.LIGHT_GRAY);
                     
-            int width = (int) getSize().getWidth(),
-                    height = (int) getSize().getHeight();
+            int width = (int) getWidth(),
+                    height = (int) getHeight();
             for (int i = 0; i < height / squareHeight(); i++) {
                 g.drawLine(0, (int) (squareHeight() * (i + 1)), width, (int) (squareHeight() * (i + 1)));
             }
@@ -1170,13 +1183,13 @@ public class Board extends JPanel{
             }
             
             g.setColor(Color.BLACK);
-            g.drawLine((int) getSize().getWidth() - 1, 0,
-                    (int) getSize().getWidth() - 1, (int) getSize().getHeight() - 1);
-            g.drawLine(0, (int) (getSize().getHeight() - mSectionHeight * squareHeight()), 
-                    (int) getSize().getWidth() - 1, 
-                    (int) (getSize().getHeight() - mSectionHeight * squareHeight()));
-            g.drawLine(0, (int) getSize().getHeight() - 1, (int) getSize().getWidth(),
-                    (int) getSize().getHeight() - 1);
+            g.drawLine((int) getWidth() - 1, 0,
+                    (int) getWidth() - 1, (int) getHeight() - 1);
+            g.drawLine(0, (int) (getHeight() - mSectionHeight * squareHeight()), 
+                    (int) getWidth() - 1, 
+                    (int) (getHeight() - mSectionHeight * squareHeight()));
+            g.drawLine(0, (int) getHeight() - 1, (int) getWidth(),
+                    (int) getHeight() - 1);
         }
         
         private void drawSquare(Graphics g, float x, float y, int tetriminoID) {
@@ -1184,7 +1197,8 @@ public class Board extends JPanel{
             color = sColorSet[tetriminoID % sColorSet.length];
             
             g.setColor(color);
-            g.fillRect((int) x + 1, (int) y + 1, (int) (squareWidth() - 1), (int) (squareHeight() - 1));
+            g.fillRect((int) x + 1, (int) y + 1, (int) (squareWidth() - 1), 
+                    (int) (squareHeight() - 1));
             
             g.setColor(color.brighter());
             g.drawLine((int) x, (int) (y + squareHeight() - 1), (int) x, (int) y);
