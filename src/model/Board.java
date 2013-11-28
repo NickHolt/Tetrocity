@@ -521,6 +521,7 @@ public class Board extends JPanel{
      */
     public void storeTetrimino(Tetrimino tetrimino) {
         mStoredTetrimino = tetrimino;
+        mStoredTetrimino.markStored();
         mSidePanel.updateStoragePiece();
         
         generateLiveTetriminoProjectionCoordinates();
@@ -680,7 +681,6 @@ public class Board extends JPanel{
         }
         
         killTetrimino(tetrimino);
-        generateLiveTetriminoProjectionCoordinates();
 
         repaint();
     }
