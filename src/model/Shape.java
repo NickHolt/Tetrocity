@@ -3,71 +3,52 @@ package model;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import util.Debug;
 import util.Matrices;
 
 /** 
  * A description of a {@link Tetrimino}'s shape. That is, the ordering of the Tetrimino's
- * constituent blocks. A Shape description is simply a LxL matrix where L is the 
- * total number of blocks, where each matrix element represents the presence of a block.
- * Any integer != 0 states that a block exists at that position, while a 0 states the 
- * opposite.
+ * constituent blocks. A Shape description is simply the smallest possible matrix
+ * capable of describing that shape. Any integer != 0 states that a block exists at 
+ * that position, while a 0 states the opposite.
  * 
  *  Example: an "L" shape Tetrimino in the original game of Tetris:
  * 
  * ******
- * *1000*
- * *1000*
- * *1100*
  * *0000*
- * ****** 
+ * *0100*
+ * *0100*
+ * *0110*
+ * *0000*
+ * ******
  * 
  *  Would be represented by the following matrix:
  *  
- *  [[1, 0, 0, 0]
- *  ,[1, 0, 0, 0]
- *  ,[1, 1, 0, 0]
- *  ,[0, 0, 0, 0]].
+ *  [[1, 0]
+ *  ,[1, 0]
+ *  ,[1, 1].
  *  
- *  A Shape is a RELATIVE description. It knows nothing of a Tetrimino's board position.
- * Coordinates are assigned as such: given  the block layout, draw the smallest possible 
- * box around the shape. This box is the matrix to which this Shape's coordinate output 
- * refers. For example, the shape:
- * 
- * *******
- * *00000*
- * *01000*
- * *01000*
- * *01100*
- * *00000*
- * *******
- * 
- *  will be converted to:
- *  
- * ****
- * *10*
- * *10*
- * *11*
- * ****
- * 
- *  The coordinates of that shape will be: {(0, 0), (1, 0), (2, 0), (2, 1)}. 
+ *  A Shape is a RELATIVE description. It knows nothing of a Tetrimino's {@link Board} position.
+ * The coordinates of that shape will be: {(0, 0), (1, 0), (2, 0), (2, 1)}. 
  *  
  *  At its core, a Shape primarily manipulates the coordinate data, as this representation is more
  * useful for external objects. A Shape also tracks Tetrimino dimensional information, such as the width,
- * height, and length of the piece. As a result, it is critical that a Tetrimino
- * update its Shape when blocks are deleted.
+ * height, and length of the piece.
  *  
  * @author Nick Holt
  *
  */
 public class Shape {
+    /* The array of relative coordinates. */
     private int[][] mCoordinates;
+    /* The total number of blocks in this shape. */
     private int mLength;
+    /* The horizontal block span of this shape. */
     private int mWidth;
+    /* The vertical block span of this shape. */
     private int mHeight;
     
     /** A new Shape object whose block matrix, as per the documentation, is give
-     * by the matrix. This method is less efficient than {@link Shape#Shape(int[][], int)}.
+     * by the matrix.
      * 
      * @param matrix The matrix describing the ordering of the blocks.  
      */
@@ -76,6 +57,7 @@ public class Shape {
         matrix = Matrices.shrink(matrix);
         ArrayList<int[]> tmpCoordinates = new ArrayList<int[]>();
         
+        /* Generate coordinates. */
         int rows = matrix.length, cols = matrix[0].length;
         
         for (int i = 0; i < rows; i++) {
@@ -92,14 +74,35 @@ public class Shape {
             mCoordinates[i] = tmpCoordinates.get(i);
         }
         
-        measure(); //generate remaining member variables. 
-
-        Debug.print(2, "New shape sucessfully created.");
+        /* Generate dimensional variables. */
+        measure();
     }
     
-    /** Informs this Shape that the block positioned at matrix coordinate (ROW, COL).
-     *  It is critical to note that the ROW, COL used on this method must refer to the
-     * relative coordinate matrix used to construct this Shape.
+    /** Calculate dimensional member variables.
+     */
+    private void measure() {
+        mLength = mHeight = mWidth = 0; 
+        
+        for (int[] coord : mCoordinates) {
+            mLength++;
+            if (coord[0] > mHeight) {
+                mHeight = coord[0];
+            }
+            if (coord[1] > mWidth) {
+                mWidth = coord[1];
+            }
+        }
+        mHeight++; //adjust for 0-indexing
+        mWidth++;                 
+    }
+    
+    /****************************/
+    /* Coordinate manipulation. */
+    /****************************/
+
+    /** Informs this Shape that the block positioned at matrix coordinate (ROW, COL) was deleted.
+     *  It is critical to note that the ROW, COL used with this method refer to the
+     * relative coordinate matrix.
      *  This method should not be used by any other class except for {@link Tetrimino},
      * via {@link Tetrimino#deleteBlock}.
      * 
@@ -122,34 +125,12 @@ public class Shape {
         measure(); //Re-calculate dimensional data
     }
     
-    /**  
-     * Calculate dimensional member variables and anchor coordinates and refresh
-     * the shape matrix to match the current coordinate set. 
-     */
-    private void measure() {
-        mLength = mHeight = mWidth = 0; 
-        
-        for (int[] coord : mCoordinates) {
-            mLength++;
-            if (coord[0] > mHeight) {
-                mHeight = coord[0];
-            }
-            if (coord[1] > mWidth) {
-                mWidth = coord[1];
-            }
-        }
-        mHeight++; //adjust for 0-indexing
-        mWidth++; 
-                
-        Debug.print(2, "Shape measured.");
-    }
-    
     /** Rotates this Shape 90 degrees clockwise.
      */
     public void rotateClockwise() {
         /* A Shape rotation is not about any specific point, as the "smallest
          * possible shape-matrix" idea must hold both before and after a rotation.
-         * A valid rotation looks as follows:
+         * An example of a valid rotation looks as follows:
          * 
          * ****    ******
          * *10* -> *1111*
@@ -168,7 +149,7 @@ public class Shape {
          * the distance between the two blocks is still c. Since the topmost block
          * is in row 0, the original block's new row is c. 
          * 
-         * You can apply similar logic to see the column mapping c -> mHeight - r -1,
+         * You can apply similar logic to see the column mapping c -> mHeight - r - 1,
          * keeping in mind that the bottom block is always in row (mHeight - 1). 
          */
         
@@ -178,7 +159,7 @@ public class Shape {
         }   
         measure();
     }
-    
+
     /** Rotates this Shape 90 degrees counter-clockwise about its rotational 
      * coordinate.
      */
@@ -193,12 +174,14 @@ public class Shape {
         measure();
     }
     
+    /************/
+    /* Getters. */
+    /************/
+    
     /** Returns a list of [row, column] matrix-coordinates representing the
      * block matrix-coordinates on an infinitely-sized matrix. These coordinates
-     * are in NO PARTICULAR ORDER. 
+     * are in no particular order. 
      * 
-     *  Note that matrix indexing begins at 0. 
-     *
      * @return A list of relative block matrix-coordinates. 
      */
     public int[][] getRelativeMatrixCoordinates() {
@@ -228,12 +211,13 @@ public class Shape {
         return mHeight;
     }
     
+    /**********************************/
+    /* Miscellaneous utility methods. */
+    /**********************************/
+    
     /** Checks if the shape matrix is a valid description of a Tetrimino 
-     * piece of the any length. For a piece to be valid, every constituent
+     * piece of any length. For a piece to be valid, every constituent
      * block must share an edge with another (unless the length is 1). 
-     * 
-     *  This method assumes the matrix is a valid matrix. That is, every
-     *  row has the same number of elements. 
      * 
      * @param matrix The shape matrix to validate. 
      * @return True IFF the matrix if a valid description of Tetrimino piece 
@@ -260,7 +244,6 @@ public class Shape {
             }
         }
         
-        Debug.print(3, "Tetrimino validity checked.");
         return true;
     }
 }
