@@ -4,7 +4,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
@@ -12,6 +16,7 @@ import model.Board;
 import model.Tetrimino;
 import util.Direction;
 import util.GameOverException;
+import util.ImagePanel;
 import util.TetriminoFactory;
 
 /** The fundamental controller for a game of Tetrocity. It is the job of the GuidedEngine to construct the
@@ -36,10 +41,7 @@ public class Engine extends JFrame{
     /* The base width of the JFrame is given by 20*ROW_RATIO*Max_tetrimino_length. 
      * In a normal game of Tetris, width = 400. */
     public static final int STANDARD_WIDTH_RATIO = 25;
-    /* The length that String should be before it is placed in the JLabel, to avoid
-     * layout issues. */
-    public static final int LABEL_STRING_LENGTH = 0; //I know this is lame but I'm terrible at Swing...
-    
+
     private int mLevel, mLinesClearedThisLevel;
     private boolean mIsPaused, mIsHalted;
     private Board mBoard;
@@ -47,6 +49,7 @@ public class Engine extends JFrame{
     private Player mPlayer;    
     private GuidedLevelParameters mLevelParameters;
     private Board.SidePanel mSidePanel;
+    private ImagePanel mAbilityPanel0, mAbilityPanel1, mAbilityPanel2, mAbilityPanel3;
     private JLabel mScoreBar;
     
     /** A new GuidedEngine for a game of Tetrocity. Instantiating an Engine will set the game parameters.
@@ -73,7 +76,7 @@ public class Engine extends JFrame{
     /** Begin the game of Tetrocity. The game will continue until either the JFrame is closed or 
      * a GameOverException is raised (to be changed, obviously).
      */
-    public void run() {
+    public void run() {        
         constructGUI();
         
         /* Run the game. */
@@ -106,7 +109,7 @@ public class Engine extends JFrame{
                     gameOver();
                 }
                 
-                mScoreBar.setText("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
+                setLevelAndScoreMessage();
                 logicTime = System.currentTimeMillis();
             }
         }
@@ -120,18 +123,33 @@ public class Engine extends JFrame{
                 
         mSidePanel = mBoard.getSidePanel();        
         
-        mScoreBar = new JLabel("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
-                        
+        mScoreBar = new JLabel();
+        setLevelAndScoreMessage();
+        
+        BufferedImage lockImage = null;
+        /*
+        try {
+            lockImage = ImageIO.read(new File("src/images/lock.png"));
+        } catch (IOException e) {
+            System.err.println("lock.png could not be read.");
+            System.exit(0);
+        }
+        mAbilityPanel0 = new ImagePanel(lockImage);
+        mAbilityPanel1 = new ImagePanel(lockImage);
+        mAbilityPanel2 = new ImagePanel(lockImage);
+        mAbilityPanel3 = new ImagePanel(lockImage); */
+        
+        //TODO ADD ABILITY PANELS
+                  
         float width = 2 * STANDARD_WIDTH_RATIO * cols,
                 height = (int) (width * rows / cols);
                         
-        setSize((int) width, (int) height); //number tweaking. Forgive me Java gods
+        setSize((int) width, (int) height);
         setTitle("Tetrocity");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setVisible(true);
-        setResizable(false);
-        
+
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         
@@ -161,8 +179,6 @@ public class Engine extends JFrame{
     
     private void doGameLogic() throws GameOverException {
         fillBoardQueue();
-
-        interpretInput(mPlayer.getMoveKeyCode());
         
         int rowsCleared = mBoard.clearRows();
         updateScore(rowsCleared);
@@ -186,7 +202,9 @@ public class Engine extends JFrame{
             } catch (GameOverException e) {
                 gameOver();
             }
-        }               
+        }      
+        
+        interpretInput(mPlayer.getMoveKeyCode());
     }
     
     /** Interpret a KeyEvent keyCode and respond as dictated by the game rules.
@@ -228,7 +246,7 @@ public class Engine extends JFrame{
      *  The first term rewards multiple lines cleared at once with an exponentially weighted 
      * bonus. The second term causes higher levels to reward exponentially higher scores in 
      * a similar fashion. The particular constants used in this equation were determined via
-     * a informal analysis. 
+     * an informal analysis. 
      * 
      * @param linesCleared The number of lines cleared.
      * @return The amount of score to add. 
@@ -254,11 +272,18 @@ public class Engine extends JFrame{
                 * Math.exp(mLevel / (double) GuidedLevelParameters.MAX_LEVEL);
     }
     
-    
     public void fillBoardQueue() {
         while (mBoard.queueTooSmall()) {
             mBoard.enqueueTetrimino(mTetriminoFactory.getRandomTetrimino());
         }
+    }
+    
+    private void setLevelAndScoreMessage() {
+        mScoreBar.setText("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
+    }
+    
+    private void setPausedMessage() {
+        mScoreBar.setText("PAUSED. Press Escape to get back in the game!");
     }
     
     /** Update the player's score given the number of lines cleared. 
@@ -275,7 +300,10 @@ public class Engine extends JFrame{
         removeKeyListener(mPlayer);
         addKeyListener(pausedKeyListener);
         
-        mScoreBar.setText("Paused.");
+        setPausedMessage();
+        
+        mBoard.setVisible(false);
+        mSidePanel.setVisible(false);
         
         while (mIsPaused) {
             System.out.print(""); //This fixes a bug and I don't know why. 
@@ -283,6 +311,9 @@ public class Engine extends JFrame{
         
         removeKeyListener(pausedKeyListener);
         addKeyListener(mPlayer);
+        
+        mBoard.setVisible(true);
+        mSidePanel.setVisible(true);
     }
     
     private void restart() {
@@ -295,17 +326,22 @@ public class Engine extends JFrame{
         fillBoardQueue();
         
         mIsPaused = false;
+        mIsHalted = false;        
     }
     
     private void halt() {
         removeKeyListener(mPlayer);
-        addKeyListener(new LoopKeyListener(false));
+        
+        LoopKeyListener loopKeyListener = new LoopKeyListener(false);
+        addKeyListener(loopKeyListener);
         mIsHalted = true;
         while(mIsHalted) {
             //Loop forever
             System.out.print("");
         }
         
+        removeKeyListener(loopKeyListener);
+        addKeyListener(mPlayer);
         restart();
     }
     
@@ -325,10 +361,8 @@ public class Engine extends JFrame{
         public void keyPressed(KeyEvent e) {
             if (mIsPausedListener && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 mIsPaused = false;
-            } else if (mIsPausedListener && e.getKeyCode() == KeyEvent.VK_R) {
-                restart();
             } else if (e.getKeyCode() == KeyEvent.VK_R) {
-                mIsHalted = false;
+                restart();
             }
         }
 
@@ -366,7 +400,7 @@ public class Engine extends JFrame{
 
         public GuidedLevelParameters() {
             mLevelParameters = new float[MAX_LEVEL][5];
-            mLevelParameters[0] = new float[]{1, 26, 3, 3, 1};
+            mLevelParameters[0] = new float[]{1, 26, 3, 3, 2};
             mLevelParameters[1] = new float[]{1, 26, 3, 4, 2};
             mLevelParameters[2] = new float[]{1, 24, 3, 4, 2};
             mLevelParameters[3] = new float[]{2, 24, 3, 4, 3};
