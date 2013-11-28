@@ -54,6 +54,9 @@ public class Board extends JPanel{
     private int mBuffer;
     /* All currently live Tetriminoes (i.e. ones that the player controls). */
     private ArrayList<Tetrimino> mLiveTetriminoes;
+    /* The coordinate set that represents the position of the bottom-most live Tetrimino if it were
+     * dropped */
+    private int[][] mLiveTetriminoProjectionCoordinates;
     /* The stored Tetrimino. */
     private Tetrimino mStoredTetrimino;
     /* The Queue of upcoming Tetriminoes. Live Tetriminoes are taken from the Queue. */
@@ -319,6 +322,8 @@ public class Board extends JPanel{
         for (Tetrimino deadTetrimino : toKill) {
             killTetrimino(deadTetrimino);
         }
+        
+        generateLiveTetriminoProjectionCoordinates();
                 
         refreshGrid();
         repaint();
@@ -378,6 +383,8 @@ public class Board extends JPanel{
                 bottomLiveTetrimino.shift(shiftDirection);
             }
             //Note non-south shift failures simply do nothing for that Tetrimino
+            
+            generateLiveTetriminoProjectionCoordinates();
                     
             refreshGrid();
             repaint();
@@ -388,8 +395,33 @@ public class Board extends JPanel{
      * the largest possible such that a collision does not occur during its trajectory. 
      * 
      *  Once the Tetrimino is dropped, it is killed.
+     *  
+     *  @return the number of lines the bottom-most Tetrimino was dropped.
      */
     public int dropTetrimino() {
+        Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
+        int dropVal = generateLiveTetriminoProjectionCoordinates();
+        
+        int[] rootCoordinate = bottomLiveValidTetrimino.getRootCoordinate();
+        bottomLiveValidTetrimino.setRootRow(rootCoordinate[0] + dropVal);
+                        
+        refreshGrid();
+        mSidePanel.updateQueuePieces();
+        repaint();
+        
+        killTetrimino(bottomLiveValidTetrimino);
+        
+        return dropVal;
+    }
+    
+    /** Generates the projection coordinates of the bottom-most live Tetrimino. That is, the
+     * coordinates it would have if it were dropped as far as possible. As added utility, this
+     * method will return the number of lines the piece could be shifted south to achieve the
+     * projection coordinates.
+     * 
+     * @return The number of South shifts needed to achieve the projection coordinates.
+     */
+    public int generateLiveTetriminoProjectionCoordinates() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
         int dropVal = 0;
 
@@ -408,11 +440,11 @@ public class Board extends JPanel{
             }
             dropVal--; //One step back was maximum
             
-            bottomLiveValidTetrimino.setRootCoordinate(new int[]{rootCoord[0] + dropVal,
+            Tetrimino dummyTetrimino = new Tetrimino(bottomLiveValidTetrimino.getShape()
+                    , bottomLiveValidTetrimino.getID(), new int[]{rootCoord[0] + dropVal,
                     rootCoord[1]});
-            refreshGrid();
-            killTetrimino(bottomLiveValidTetrimino);   
-            repaint();
+            
+            mLiveTetriminoProjectionCoordinates = dummyTetrimino.getCoordinates();
         }
         
         return dropVal;
@@ -467,7 +499,8 @@ public class Board extends JPanel{
             }
             
             mSidePanel.updateStoragePiece();
-        } 
+            generateLiveTetriminoProjectionCoordinates();
+        }         
     }
     
     /** Replace the Tetrimino currently in storage with the input Tetrimino. This will
@@ -476,6 +509,8 @@ public class Board extends JPanel{
     public void storeTetrimino(Tetrimino tetrimino) {
         mStoredTetrimino = tetrimino;
         mSidePanel.updateStoragePiece();
+        
+        generateLiveTetriminoProjectionCoordinates();
     }
     
     /** Attempts to rotate the bottom live Tetrimino piece clockwise. This method implements fluid
@@ -516,6 +551,8 @@ public class Board extends JPanel{
                         + shiftVal); //shift it back
                 bottomLiveValidTetrimino.rotateCounterClockwise(); //rotate it back
             } else {
+                generateLiveTetriminoProjectionCoordinates();
+
                 refreshGrid();
                 repaint();
             }
@@ -561,6 +598,8 @@ public class Board extends JPanel{
                         + shiftVal); //shift it back
                 bottomLiveValidTetrimino.rotateClockwise(); //rotate it back
             } else {
+                generateLiveTetriminoProjectionCoordinates();
+
                 refreshGrid();
                 repaint();
             }
@@ -613,6 +652,8 @@ public class Board extends JPanel{
     public void killTetrimino(Tetrimino tetrimino) {
         mLiveTetriminoes.remove(tetrimino);
         mLiveTetriminoCoordinates.remove(tetrimino.getID());
+        
+        generateLiveTetriminoProjectionCoordinates();
     }
     
     /** Removes the Tetrimino from the grid and the list of live Tetriminoes. 
@@ -626,6 +667,8 @@ public class Board extends JPanel{
         }
         
         killTetrimino(tetrimino);
+        generateLiveTetriminoProjectionCoordinates();
+
         repaint();
     }
     
@@ -701,6 +744,8 @@ public class Board extends JPanel{
             tetrimino.setRootCoordinate(rootCoordinate);
             
             mLiveTetriminoes.add(tetrimino);
+            
+            generateLiveTetriminoProjectionCoordinates();
             
             refreshGrid();
             repaint();            
@@ -848,6 +893,11 @@ public class Board extends JPanel{
                 }
             }
         }
+        
+        for (int[] projection : mLiveTetriminoProjectionCoordinates) {
+            drawOpaqueSquare(g, projection[1] * squareWidth(),
+                    (projection[0] - mBuffer) * squareHeight());
+        }        
     }
     
     private void drawGrid(Graphics g) {
@@ -868,9 +918,7 @@ public class Board extends JPanel{
     }
     
     private void drawSquare(Graphics g, float x, float y, int tetriminoID) {
-        Color color;
-        color = sColorSet[tetriminoID % sColorSet.length];
-        
+        Color color = sColorSet[tetriminoID % sColorSet.length];
         g.setColor(color);
         g.fillRect((int) x + 1, (int) y + 1, (int) (squareWidth() - 1), (int) (squareHeight() - 1));
         
@@ -879,6 +927,24 @@ public class Board extends JPanel{
         g.drawLine((int) x, (int) y, (int) (x + squareWidth() - 1), (int) y);
         
         g.setColor(color.darker());
+        g.drawLine((int) x + 1, (int) (y + squareHeight() - 1),
+                (int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1));
+        g.drawLine((int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1), 
+                (int) (x + squareWidth() - 1), (int) y + 1);
+    }
+    
+    /** Draws an opaque, grey square at the provided coordinates. 
+     */
+    private void drawOpaqueSquare(Graphics g, float x, float y) {
+        Color baseColor = Color.GRAY;
+        Color color = new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue()
+                , baseColor.getAlpha() / 3);
+        g.setColor(color);
+        g.fillRect((int) x + 1, (int) y + 1, (int) (squareWidth() - 1), (int) (squareHeight() - 1));
+        
+        g.setColor(color.brighter());
+        g.drawLine((int) x, (int) (y + squareHeight() - 1), (int) x, (int) y);
+        g.drawLine((int) x, (int) y, (int) (x + squareWidth() - 1), (int) y);        
         g.drawLine((int) x + 1, (int) (y + squareHeight() - 1),
                 (int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1));
         g.drawLine((int) (x + squareWidth() - 1), (int) (y + squareHeight() - 1), 
