@@ -29,6 +29,7 @@ import util.TetriminoFactory;
  */
 public class Engine extends JFrame{
     private static final long serialVersionUID = 1L;
+    /* The number of times per second logical operations are performed. */
     public static final int LOGICAL_FPS = 60;
     /* E.g. number of grid rows = max_length * ROW_RATIO */
     public static final float ROW_RATIO = 5.0f, COLUMN_RATIO = 2.5f;
@@ -38,19 +39,16 @@ public class Engine extends JFrame{
     public static final int STRAIGHT_LINE_EXPECTED_SPACING = 10;
     /* The factor by which the drop speed is multiplied as levels increase */
     public static final float DROP_SPEED_INCREASE_FACTOR = 1.1f;
-    /* The base width factor for the JFrame. This value may be tweaked to scale all 
-     * components proportionally. */
-    public static final int BASE_WIDTH_FACTOR = 27;
-    /* Ability duration constants. */
+    /* This value may be tweaked to scale all components proportionally. */
+    private static final int BASE_WIDTH_FACTOR = 27;
+    /* Ability constants. */
     public static final int BOOST_DURATION = 5;
     public static final int BOOST_COOLDOWN = 30;
     public static final int STRAIGHT_LINE_ABILITY_COOLDOWN = 60;
     public static final int ZERO_GRAVITY_DURATION = 5;
     public static final int ZERO_GRAVITY_COOLDOWN = 120;
-    public static final int CLEAR_GRID_COOLDOWN = 600;
-
-    private int mLevel, mLinesClearedThisLevel;
-    private boolean mIsWelcoming, mIsPaused, mIsHalted;
+    public static final int CLEAR_GRID_COOLDOWN = 300;
+    /* Game components. */
     private Board mBoard;
     private TetriminoFactory mTetriminoFactory;
     private Player mPlayer;    
@@ -58,6 +56,10 @@ public class Engine extends JFrame{
     private Board.SidePanel mSidePanel;
     private ImagePanel mAbilityPanel0, mAbilityPanel1, mAbilityPanel2, mAbilityPanel3;
     private JLabel mScoreBar;
+    /* Game states. */
+    private int mLevel, mLinesClearedThisLevel;
+    private boolean mIsWelcoming, mIsPaused, mIsHalted;
+    /* Ability states. */
     private boolean mBoostEnabled, mBoostAvailable, mBoostUnlocked;
     private long mBoostPreviousTime;
     private boolean mLinePieceAbilityAvailable, mLinePieceAbilityUnlocked;
@@ -67,8 +69,12 @@ public class Engine extends JFrame{
     private boolean mClearGridAvailable, mClearGridUnlocked;
     private long mClearGridPreviousTime;
     
-    /** A new GuidedEngine for a game of Tetrocity. Instantiating an Engine will set the game parameters.
-     * @throws GameOverException 
+    
+    /** A new GuidedEngine for a game of Tetrocity. Instantiating an Engine will set the game parameters,
+     * however the GUI will not be constructed until {@link Engine#run()} is called.
+     * 
+     *  A new Engine begins a game of Tetrocity at level 1, with a score of 0 and all abilities 
+     * locked. 
      */
     public Engine() {
         mLevelParameters = new GuidedLevelParameters();
@@ -91,12 +97,19 @@ public class Engine extends JFrame{
         
         mPlayer = new Player();
         
-        setFocusable(true);
         addKeyListener(mPlayer);
     }
     
-    /** Begin the game of Tetrocity. The game will continue until either the JFrame is closed or 
-     * a GameOverException is raised (to be changed, obviously).
+    /** Begin the game of Tetrocity. This method facilitates the timing of the logical operations
+     * of the Engine. This method firsts construct the GUI and presents the player the welcome
+     * message. Then, the following operations are performed:
+     * * Drop pieces periodically as dictated by the {@link Engine#INITIAL_DROP_SPEED} and level increase 
+     * factor.
+     * * Check if the player has cleared enough lines to progress to the next level. If so,
+     * update level parameters.
+     * * Perform logical operations, such as line clearing and queue filling periodically as dictated by 
+     * the {@link Engine#LOGICAL_FPS}.
+     * * End the game if a {@link GameOverException} is observed.
      */
     public void run() {        
         constructGUI();
@@ -112,187 +125,58 @@ public class Engine extends JFrame{
                 
         while (true) {
             if (!mZeroGravityEnabled 
-                    && System.currentTimeMillis() >= dropTime + dropPeriod) {
+                    && System.currentTimeMillis() >= dropTime + dropPeriod) { //drop Tetriminoes
                 mBoard.shiftAllLiveTetriminoes(Direction.SOUTH);
                 dropTime = System.currentTimeMillis();
             }
-            if (System.currentTimeMillis() >= logicTime + logicPeriod) {
+            if (System.currentTimeMillis() >= logicTime + logicPeriod) { //update level
                 if (mLinesClearedThisLevel >= mLevelParameters.getNextLevelLinesCleared(mLevel)) {
                     mLinesClearedThisLevel = 0;
-                    mLevel++; //update level
+                    mLevel++;
                     dropPeriod = (1 / (float) (INITIAL_DROP_SPEED * 
                             Math.pow(DROP_SPEED_INCREASE_FACTOR, 
                                     mLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
                     mTetriminoFactory.
                         setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));    
                     
-                    if (mLevel == 2) {
+                    if (mLevel == 10) { //unlock abilities (note these levels cannot be skipped)
                         setBoostGraphic();
                         mBoostUnlocked = true;
-                    } else if (mLevel == 3) {
+                    } else if (mLevel == 20) {
                         setStraightLineGraphic();
                         mLinePieceAbilityUnlocked = true;
-                    } else if (mLevel == 4) {
+                    } else if (mLevel == 30) {
                         setZeroGravityGraphic();
                         mZeroGravityUnlocked = true;
-                    } else if (mLevel == 5) {
+                    } else if (mLevel == 40) {
                         setClearGridGraphic();
                         mClearGridUnlocked = true;
                     }
                 }   
                 
-                try {
-                    doGameLogic();
-                } catch (GameOverException e) {
-                    gameOver();
-                }
+                doGameLogic();
                 
                 setLevelAndScoreMessage();
                 logicTime = System.currentTimeMillis();
             }
         }
     }
+    
+    /***********************/
+    /* Logical Operations. */
+    /***********************/
 
-    private void constructGUI() {
-        int rows = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * ROW_RATIO),
-                cols = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * COLUMN_RATIO),
-                buffer = GuidedLevelParameters.MAX_TETRIMINO_LENGTH;
-        mBoard = new Board(rows, cols, buffer, GuidedLevelParameters.MAX_TETRIMINO_LENGTH);
-                
-        mSidePanel = mBoard.getSidePanel();        
-        
-        mScoreBar = new JLabel();
-        setLevelAndScoreMessage();
-        
-        BufferedImage lockImage = null;
-        
-        try {
-            lockImage = ImageIO.read(new File("src/images/lock.png"));
-        } catch (IOException e) {
-            System.err.println("lock.png could not be read.");
-            System.exit(0);
-        }
-        mAbilityPanel0 = new ImagePanel(lockImage);
-        mAbilityPanel0.setBottomText("Level 10");
-        mAbilityPanel1 = new ImagePanel(lockImage);
-        mAbilityPanel1.setBottomText("Level 20");
-        mAbilityPanel2 = new ImagePanel(lockImage);
-        mAbilityPanel2.setBottomText("Level 30");
-        mAbilityPanel3 = new ImagePanel(lockImage);
-        mAbilityPanel3.setBottomText("Level 40");
-                          
-        float width = 2 * BASE_WIDTH_FACTOR * cols,
-                height = (int) (width * rows / cols);
-                        
-        setSize((int) width, (int) height);
-        setTitle("Tetrocity");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setVisible(true);
-
-        setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        
-        c.weighty = 1;
-        c.anchor = GridBagConstraints.LINE_START;
-                
-        c.fill = GridBagConstraints.BOTH;
-        c.gridy = 0;
-        c.gridx = 0;
-        c.gridheight = 4;
-        c.gridwidth = 1;
-        c.weightx = 0.2;
-        add(mSidePanel, c);
-        
-        c.gridy = 0;
-        c.gridx = 1;
-        c.gridheight = 4;
-        c.gridwidth = 1;
-        c.weightx = 0.4;
-        add(mBoard, c);
-        
-        c.gridy = 0;
-        c.gridx = 2;
-        c.gridheight = 1;
-        c.gridwidth = 1;
-        c.weightx = 0.1;
-        add(mAbilityPanel0, c);
-        
-        c.gridy = 1;
-        c.gridx = 2;
-        add(mAbilityPanel1, c);
-        
-        c.gridy = 2;
-        c.gridx = 2;
-        add(mAbilityPanel2, c);
-        
-        c.gridy = 3;
-        c.gridx = 2;
-        add(mAbilityPanel3, c);
-        
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridwidth = 2;
-        c.weighty = 0;
-        c.weightx = 0;
-        c.anchor = GridBagConstraints.PAGE_END;
-        c.gridy = 4;
-        c.gridx = 0;
-        add(mScoreBar, c); 
-    }
-    
-    private void setBoostGraphic() {
-        BufferedImage image = null;
-        
-        try {
-            image = ImageIO.read(new File("src/images/boost_score.png"));
-        } catch (IOException e) {
-            System.err.println("boost_score.png could not be read.");
-            System.exit(0);
-        }
-        mAbilityPanel0.setImage(image);
-        mAbilityPanel0.setBottomText("Score Boost");
-    }
-    
-    private void setStraightLineGraphic() {
-        BufferedImage image = null;
-        
-        try {
-            image = ImageIO.read(new File("src/images/line_piece.png"));
-        } catch (IOException e) {
-            System.err.println("line_piece.png could not be read.");
-            System.exit(0);
-        }
-        mAbilityPanel1.setImage(image);
-        mAbilityPanel1.setBottomText("Line Piece");
-    }
-    
-    private void setZeroGravityGraphic() {
-        BufferedImage image = null;
-        
-        try {
-            image = ImageIO.read(new File("src/images/zero_gravity.png"));
-        } catch (IOException e) {
-            System.err.println("zero_gravity.png could not be read.");
-            System.exit(0);
-        }
-        mAbilityPanel2.setImage(image);
-        mAbilityPanel2.setBottomText("Zero Gravity");
-    }
-    
-    private void setClearGridGraphic() {
-        BufferedImage image = null;
-        
-        try {
-            image = ImageIO.read(new File("src/images/clear_grid.png"));
-        } catch (IOException e) {
-            System.err.println("clear_grid.png could not be read.");
-            System.exit(0);
-        }
-        mAbilityPanel3.setImage(image);
-        mAbilityPanel3.setBottomText("Clear Grid");
-    }
-    
-    private void doGameLogic() throws GameOverException {
+    /** Performs the period game logic functions of this Engine. These roles are, in this order:
+     * *Ensure the {@link Board}'s Tetrimino queue is full.
+     * *Attempt to clear rows and update the player's score as needed.
+     * *Check if there currently is a live Tetrimino on the screen or the spacing between two
+     * is less than that given by the level parameters. If not, put a Tetrimino on the board.
+     * *If putting a Tetrimino on the Board caused a GameOverException, run the game over protocol.
+     * *Update ability states
+     * *Interpret one player input
+     * 
+     */
+    private void doGameLogic() {
         fillBoardQueue();
         
         int rowsCleared = mBoard.clearRows();
@@ -307,7 +191,8 @@ public class Engine extends JFrame{
             try {
                 mBoard.putTetrimino();
             } catch (GameOverException e) {
-                gameOver();
+                setGameOverMessage();
+                halt();
             }
         }
         
@@ -315,7 +200,8 @@ public class Engine extends JFrame{
             try {
                 mBoard.putTetrimino();
             } catch (GameOverException e) {
-                gameOver();
+                setGameOverMessage();
+                halt();
             }
         }      
         
@@ -323,55 +209,12 @@ public class Engine extends JFrame{
         interpretInput(mPlayer.getMoveKeyCode());
     }
     
-    /** Interpret a KeyEvent keyCode and respond as dictated by the game rules.
+    /** Update the player's score given the number of lines cleared. 
      * 
-     * @param keyCode The key code to interpret. 
+     * @param linesCleared The number of lines cleared.
      */
-    private void interpretInput(int keyCode) {
-        if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
-            mBoard.shiftTetrimino(Direction.EAST);
-        } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_KP_DOWN) {
-            mBoard.shiftTetrimino(Direction.SOUTH);
-        } else if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_KP_LEFT) {
-            mBoard.shiftTetrimino(Direction.WEST);
-        } else if (keyCode == KeyEvent.VK_SPACE) {
-            mPlayer.addToScore(scoreLinesDropped(mBoard.dropTetrimino()));
-        } else if (keyCode == KeyEvent.VK_SHIFT) {
-            try {
-                mBoard.storeTetrimino();
-            } catch (GameOverException e) {
-                gameOver();
-            }
-        } else if (keyCode == KeyEvent.VK_Z) {
-            mBoard.rotateTetriminoCounterClockwise();
-        } else if (keyCode == KeyEvent.VK_X || keyCode == KeyEvent.VK_UP 
-                || keyCode == KeyEvent.VK_KP_UP) {
-            mBoard.rotateTetriminoClockwise();
-        } else if (keyCode == KeyEvent.VK_ESCAPE) {
-            pause();
-        } else if (keyCode == KeyEvent.VK_R) {
-            restart();
-        } else if (keyCode == KeyEvent.VK_A){
-            if (mBoostUnlocked && mBoostAvailable) {
-                mBoostEnabled = true;
-                mBoostPreviousTime = System.currentTimeMillis();
-            }
-        } else if (keyCode == KeyEvent.VK_S){
-            if (mLinePieceAbilityUnlocked && mLinePieceAbilityAvailable) {
-                mBoard.storeTetrimino(mTetriminoFactory.getRandomMaxLengthStraightLineTetrimino());
-                mLinePiecePreviousTime = System.currentTimeMillis();
-            }
-        } else if (keyCode == KeyEvent.VK_D){
-            if (mZeroGravityUnlocked && mZeroGravityAvailable) {
-                mZeroGravityEnabled = true;
-                mZeroGravityPreviousTime = System.currentTimeMillis();
-            }
-        } else if (keyCode == KeyEvent.VK_F) {
-            if (mClearGridUnlocked && mClearGridAvailable) {
-                mBoard.emptyGrid();
-                mClearGridPreviousTime = System.currentTimeMillis();
-            }
-        }
+    private void updateScore(int linesCleared) {
+        mPlayer.addToScore(scoreLinesCleared(linesCleared));
     }
 
     /** Uses current game information to interpret the corresponding increase in score after
@@ -396,7 +239,7 @@ public class Engine extends JFrame{
             return baseScore;
         }
     }
-    
+
     /** Uses current game information to interpret the corresponding increase in score after
      * a Tetrimino piece was dropped a number of lines. 
      * 
@@ -417,13 +260,11 @@ public class Engine extends JFrame{
             return baseScore;
         }
     }
-    
-    private void fillBoardQueue() {
-        while (mBoard.queueTooSmall()) {
-            mBoard.enqueueTetrimino(mTetriminoFactory.getRandomTetrimino());
-        }
-    }
-    
+
+    /** Updates ability states. This method checks the last time the ability was used, 
+     * and determines if the ability is either active, ready, or on cooldown. Graphic
+     * information and ability state variables are updated accordingly. 
+     */
     private void updateAbilityStates() {
         if (mBoostUnlocked) {
             long elapsedTime = System.currentTimeMillis() - mBoostPreviousTime;
@@ -498,27 +339,75 @@ public class Engine extends JFrame{
             }
         }
     }
-    
-    private void setWelcomeMessage() {
-        mScoreBar.setText("Welcome to Tetrocity! Press 'Space' to begin. Good luck!");
-    }
-    
-    private void setLevelAndScoreMessage() {
-        mScoreBar.setText("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
-    }
-    
-    private void setPausedMessage() {
-        mScoreBar.setText("PAUSED. Press 'Escape' to get back in the game!");
-    }
-    
-    /** Update the player's score given the number of lines cleared. 
+
+    /** Interpret a KeyEvent keyCode and respond as dictated by the game rules.
      * 
-     * @param linesCleared The number of lines cleared.
+     * @param keyCode The key code to interpret. 
      */
-    private void updateScore(int linesCleared) {
-        mPlayer.addToScore(scoreLinesCleared(linesCleared));
+    private void interpretInput(int keyCode) {
+        if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
+            mBoard.shiftTetrimino(Direction.EAST);
+        } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_KP_DOWN) {
+            mBoard.shiftTetrimino(Direction.SOUTH);
+        } else if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_KP_LEFT) {
+            mBoard.shiftTetrimino(Direction.WEST);
+        } else if (keyCode == KeyEvent.VK_SPACE) {
+            mPlayer.addToScore(scoreLinesDropped(mBoard.dropTetrimino()));
+        } else if (keyCode == KeyEvent.VK_SHIFT) {
+            try {
+                mBoard.storeTetrimino();
+            } catch (GameOverException e) {
+                setGameOverMessage();
+                halt();
+            }
+        } else if (keyCode == KeyEvent.VK_Z) {
+            mBoard.rotateTetriminoCounterClockwise();
+        } else if (keyCode == KeyEvent.VK_X || keyCode == KeyEvent.VK_UP 
+                || keyCode == KeyEvent.VK_KP_UP) {
+            mBoard.rotateTetriminoClockwise();
+        } else if (keyCode == KeyEvent.VK_ESCAPE) {
+            pause();
+        } else if (keyCode == KeyEvent.VK_R) {
+            restart();
+        } else if (keyCode == KeyEvent.VK_A){
+            if (mBoostUnlocked && mBoostAvailable) {
+                mBoostEnabled = true;
+                mBoostPreviousTime = System.currentTimeMillis();
+            }
+        } else if (keyCode == KeyEvent.VK_S){
+            if (mLinePieceAbilityUnlocked && mLinePieceAbilityAvailable) {
+                mBoard.storeTetrimino(mTetriminoFactory.getRandomMaxLengthStraightLineTetrimino());
+                mLinePiecePreviousTime = System.currentTimeMillis();
+            }
+        } else if (keyCode == KeyEvent.VK_D){
+            if (mZeroGravityUnlocked && mZeroGravityAvailable) {
+                mZeroGravityEnabled = true;
+                mZeroGravityPreviousTime = System.currentTimeMillis();
+            }
+        } else if (keyCode == KeyEvent.VK_F) {
+            if (mClearGridUnlocked && mClearGridAvailable) {
+                mBoard.emptyGrid();
+                mClearGridPreviousTime = System.currentTimeMillis();
+            }
+        }
+    }
+
+    /** Ensures that this Engine's {@link Board} Tetrimino queue is full.
+     */
+    private void fillBoardQueue() {
+        while (mBoard.queueTooSmall()) {
+            mBoard.enqueueTetrimino(mTetriminoFactory.getRandomTetrimino());
+        }
     }
     
+    /*************************/
+    /* Game state protocols. */
+    /*************************/
+    
+    /** Runs the welcome protocol. This simply hides all components except for the JLabel,
+     * displays the appropriate message, and waits for the player to press the appropriate
+     * key to start the game.
+     */
     private void welcome() {
         mIsWelcoming = true;
         LoopKeyListener welcomeKeyListener = new LoopKeyListener(LoopKeyListener.WELCOME);
@@ -550,6 +439,10 @@ public class Engine extends JFrame{
         mAbilityPanel3.setVisible(true);
     }
     
+    /** Runs the pause protocol. This simply hides all components except for the JLabel,
+     * displays the appropriate message, and waits for the player to press the appropriate
+     * key to resume the game.
+     */
     private void pause() {
         mIsPaused = true;
         LoopKeyListener pausedKeyListener = new LoopKeyListener(LoopKeyListener.PAUSED);
@@ -581,6 +474,8 @@ public class Engine extends JFrame{
         mAbilityPanel3.setVisible(true);
     }
     
+    /** Runs the welcome protocol. This resets all state variables and components. 
+     */
     private void restart() {
         mLevel = 1;
         mLinesClearedThisLevel = 0;
@@ -603,6 +498,11 @@ public class Engine extends JFrame{
         mIsHalted = false;        
     }
     
+    /** Runs the halt protocol. This simply displays the appropriate message, and waits for the 
+     * player to press the appropriate key to start a new game.
+     * 
+     *  This protocol is run when the game is over.
+     */
     private void halt() {
         removeKeyListener(mPlayer);
         
@@ -619,9 +519,190 @@ public class Engine extends JFrame{
         restart();
     }
     
-    private void gameOver() {
-        String text = "GAME OVER! Level: " + mLevel + ", Score: " + (int) mPlayer.getScore() + ". ";
+    /********************/
+    /* GUI Manipulation */
+    /********************/
+    
+    /** Creates all components of the GUI, alone with the appropriate initial text field values.
+     * This Engine is a JFrame whose size is determined by 
+     * {@link GuidedLevelParameters#MAX_TETRIMINO_LENGTH}, {@link Engine#ROW_RATIO}, 
+     * {@link Engine#COLUMN_RATIO} and {@link Engine#BASE_WIDTH_FACTOR}.
+     * 
+     *  The layout of the JFrame is a {@link GridBagLayout} with 7 components: the {@link Board.SidePanel},
+     * the {@link Board} itself, 4 {@link ImagePanel}s representing the ability graphics, and 
+     * a JLabel to display game statistics such as score and level.
+     */
+    private void constructGUI() {
+        int rows = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * ROW_RATIO),
+                cols = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * COLUMN_RATIO),
+                buffer = GuidedLevelParameters.MAX_TETRIMINO_LENGTH;
+        mBoard = new Board(rows, cols, buffer, GuidedLevelParameters.MAX_TETRIMINO_LENGTH);
                 
+        mSidePanel = mBoard.getSidePanel();        
+        
+        mScoreBar = new JLabel();
+        setLevelAndScoreMessage();
+        
+        BufferedImage lockImage = null;
+        
+        try {
+            lockImage = ImageIO.read(new File("src/images/lock.png"));
+        } catch (IOException e) {
+            System.err.println("lock.png could not be read.");
+            System.exit(0);
+        }
+        mAbilityPanel0 = new ImagePanel(lockImage); //Everything begins locked
+        mAbilityPanel0.setBottomText("Level 10");
+        mAbilityPanel1 = new ImagePanel(lockImage);
+        mAbilityPanel1.setBottomText("Level 20");
+        mAbilityPanel2 = new ImagePanel(lockImage);
+        mAbilityPanel2.setBottomText("Level 30");
+        mAbilityPanel3 = new ImagePanel(lockImage);
+        mAbilityPanel3.setBottomText("Level 40");
+                          
+        float width = 2 * BASE_WIDTH_FACTOR * cols,
+                height = (int) (width * rows / cols);
+                        
+        setSize((int) width, (int) height);
+        setTitle("Tetrocity");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setVisible(true);
+        setFocusable(true);
+    
+        setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        
+        c.weighty = 1;
+        c.anchor = GridBagConstraints.LINE_START;
+                
+        c.fill = GridBagConstraints.BOTH;
+        c.gridy = 0;
+        c.gridx = 0;
+        c.gridheight = 4;
+        c.gridwidth = 1;
+        c.weightx = 0.2;
+        add(mSidePanel, c);
+        
+        c.gridy = 0;
+        c.gridx = 1;
+        c.gridheight = 4;
+        c.gridwidth = 1;
+        c.weightx = 0.4;
+        add(mBoard, c);
+        
+        c.gridy = 0;
+        c.gridx = 2;
+        c.gridheight = 1;
+        c.gridwidth = 1;
+        c.weightx = 0.1;
+        add(mAbilityPanel0, c);
+        
+        c.gridy = 1;
+        c.gridx = 2;
+        add(mAbilityPanel1, c);
+        
+        c.gridy = 2;
+        c.gridx = 2;
+        add(mAbilityPanel2, c);
+        
+        c.gridy = 3;
+        c.gridx = 2;
+        add(mAbilityPanel3, c);
+        
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridwidth = 2;
+        c.weighty = 0;
+        c.weightx = 0;
+        c.anchor = GridBagConstraints.PAGE_END;
+        c.gridy = 4;
+        c.gridx = 0;
+        add(mScoreBar, c); 
+    }
+
+    /** Sets the first ImagePanel's graphic to represent the boost ability. 
+     */
+    private void setBoostGraphic() {
+        BufferedImage image = null;
+        
+        try {
+            image = ImageIO.read(new File("src/images/boost_score.png"));
+        } catch (IOException e) {
+            System.err.println("boost_score.png could not be read.");
+            System.exit(0);
+        }
+        mAbilityPanel0.setImage(image);
+        mAbilityPanel0.setBottomText("Score Boost");
+    }
+
+    /** Sets the second ImagePanel's graphic to represent the new straight-line ability. 
+     */
+    private void setStraightLineGraphic() {
+        BufferedImage image = null;
+        
+        try {
+            image = ImageIO.read(new File("src/images/line_piece.png"));
+        } catch (IOException e) {
+            System.err.println("line_piece.png could not be read.");
+            System.exit(0);
+        }
+        mAbilityPanel1.setImage(image);
+        mAbilityPanel1.setBottomText("Line Piece");
+    }
+
+    /** Sets the third ImagePanel's graphic to represent the zero-gravity ability. 
+     */
+    private void setZeroGravityGraphic() {
+        BufferedImage image = null;
+        
+        try {
+            image = ImageIO.read(new File("src/images/zero_gravity.png"));
+        } catch (IOException e) {
+            System.err.println("zero_gravity.png could not be read.");
+            System.exit(0);
+        }
+        mAbilityPanel2.setImage(image);
+        mAbilityPanel2.setBottomText("Zero Gravity");
+    }
+
+    /** Sets the fourth ImagePanel's graphic to represent the clear-grid ability. 
+     */
+    private void setClearGridGraphic() {
+        BufferedImage image = null;
+        
+        try {
+            image = ImageIO.read(new File("src/images/clear_grid.png"));
+        } catch (IOException e) {
+            System.err.println("clear_grid.png could not be read.");
+            System.exit(0);
+        }
+        mAbilityPanel3.setImage(image);
+        mAbilityPanel3.setBottomText("Clear Grid");
+    }
+
+    /** Sets the welcome message on this Engine's score bar. 
+     */
+    private void setWelcomeMessage() {
+        mScoreBar.setText("Welcome to Tetrocity! Press 'Space' to begin. Good luck!");
+    }
+
+    /** Sets the standard level and score message on this Engine's score bar. 
+     */
+    private void setLevelAndScoreMessage() {
+        mScoreBar.setText("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
+    }
+
+    /** Sets the paused message on this Engine's score bar. 
+     */
+    private void setPausedMessage() {
+        mScoreBar.setText("PAUSED. Press 'Escape' to get back in the game!");
+    }
+
+    /** Sets the game over message on this Engine's score bar. 
+     */
+    private void setGameOverMessage() {
+        String text = "GAME OVER! Level: " + mLevel + ", Score: " + (int) mPlayer.getScore() + ". ";
+        
         if (mLevel < 10) {
             text += "Keep practicing!";
         } else if (mLevel < 20) {
@@ -636,9 +717,23 @@ public class Engine extends JFrame{
             text += "You are a god.";
         }
         mScoreBar.setText(text);
-        halt();
     }
     
+    /****************************/
+    /* Private utility classes. */
+    /****************************/
+
+    /** The LoopKeyListener class is used when processes need to halt until the player presses
+     * a particular key. Internally, this class is a key listener that sets member boolean values
+     * corresponding to the game state. When that boolean is switched, a loop elsewhere will break,
+     * allowing the game to resume normal functions.
+     * 
+     *  A LoopKeyListener can be used for one of the 3 such states in a game of Tetrocity:
+     * the welcome screen state, the paused state, and the halted state.
+     * 
+     * @author Nick Holt
+     *
+     */
     private class LoopKeyListener implements KeyListener {
         public static final int WELCOME = 0;
         public static final int PAUSED = 1;
@@ -646,7 +741,6 @@ public class Engine extends JFrame{
         
         private int mState;
 
-        
         public LoopKeyListener(int state) {
             mState = state;
         }
@@ -707,7 +801,7 @@ public class Engine extends JFrame{
      *  For example, level 1 in a game of Tetrocity has the level-array: [1.0, 26, 3, 3, 2]. 
      * Thus, level 1:
      *   1) Has a drop speed of 1.0 row/second.
-     *   2) Has a live Tetrimino spacing of mBoardRows + 1 (i.e. only 1 live Tetrimino active at a time)
+     *   2) Has a live Tetrimino spacing of 26 (i.e. only 1 live Tetrimino active at a time)
      *   3) Has a live Tetrimino length-range of [3, 3] (i.e. only 3)
      *   4) Requires 2 cleared lines to progress to level 2. 
      * 
@@ -777,6 +871,9 @@ public class Engine extends JFrame{
             mLevelParameters[49] = new float[]{8, 13, 6, 6, 14};
         }
         
+        /**
+         * @return The drop speed increase factor for a given level.
+         */
         public float getLevelDropFactor(int level) {
             if (level <= MAX_LEVEL) {
                 return mLevelParameters[level - 1][0];
@@ -785,6 +882,9 @@ public class Engine extends JFrame{
             }
         }
         
+        /**
+         * @return The spacing between live Tetrimino pieces for a given level.
+         */
         public int getLevelLiveTetriminoSpacing(int level) {
             if (level <= MAX_LEVEL) {
                 return (int) mLevelParameters[level - 1][1];
@@ -793,6 +893,9 @@ public class Engine extends JFrame{
             }
         }
         
+        /**
+         * @return The range of lengths of live Tetrimino pieces for a given level.
+         */
         public int[] getLevelLiveTetriminoLengthRange(int level) {
             if (level <= MAX_LEVEL) {
                 return new int[]{(int) mLevelParameters[level - 1][2],
@@ -808,10 +911,10 @@ public class Engine extends JFrame{
          * to the next level.
          */
         public int getNextLevelLinesCleared(int level) {
-            if (level <= MAX_LEVEL) {
+            if (level < MAX_LEVEL) {
                 return (int) mLevelParameters[level - 1][4];
             } else {
-                return Integer.MAX_VALUE;
+                return Integer.MAX_VALUE; //Can never progress past level 50
             }
         }
     }
