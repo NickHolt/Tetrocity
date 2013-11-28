@@ -2,8 +2,6 @@ package util;
 
 import java.util.HashSet;
 
-import testing.Debug;
-
 /** A utility class for matrix operations required by other Tetrocity classes. 
  * 
  * @author Nick Holt
@@ -26,26 +24,9 @@ public class Matrices {
             }
         }
         
-        Debug.print(3, "Matrix padded");
         return paddedMatrix;
     }
 
-    /** A crude method for printing out matrices. Used mainly for debugging. 
-     * 
-     * @param matrix The matrix to be printed. 
-     */
-    public static void printMatrix(int[][] matrix) {
-        int rows = matrix.length, cols = matrix[0].length;
-        for (int i = 0; i < rows; i++) {
-            
-            System.out.print("[");
-            for (int j = 0; j < cols; j++) {
-                System.out.print(matrix[i][j] + ", ");
-            }
-            System.out.println("]");
-        }
-    }
-    
     /** Removes as much "padding" (i.e. full rows and/or columns of 0's that surround
      * the matrix) as possible.
      * 
