@@ -17,7 +17,8 @@ import javax.swing.JPanel;
 public class ImagePanel extends JPanel {
     private static final long serialVersionUID = 1L;
     BufferedImage mImage;
-    String mText;
+    String mTopText;
+    String mBottomText;
     
     /** A new ImagePanel that contains the specified image. The text of this ImagePanel will
      * be the empty string.
@@ -26,7 +27,8 @@ public class ImagePanel extends JPanel {
      */
     public ImagePanel(BufferedImage image) {
         setImage(image);
-        setText("");
+        setTopText("");
+        setBottomText("");
         
         setSize(imageWidth(), imageHeight());
         setVisible(true);
@@ -46,8 +48,13 @@ public class ImagePanel extends JPanel {
         repaint();
     }
     
-    public void setText(String text) {
-        mText = text;
+    public void setTopText(String text) {
+        mTopText = text;
+        repaint();
+    }
+    
+    public void setBottomText(String text) {
+        mBottomText = text;
         repaint();
     }
     
@@ -62,9 +69,14 @@ public class ImagePanel extends JPanel {
         
         //Draw centered text
         FontMetrics fm   = g.getFontMetrics(g.getFont());
-        Rectangle2D rect = fm.getStringBounds(mText, g);
+        Rectangle2D rect = fm.getStringBounds(mTopText, g);
+        
+        g.drawString(mTopText, (int) (getWidth() - rect.getWidth()) / 2
+                , fm.getAscent() + 8);
+        
+        rect = fm.getStringBounds(mBottomText, g);
 
-        g.drawString(mText, (int) (getWidth()  - rect.getWidth())  / 2
+        g.drawString(mBottomText, (int) (getWidth()  - rect.getWidth())  / 2
                 , (int) (getHeight() - fm.getAscent()));
 
         //Draw borders
