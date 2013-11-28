@@ -9,17 +9,19 @@ import java.util.concurrent.ArrayBlockingQueue;
  * to accept all keyboard input and, if possible, convert it to a recognizable control
  * via {@link Control}.
  * 
- * A player also keeps track of their score in a game of Tetrocity. 
+ * A player also keeps track of their score. 
  * 
  * @author Nick Holt
- *
  */
 public class Player implements KeyListener {
     public static final int MAX_MOVES = 3;
     private ArrayBlockingQueue<Integer> mMoveKeyCodes;
     
-    private long mScore;
+    private double mScore;
     
+    /** A new Player for a game of Tetrocity, who is capable of presenting at most
+     * {@link Player#MAX_MOVES} moves at a time, with a score of 0.
+     */
     public Player() {
         mMoveKeyCodes = new ArrayBlockingQueue<Integer>(MAX_MOVES);
         mScore = 0;        
@@ -27,32 +29,28 @@ public class Player implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        // TODO Auto-generated method stub
         mMoveKeyCodes.add(e.getKeyCode());
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-        // Do nothing?
     }
     
     /**
      * @return This player's score.
      */
-    public long getScore() {
+    public double getScore() {
         return mScore;
     }
     
     /** 
      * @param toAdd The amount to add to this player's score. 
      */
-    public void addToScore(long toAdd) {
+    public void addToScore(double toAdd) {
         mScore += toAdd;
     }
     
@@ -63,11 +61,12 @@ public class Player implements KeyListener {
     }
     
     /**
-     * @return The first move key code in the Player's move Queue. -1 if there is no move to return.
+     * @return The first move key code in the Player's move Queue. Returns
+     * {@link KeyEvent#KEY_LOCATION_UNKNOWN} if there is no move to return. 
      */
     public int getMoveKeyCode() {
         if (mMoveKeyCodes.size() == 0) {
-            return -1;
+            return KeyEvent.KEY_LOCATION_UNKNOWN;
         }
         
         return mMoveKeyCodes.poll();
