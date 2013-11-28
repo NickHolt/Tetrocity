@@ -1,9 +1,13 @@
 package control;
 
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -11,12 +15,12 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import model.Board;
 import model.Tetrimino;
 import util.Direction;
 import util.GameOverException;
-import util.ImagePanel;
 import util.TetriminoFactory;
 
 /** The fundamental controller for a game of Tetrocity. It is the job of the GuidedEngine to construct the
@@ -916,6 +920,117 @@ public class Engine extends JFrame{
             } else {
                 return Integer.MAX_VALUE; //Can never progress past level 50
             }
+        }
+    }
+    
+    /** An ImagePanel is a simply JPanel component that contains an image and a JLabel only. Both
+     * of these components can be set and updated by the appropriate methods.
+     * The JLabel is placed under the drawn image.
+     * 
+     * @author Nick Holt
+     */
+    private class ImagePanel extends JPanel {
+        private static final long serialVersionUID = 1L;
+        /* The image to display. */
+        BufferedImage mImage;
+        /* The text to display above the image. */
+        String mTopText;
+        /* The text to display below the image. */
+        String mBottomText;
+        
+        /** A new ImagePanel that contains the specified image. The text of this ImagePanel will
+         * be the empty string.
+         * 
+         * @param image The image of this ImagePanel
+         */
+        public ImagePanel(BufferedImage image) {
+            setImage(image);
+            setTopText("");
+            setBottomText("");
+            
+            setSize(imageWidth(), imageHeight());
+            setVisible(true);
+            repaint();
+        }
+        
+        /************/
+        /* Getters. */
+        /************/
+        
+        /**
+         * @return The height, in pixels, of the image.
+         */
+        public int imageHeight() {
+            return mImage.getHeight();
+        }
+        
+        /**
+         * @return The width, in pixels, of the image.
+         */
+        public int imageWidth() {
+            return mImage.getWidth();
+        }
+        
+        /************/
+        /* Setters. */
+        /************/
+
+        /**
+         * @param image The image to display.
+         */
+        public void setImage(BufferedImage image) {
+            mImage = image;
+            repaint();
+        }
+        
+        /**
+         * @param text The text to display above the image.
+         */
+        public void setTopText(String text) {
+            mTopText = text;
+            repaint();
+        }
+        
+        /**
+         * @param text The text to display below the image. 
+         */
+        public void setBottomText(String text) {
+            mBottomText = text;
+            repaint();
+        }
+        
+        /*********************/
+        /* GUI manipulation. */
+        /*********************/
+        
+        /** Paint the image, text, and borders.
+         */
+        public void paint(Graphics g) {
+            super.paint(g);
+            
+            int[] imageDimensions = new int[]{mImage.getHeight(), mImage.getWidth()};
+            
+            //Draw image
+            g.drawImage(mImage, (int) (getWidth() - imageDimensions[1]) / 2,
+                    (int) (getHeight() - imageDimensions[0]) / 2, null);
+            
+            //Draw centered text
+            FontMetrics fm   = g.getFontMetrics(g.getFont());
+            Rectangle2D rect = fm.getStringBounds(mTopText, g);
+            
+            g.drawString(mTopText, (int) (getWidth() - rect.getWidth()) / 2
+                    , fm.getAscent() + 8);
+            
+            rect = fm.getStringBounds(mBottomText, g);
+
+            g.drawString(mBottomText, (int) (getWidth()  - rect.getWidth())  / 2
+                    , (int) (getHeight() - fm.getAscent()));
+
+            //Draw borders
+            g.setColor(Color.BLACK);
+            g.drawLine(0, 0, 0, (int) getHeight() -1);
+            g.drawLine(0, (int) getHeight() - 1,
+                       (int) getWidth() - 1, (int) getHeight() - 1);
         }
     }
 }
