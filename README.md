@@ -16,7 +16,7 @@ If you've played Tetris before, you know most of the rules of Tetrocity. If not:
 Controls
 =========
 
-Left Arrow / Down Arrow / Right Arrow / Up Arrow: Shift.
+Left Arrow / Down Arrow / Right Arrow / Up Arrow: Move.
 
 Space : Drop.
 
