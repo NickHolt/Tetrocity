@@ -328,9 +328,7 @@ public class Engine extends JFrame{
      * @param keyCode The key code to interpret. 
      */
     private void interpretInput(int keyCode) {
-        if (mZeroGravityEnabled && (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_KP_UP)) {
-            mBoard.shiftTetrimino(Direction.NORTH);
-        } else if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
+        if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
             mBoard.shiftTetrimino(Direction.EAST);
         } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_KP_DOWN) {
             mBoard.shiftTetrimino(Direction.SOUTH);
@@ -346,7 +344,8 @@ public class Engine extends JFrame{
             }
         } else if (keyCode == KeyEvent.VK_Z) {
             mBoard.rotateTetriminoCounterClockwise();
-        } else if (keyCode == KeyEvent.VK_X) {
+        } else if (keyCode == KeyEvent.VK_X || keyCode == KeyEvent.VK_UP 
+                || keyCode == KeyEvent.VK_KP_UP) {
             mBoard.rotateTetriminoClockwise();
         } else if (keyCode == KeyEvent.VK_ESCAPE) {
             pause();
