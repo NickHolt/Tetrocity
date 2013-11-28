@@ -37,17 +37,17 @@ public class Engine extends JFrame{
     /* The expected number of Tetriminoes between any two max-length straight line pieces. */
     public static final int STRAIGHT_LINE_EXPECTED_SPACING = 10;
     /* The factor by which the drop speed is multiplied as levels increase */
-    public static final float DROP_SPEED_INCREASE_FACTOR = 1.15f;
+    public static final float DROP_SPEED_INCREASE_FACTOR = 1.1f;
     /* The base width factor for the JFrame. This value may be tweaked to scale all 
      * components proportionally. */
     public static final int BASE_WIDTH_FACTOR = 27;
     /* Ability duration constants. */
-    public static final int BOOST_DURATION = 3;
-    public static final int BOOST_COOLDOWN = 25;
-    public static final int STRAIGHT_LINE_ABILITY_COOLDOWN = 65;
+    public static final int BOOST_DURATION = 5;
+    public static final int BOOST_COOLDOWN = 30;
+    public static final int STRAIGHT_LINE_ABILITY_COOLDOWN = 60;
     public static final int ZERO_GRAVITY_DURATION = 5;
     public static final int ZERO_GRAVITY_COOLDOWN = 120;
-    public static final int CLEAR_GRID_COOLDOWN = 300;
+    public static final int CLEAR_GRID_COOLDOWN = 600;
 
     private int mLevel, mLinesClearedThisLevel;
     private boolean mIsWelcoming, mIsPaused, mIsHalted;
@@ -126,16 +126,16 @@ public class Engine extends JFrame{
                     mTetriminoFactory.
                         setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));    
                     
-                    if (mLevel == 10) {
+                    if (mLevel == 2) {
                         setBoostGraphic();
                         mBoostUnlocked = true;
-                    } else if (mLevel == 20) {
+                    } else if (mLevel == 3) {
                         setStraightLineGraphic();
                         mLinePieceAbilityUnlocked = true;
-                    } else if (mLevel == 30) {
+                    } else if (mLevel == 4) {
                         setZeroGravityGraphic();
                         mZeroGravityUnlocked = true;
-                    } else if (mLevel == 40) {
+                    } else if (mLevel == 5) {
                         setClearGridGraphic();
                         mClearGridUnlocked = true;
                     }
@@ -173,13 +173,13 @@ public class Engine extends JFrame{
             System.exit(0);
         }
         mAbilityPanel0 = new ImagePanel(lockImage);
-        mAbilityPanel0.setText("Level 10");
+        mAbilityPanel0.setBottomText("Level 10");
         mAbilityPanel1 = new ImagePanel(lockImage);
-        mAbilityPanel1.setText("Level 20");
+        mAbilityPanel1.setBottomText("Level 20");
         mAbilityPanel2 = new ImagePanel(lockImage);
-        mAbilityPanel2.setText("Level 30");
+        mAbilityPanel2.setBottomText("Level 30");
         mAbilityPanel3 = new ImagePanel(lockImage);
-        mAbilityPanel3.setText("Level 40");
+        mAbilityPanel3.setBottomText("Level 40");
                           
         float width = 2 * BASE_WIDTH_FACTOR * cols,
                 height = (int) (width * rows / cols);
@@ -250,7 +250,7 @@ public class Engine extends JFrame{
             System.exit(0);
         }
         mAbilityPanel0.setImage(image);
-        mAbilityPanel0.setText("Score Boost");
+        mAbilityPanel0.setBottomText("Score Boost");
     }
     
     private void setStraightLineGraphic() {
@@ -263,7 +263,7 @@ public class Engine extends JFrame{
             System.exit(0);
         }
         mAbilityPanel1.setImage(image);
-        mAbilityPanel1.setText("Line Piece");
+        mAbilityPanel1.setBottomText("Line Piece");
     }
     
     private void setZeroGravityGraphic() {
@@ -276,7 +276,7 @@ public class Engine extends JFrame{
             System.exit(0);
         }
         mAbilityPanel2.setImage(image);
-        mAbilityPanel2.setText("Zero Gravity");
+        mAbilityPanel2.setBottomText("Zero Gravity");
     }
     
     private void setClearGridGraphic() {
@@ -289,7 +289,7 @@ public class Engine extends JFrame{
             System.exit(0);
         }
         mAbilityPanel3.setImage(image);
-        mAbilityPanel3.setText("Clear Grid");
+        mAbilityPanel3.setBottomText("Clear Grid");
     }
     
     private void doGameLogic() throws GameOverException {
@@ -430,19 +430,22 @@ public class Engine extends JFrame{
             long elapsedTime = System.currentTimeMillis() - mBoostPreviousTime;
             
             if (elapsedTime > BOOST_COOLDOWN * 1000) {
-                mBoostEnabled = true;
+                mBoostEnabled = false;
                 mBoostAvailable = true;
-                mAbilityPanel0.setText("Boost Score");
+                mAbilityPanel0.setTopText("A");
+                mAbilityPanel0.setBottomText("Boost Score");
             } else if (elapsedTime < BOOST_DURATION * 1000) { //ability is still active
                 mBoostEnabled = true;
                 mBoostAvailable = false;
-                mAbilityPanel0.setText("*" + String.valueOf((int) (BOOST_DURATION - 
-                        (elapsedTime / (float) 1000))) + "*");
+                mAbilityPanel0.setTopText("");
+                mAbilityPanel0.setBottomText("*" + String.valueOf((int) (Math.ceil(BOOST_DURATION - 
+                        (elapsedTime / (float) 1000)))) + "*");
             } else { //inactive, on cooldown
                 mBoostEnabled = false;
                 mBoostAvailable = false;
-                mAbilityPanel0.setText(String.valueOf((int) ((float) BOOST_COOLDOWN - 
-                        (elapsedTime / (float) 1000))));
+                mAbilityPanel0.setTopText("");
+                mAbilityPanel0.setBottomText(String.valueOf((int) (Math.ceil((float) BOOST_COOLDOWN - 
+                        (elapsedTime / (float) 1000)))));
             }
         }
         if (mLinePieceAbilityUnlocked) {
@@ -450,30 +453,35 @@ public class Engine extends JFrame{
             
             if (elapsedTime > STRAIGHT_LINE_ABILITY_COOLDOWN * 1000) {
                 mLinePieceAbilityAvailable = true;
-                mAbilityPanel1.setText("Line Piece");
+                mAbilityPanel1.setTopText("S");
+                mAbilityPanel1.setBottomText("Line Piece");
             } else {
                 mLinePieceAbilityAvailable = false;
-                mAbilityPanel1.setText(String.valueOf((int) ((float) STRAIGHT_LINE_ABILITY_COOLDOWN - 
-                        (elapsedTime / (float) 1000))));
+                mAbilityPanel1.setTopText("");
+                mAbilityPanel1.setBottomText(String.valueOf((int) 
+                        (Math.ceil((float) STRAIGHT_LINE_ABILITY_COOLDOWN - (elapsedTime / (float) 1000)))));
             }
         }
         if (mZeroGravityUnlocked) {
             long elapsedTime = System.currentTimeMillis() - mZeroGravityPreviousTime;
             
             if (elapsedTime > ZERO_GRAVITY_COOLDOWN * 1000) {
-                mZeroGravityEnabled = true;
+                mZeroGravityEnabled = false;
                 mZeroGravityAvailable = true;
-                mAbilityPanel2.setText("Zero Gravity");
+                mAbilityPanel2.setTopText("D");
+                mAbilityPanel2.setBottomText("Zero Gravity");
             } else if (elapsedTime < ZERO_GRAVITY_DURATION * 1000) {
                 mZeroGravityEnabled = true;
                 mZeroGravityAvailable = false;
-                mAbilityPanel2.setText("*" + String.valueOf((int) (ZERO_GRAVITY_DURATION - 
-                        (elapsedTime / (float) 1000))) + "*");
+                mAbilityPanel2.setTopText("");
+                mAbilityPanel2.setBottomText("*" + String.valueOf((int) Math.ceil((ZERO_GRAVITY_DURATION - 
+                        (elapsedTime / (float) 1000)))) + "*");
             } else {
                 mZeroGravityEnabled = false;
                 mZeroGravityAvailable = false;
-                mAbilityPanel2.setText(String.valueOf((int) ((float) ZERO_GRAVITY_COOLDOWN - 
-                        (elapsedTime / (float) 1000))));
+                mAbilityPanel2.setTopText("");
+                mAbilityPanel2.setBottomText(String.valueOf((int) (Math.ceil((float) ZERO_GRAVITY_COOLDOWN - 
+                        (elapsedTime / (float) 1000)))));
             }
         }
         if (mClearGridUnlocked) {
@@ -481,11 +489,13 @@ public class Engine extends JFrame{
             
             if (elapsedTime > CLEAR_GRID_COOLDOWN * 1000) {
                 mClearGridAvailable = true;
-                mAbilityPanel3.setText("Clear Grid");
+                mAbilityPanel3.setTopText("F");
+                mAbilityPanel3.setBottomText("Clear Grid");
             } else {
                 mClearGridAvailable = false;
-                mAbilityPanel3.setText(String.valueOf((int) ((float) CLEAR_GRID_COOLDOWN - 
-                        (elapsedTime / (float) 1000))));
+                mAbilityPanel3.setTopText("");
+                mAbilityPanel3.setBottomText(String.valueOf((int) (Math.ceil((float) CLEAR_GRID_COOLDOWN - 
+                        (elapsedTime / (float) 1000)))));
             }
         }
     }
@@ -647,6 +657,21 @@ public class Engine extends JFrame{
             int keyCode = e.getKeyCode();
 
             if (mState == WELCOME) {
+                if (keyCode == KeyEvent.VK_6){ //debug / cheat code 
+                        mIsWelcoming = false;
+                        
+                        setBoostGraphic();
+                        mBoostUnlocked = true;
+                        
+                        setStraightLineGraphic();
+                        mLinePieceAbilityUnlocked = true;
+                        
+                        setZeroGravityGraphic();
+                        mZeroGravityUnlocked = true;
+                        
+                        setClearGridGraphic();
+                        mClearGridUnlocked = true;
+                }
                 if (keyCode == KeyEvent.VK_SPACE) {
                     mIsWelcoming = false;
                 }
