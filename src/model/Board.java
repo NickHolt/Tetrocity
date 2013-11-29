@@ -910,6 +910,11 @@ public class Board extends JPanel{
                         (projection[0] - mBuffer) * squareHeight());
             }   
         }  
+        
+        /*Draw bottom border */
+        g.setColor(Color.BLACK);
+        g.drawLine(0, (int) getHeight() - 1, (int) getWidth(),
+                (int) getHeight() - 1);
     }
     
     /** Draws a grid of lines representing the empty pieces in this
@@ -926,10 +931,6 @@ public class Board extends JPanel{
         for (int i = 0; i < width / squareWidth(); i++) {
             g.drawLine((int) (squareWidth() * (i + 1)), 0, (int) (squareWidth() * (i + 1)), height);
         }
-        
-        g.setColor(Color.BLACK);
-        g.drawLine(0, (int) getHeight() - 1, (int) getWidth(),
-                (int) getHeight() - 1);
     }
     
     /** Draws a square representing a single block of a Tetrimino with the
