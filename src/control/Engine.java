@@ -5,14 +5,12 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -547,14 +545,9 @@ public class Engine extends JFrame{
         mScoreBar = new JLabel();
         setLevelAndScoreMessage();
         
-        BufferedImage lockImage = null;
+        Image lockImage = Toolkit.getDefaultToolkit().getImage(getClass()
+                .getResource("/images/lock.png"));     
         
-        try {
-            lockImage = ImageIO.read(new File("src/images/lock.png"));
-        } catch (IOException e) {
-            System.err.println("lock.png could not be read.");
-            System.exit(0);
-        }
         mAbilityPanel0 = new ImagePanel(lockImage); //Everything begins locked
         mAbilityPanel0.setBottomText("Level 10");
         mAbilityPanel1 = new ImagePanel(lockImage);
@@ -567,7 +560,7 @@ public class Engine extends JFrame{
         float width = 2 * BASE_WIDTH_FACTOR * cols,
                 height = (int) (width * rows / cols);
                         
-        setSize((int) (width * 1.2), (int) (height * 0.73)); //tweaking for windows taskbar
+        setSize((int) (width * 1.25), (int) (height * 0.73)); //tweaking for windows taskbar
         setTitle("Tetrocity");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -627,14 +620,9 @@ public class Engine extends JFrame{
     /** Sets the first ImagePanel's graphic to represent the boost ability. 
      */
     private void setBoostGraphic() {
-        BufferedImage image = null;
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass()
+                .getResource("/images/boost_score.png"));  
         
-        try {
-            image = ImageIO.read(new File("src/images/boost_score.png"));
-        } catch (IOException e) {
-            System.err.println("boost_score.png could not be read.");
-            System.exit(0);
-        }
         mAbilityPanel0.setImage(image);
         mAbilityPanel0.setBottomText("Score Boost");
     }
@@ -642,14 +630,9 @@ public class Engine extends JFrame{
     /** Sets the second ImagePanel's graphic to represent the new straight-line ability. 
      */
     private void setStraightLineGraphic() {
-        BufferedImage image = null;
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass()
+                .getResource("/images/line_piece.png"));   
         
-        try {
-            image = ImageIO.read(new File("src/images/line_piece.png"));
-        } catch (IOException e) {
-            System.err.println("line_piece.png could not be read.");
-            System.exit(0);
-        }
         mAbilityPanel1.setImage(image);
         mAbilityPanel1.setBottomText("Line Piece");
     }
@@ -657,14 +640,9 @@ public class Engine extends JFrame{
     /** Sets the third ImagePanel's graphic to represent the zero-gravity ability. 
      */
     private void setZeroGravityGraphic() {
-        BufferedImage image = null;
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass()
+                .getResource("/images/zero_gravity.png"));  
         
-        try {
-            image = ImageIO.read(new File("src/images/zero_gravity.png"));
-        } catch (IOException e) {
-            System.err.println("zero_gravity.png could not be read.");
-            System.exit(0);
-        }
         mAbilityPanel2.setImage(image);
         mAbilityPanel2.setBottomText("Zero Gravity");
     }
@@ -672,14 +650,9 @@ public class Engine extends JFrame{
     /** Sets the fourth ImagePanel's graphic to represent the clear-grid ability. 
      */
     private void setClearGridGraphic() {
-        BufferedImage image = null;
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass()
+                .getResource("/images/clear_grid.png"));  
         
-        try {
-            image = ImageIO.read(new File("src/images/clear_grid.png"));
-        } catch (IOException e) {
-            System.err.println("clear_grid.png could not be read.");
-            System.exit(0);
-        }
         mAbilityPanel3.setImage(image);
         mAbilityPanel3.setBottomText("Clear Grid");
     }
@@ -932,7 +905,7 @@ public class Engine extends JFrame{
     private class ImagePanel extends JPanel {
         private static final long serialVersionUID = 1L;
         /* The image to display. */
-        BufferedImage mImage;
+        Image mImage;
         /* The text to display above the image. */
         String mTopText;
         /* The text to display below the image. */
@@ -943,7 +916,7 @@ public class Engine extends JFrame{
          * 
          * @param image The image of this ImagePanel
          */
-        public ImagePanel(BufferedImage image) {
+        public ImagePanel(Image image) {
             setImage(image);
             setTopText("");
             setBottomText("");
@@ -961,14 +934,14 @@ public class Engine extends JFrame{
          * @return The height, in pixels, of the image.
          */
         public int imageHeight() {
-            return mImage.getHeight();
+            return mImage.getHeight(null);
         }
         
         /**
          * @return The width, in pixels, of the image.
          */
         public int imageWidth() {
-            return mImage.getWidth();
+            return mImage.getWidth(null);
         }
         
         /************/
@@ -978,7 +951,7 @@ public class Engine extends JFrame{
         /**
          * @param image The image to display.
          */
-        public void setImage(BufferedImage image) {
+        public void setImage(Image image) {
             mImage = image;
             repaint();
         }
@@ -1008,7 +981,7 @@ public class Engine extends JFrame{
         public void paint(Graphics g) {
             super.paint(g);
             
-            int[] imageDimensions = new int[]{mImage.getHeight(), mImage.getWidth()};
+            int[] imageDimensions = new int[]{mImage.getHeight(null), mImage.getWidth(null)};
             
             //Draw image
             g.drawImage(mImage, (int) (getWidth() - imageDimensions[1]) / 2,
