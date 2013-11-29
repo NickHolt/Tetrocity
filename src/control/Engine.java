@@ -44,7 +44,7 @@ public class Engine extends JFrame{
     /* The factor by which the drop speed is multiplied as levels increase */
     public static final float DROP_SPEED_INCREASE_FACTOR = 1.1f;
     /* This value may be tweaked to scale all components proportionally. */
-    private static final int BASE_WIDTH_FACTOR = 27;
+    private static final int BASE_WIDTH_FACTOR = 20;
     /* Ability constants. */
     public static final int BOOST_DURATION = 5;
     public static final int BOOST_COOLDOWN = 30;
@@ -567,7 +567,7 @@ public class Engine extends JFrame{
         float width = 2 * BASE_WIDTH_FACTOR * cols,
                 height = (int) (width * rows / cols);
                         
-        setSize((int) width, (int) height);
+        setSize((int) (width * 1.2), (int) (height * 0.73)); //tweaking for windows taskbar
         setTitle("Tetrocity");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
