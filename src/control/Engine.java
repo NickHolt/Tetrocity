@@ -210,6 +210,10 @@ public class Engine extends JFrame{
                 mLevelParameters.getLevelLiveTetriminoSpacing(mLevel))) {
             try {
                 mBoard.putTetrimino();
+                
+                if (mSoundEffectsEnabled) {
+                    SoundEffect.BLIP.play();
+                }
             } catch (GameOverException e) {
                 gameOver();
             }
@@ -218,6 +222,10 @@ public class Engine extends JFrame{
         if (mBoard.numLiveTetriminoes() == 0) {
             try {
                 mBoard.putTetrimino();
+                
+                if (mSoundEffectsEnabled) {
+                    SoundEffect.BLIP.play();
+                }
             } catch (GameOverException e) {
                 gameOver();
             }
