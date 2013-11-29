@@ -927,8 +927,10 @@ public class Board extends JPanel{
         
         if (mLiveTetriminoProjectionCoordinates != null) {
             for (int[] projection : mLiveTetriminoProjectionCoordinates) {
-                drawOpaqueSquare(g, projection[1] * squareWidth(),
-                        (projection[0] - mBuffer) * squareHeight());
+                if (mGrid[projection[0]][projection[1]] == -1) {
+                    drawOpaqueSquare(g, projection[1] * squareWidth(),
+                            (projection[0] - mBuffer) * squareHeight());
+                }
             }   
         }  
         
