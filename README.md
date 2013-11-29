@@ -30,6 +30,8 @@ Escape : Pause.
 
 r : Restart.
 
+m : Toggle sound.
+
 That's it?
 ==========
 
