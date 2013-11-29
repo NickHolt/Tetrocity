@@ -157,6 +157,10 @@ public class Engine extends JFrame{
                         setClearGridGraphic();
                         mClearGridUnlocked = true;
                     }
+                    
+                    if (mSoundEffectsEnabled) {
+                        SoundEffect.LEVEL_UP.play();
+                    }
                 }   
                 
                 doGameLogic();

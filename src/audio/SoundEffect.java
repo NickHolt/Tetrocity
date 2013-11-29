@@ -8,6 +8,7 @@ public class SoundEffect {
     public static final SoundEffect CLEAR_GRID = new SoundEffect("SFX_ClearGrid.wav");
     public static final SoundEffect GAME_OVER = new SoundEffect("SFX_GameOver.wav");
     public static final SoundEffect GAME_START = new SoundEffect("SFX_GameStart.wav");
+    public static final SoundEffect LEVEL_UP = new SoundEffect("SFX_LevelUp.wav");
     public static final SoundEffect LINE_PIECE = new SoundEffect("SFX_LinePiece.wav");
     public static final SoundEffect HARD_DROP = new SoundEffect("SFX_PieceHardDrop.wav");
     public static final SoundEffect STORE = new SoundEffect("SFX_PieceHold.wav");
