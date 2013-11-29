@@ -4,6 +4,7 @@ import java.applet.Applet;
 import java.applet.AudioClip;
 
 public class SoundEffect {
+    public static final SoundEffect ABILITY_UNLOCK = new SoundEffect("SFX_AbilityUnlock.wav");
     public static final SoundEffect BLIP = new SoundEffect("SFX_Blip.wav");
     public static final SoundEffect CLEAR_GRID = new SoundEffect("SFX_ClearGrid.wav");
     public static final SoundEffect GAME_OVER = new SoundEffect("SFX_GameOver.wav");

@@ -147,18 +147,28 @@ public class Engine extends JFrame{
                     if (mLevel == 6) { //unlock abilities (note these levels cannot be skipped)
                         setBoostGraphic();
                         mBoostUnlocked = true;
+                        if (mSoundEffectsEnabled) {
+                            SoundEffect.ABILITY_UNLOCK.play();
+                        }
                     } else if (mLevel == 12) {
                         setStraightLineGraphic();
                         mLinePieceAbilityUnlocked = true;
+                        if (mSoundEffectsEnabled) {
+                            SoundEffect.ABILITY_UNLOCK.play();
+                        }
                     } else if (mLevel == 18) {
                         setZeroGravityGraphic();
                         mZeroGravityUnlocked = true;
+                        if (mSoundEffectsEnabled) {
+                            SoundEffect.ABILITY_UNLOCK.play();
+                        }
                     } else if (mLevel == 24) {
                         setClearGridGraphic();
                         mClearGridUnlocked = true;
-                    }
-                    
-                    if (mSoundEffectsEnabled) {
+                        if (mSoundEffectsEnabled) {
+                            SoundEffect.ABILITY_UNLOCK.play();
+                        }
+                    } else if (mSoundEffectsEnabled) {
                         SoundEffect.LEVEL_UP.play();
                     }
                 }   
@@ -806,7 +816,11 @@ public class Engine extends JFrame{
     /** Sets the paused message on this Engine's score bar. 
      */
     private void setPausedMessage() {
-        mScoreBar.setText("PAUSED. Press 'Escape' to get back in the game!");
+        String paused = "<html><p align = center>==CONTROLS==<br />Left/Down/Right : Shift <br />z/x/Up : Rotate<br />"
+                + "Shift : Store<br />Space : Drop<br />a/s/d/f : Activate ability"
+                + "<br >m : Toggle sound</p>"
+                + "<p align = center><br>PAUSED. Press 'Escape' to get back in the game!</p></html>";
+        mScoreBar.setText(paused);
     }
 
     /** Sets the game over message on this Engine's score bar. 
