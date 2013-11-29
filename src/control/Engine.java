@@ -537,9 +537,24 @@ public class Engine extends JFrame{
         mAbilityPanel2.setVisible(false);
         mAbilityPanel3.setVisible(false);
 
-        
+        long timePaused = System.currentTimeMillis();
         while (mIsPaused) {
             System.out.print(""); //This fixes a bug and I don't know why. 
+        }
+        long totalTimePaused = System.currentTimeMillis() - timePaused;
+        
+        /* Update cooldowns to prevent cheating. */
+        if (mBoostUnlocked) {
+            mBoostPreviousTime += totalTimePaused;
+        }
+        if (mLinePieceAbilityUnlocked) {
+            mLinePiecePreviousTime += totalTimePaused;
+        }
+        if (mZeroGravityUnlocked) {
+            mZeroGravityPreviousTime += totalTimePaused;
+        }
+        if (mClearGridUnlocked) {
+            mClearGridPreviousTime += totalTimePaused;
         }
         
         removeKeyListener(pausedKeyListener);
