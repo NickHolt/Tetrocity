@@ -244,7 +244,7 @@ public class Engine extends JFrame{
     /** Uses current game information to interpret the corresponding increase in score after
      * a number of lines have been cleared.
      * 
-     *  The equation used is 100 * linesCleared^1.3 * e^(3*level/max_level). 
+     *  The equation used is linesCleared^1.3 * e^(3*level/max_level) * 100. 
      *  
      *  The first term rewards multiple lines cleared at once with an exponentially weighted 
      * bonus. The second term causes higher levels to reward exponentially higher scores in 
@@ -258,18 +258,18 @@ public class Engine extends JFrame{
      */
     private double scoreLinesCleared(int linesCleared) {
         double baseScore = Math.pow(linesCleared, 1.3) 
-                * Math.exp(3 * mLevel / (float) GuidedLevelParameters.MAX_LEVEL);
+                * Math.exp(3 * mLevel / (float) GuidedLevelParameters.MAX_LEVEL) * 100;
         if (mBoostEnabled) {
-            return 200 * baseScore;
+            return 2 * baseScore;
         } else {
-            return 100 * baseScore;
+            return baseScore;
         }
     }
 
     /** Uses current game information to interpret the corresponding increase in score after
      * a Tetrimino piece was dropped a number of lines. 
      * 
-     *  The equation used is 100 * linesDropped / (total_rows - max_length) * e^(level / max_level).
+     *  The equation used is 50 * linesDropped / (total_rows - max_length) * e^(level / max_level).
      * This equation was determined by an informal analysis. See 
      * {@link Engine#scoreLinesCleared} for a similar explanation of reasoning. 
      * 
@@ -280,11 +280,11 @@ public class Engine extends JFrame{
     private double scoreLinesDropped(int linesDropped) {
         double baseScore = linesDropped / (double) (mBoard.getGridDimensions()[0] 
                         - GuidedLevelParameters.MAX_TETRIMINO_LENGTH)
-                * Math.exp(mLevel / (double) GuidedLevelParameters.MAX_LEVEL);
+                * Math.exp(mLevel / (double) GuidedLevelParameters.MAX_LEVEL) * 50;
         if (mBoostEnabled) {
-            return 100 * baseScore;
+            return 2 * baseScore;
         } else {
-            return 50 * baseScore;
+            return baseScore;
         }
     }
 
