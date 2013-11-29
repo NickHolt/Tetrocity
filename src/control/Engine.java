@@ -786,7 +786,8 @@ public class Engine extends JFrame{
      */
     private void setWelcomeMessage() {
         String welcome = "<html><p align = center>==CONTROLS==<br />Left/Down/Right : Shift <br />z/x/Up : Rotate<br />"
-                + "Shift : Store<br />Space : Drop<br />a/s/d/f : Activate ability</p>"
+                + "Shift : Store<br />Space : Drop<br />a/s/d/f : Activate ability"
+                + "<br >m : Toggle sound</p>"
                 + "<p align = center><br>Press 'space' to start! Good luck!</p></html>";
         
         mScoreBar.setText(welcome);
