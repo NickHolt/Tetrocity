@@ -3,6 +3,13 @@ package audio;
 import java.applet.Applet;
 import java.applet.AudioClip;
 
+/** The sound effects for a game of Tetrocity. This object cannot be instantiated. Instead,
+ * a specific sound effect is played by accessing the corresponding static variable and calling
+ * {@link SoundEffect#play} on it. 
+ * 
+ * @author Nick Holt
+ *
+ */
 public class SoundEffect {
     public static final SoundEffect ABILITY_UNLOCK = new SoundEffect("SFX_AbilityUnlock.wav");
     public static final SoundEffect BLIP = new SoundEffect("SFX_Blip.wav");
