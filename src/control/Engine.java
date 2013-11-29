@@ -615,7 +615,7 @@ public class Engine extends JFrame{
         add(mAbilityPanel3, c);
         
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridwidth = 2;
+        c.gridwidth = 3;
         c.weighty = 0;
         c.weightx = 0;
         c.anchor = GridBagConstraints.PAGE_END;
