@@ -15,12 +15,12 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import audio.SoundEffect;
 import model.Board;
 import model.Tetrimino;
 import util.Direction;
 import util.GameOverException;
 import util.TetriminoFactory;
+import audio.SoundEffect;
 
 /** The fundamental controller for a game of Tetrocity. It is the job of the GuidedEngine to construct the
  * GUI, and facilitate the game through the use of timers and parsing player input via the Player class.
@@ -45,8 +45,8 @@ public class Engine extends JFrame{
     /* This value may be tweaked to scale all components proportionally. */
     private static final int BASE_WIDTH_FACTOR = 20;
     /* Ability constants. */
-    public static final int BOOST_DURATION = 3;
-    public static final int BOOST_COOLDOWN = 25;
+    public static final int BOOST_DURATION = 5;
+    public static final int BOOST_COOLDOWN = 30;
     public static final int STRAIGHT_LINE_ABILITY_COOLDOWN = 60;
     public static final int ZERO_GRAVITY_DURATION = 5;
     public static final int ZERO_GRAVITY_COOLDOWN = 120;
@@ -785,7 +785,11 @@ public class Engine extends JFrame{
     /** Sets the welcome message on this Engine's score bar. 
      */
     private void setWelcomeMessage() {
-        mScoreBar.setText("Welcome to Tetrocity! Press 'Space' to begin. Good luck!");
+        String welcome = "<html><p align = center>==CONTROLS==<br />Left/Down/Right : Shift <br />z/x/Up : Rotate<br />"
+                + "Shift : Store<br />Space : Drop<br />a/s/d/f : Activate ability</p>"
+                + "<p align = center><br>Press 'space' to start! Good luck!</p></html>";
+        
+        mScoreBar.setText(welcome);
     }
 
     /** Sets the standard level and score message on this Engine's score bar. 
@@ -940,58 +944,58 @@ public class Engine extends JFrame{
             mLevelParameters = new float[MAX_LEVEL][5];
             mLevelParameters[0] = new float[]{1, 26, 3, 3, 2};
             mLevelParameters[1] = new float[]{1, 26, 3, 4, 2};
-            mLevelParameters[2] = new float[]{1, 24, 3, 4, 2};
+            mLevelParameters[2] = new float[]{2, 24, 3, 4, 2};
             mLevelParameters[3] = new float[]{2, 24, 3, 4, 3};
-            mLevelParameters[4] = new float[]{2, 23, 3, 4, 3};
+            mLevelParameters[4] = new float[]{3, 23, 3, 4, 3};
             mLevelParameters[5] = new float[]{3, 23, 3, 4, 3};
             mLevelParameters[6] = new float[]{3, 21, 3, 4, 4};
-            mLevelParameters[7] = new float[]{3, 21, 3, 4, 4};
+            mLevelParameters[7] = new float[]{4, 21, 3, 4, 4};
             mLevelParameters[8] = new float[]{4, 20, 3, 4, 4};
             mLevelParameters[9] = new float[]{4, 20, 3, 4, 4};
             
-            mLevelParameters[10] = new float[]{2, 25, 3, 5, 5};
-            mLevelParameters[11] = new float[]{2, 25, 3, 5, 5};
-            mLevelParameters[12] = new float[]{2, 23, 3, 5, 5};
-            mLevelParameters[13] = new float[]{3, 23, 3, 5, 6};
-            mLevelParameters[14] = new float[]{3, 21, 3, 5, 6};
-            mLevelParameters[15] = new float[]{4, 21, 3, 5, 6};
-            mLevelParameters[16] = new float[]{4, 19, 3, 5, 7};
-            mLevelParameters[17] = new float[]{4, 19, 3, 5, 7};
-            mLevelParameters[18] = new float[]{5, 18, 3, 5, 7};
-            mLevelParameters[19] = new float[]{5, 18, 3, 5, 7};
+            mLevelParameters[10] = new float[]{3, 25, 3, 5, 5};
+            mLevelParameters[11] = new float[]{3, 25, 3, 5, 5};
+            mLevelParameters[12] = new float[]{4, 23, 3, 5, 5};
+            mLevelParameters[13] = new float[]{4, 23, 3, 5, 6};
+            mLevelParameters[14] = new float[]{5, 21, 3, 5, 6};
+            mLevelParameters[15] = new float[]{5, 21, 3, 5, 6};
+            mLevelParameters[16] = new float[]{5, 19, 3, 5, 7};
+            mLevelParameters[17] = new float[]{6, 19, 3, 5, 7};
+            mLevelParameters[18] = new float[]{6, 18, 3, 5, 7};
+            mLevelParameters[19] = new float[]{6, 18, 3, 5, 7};
             
-            mLevelParameters[20] = new float[]{3, 24, 4, 5, 8};
-            mLevelParameters[21] = new float[]{3, 24, 4, 5, 8};
-            mLevelParameters[22] = new float[]{3, 22, 4, 5, 8};
-            mLevelParameters[23] = new float[]{4, 22, 4, 5, 9};
-            mLevelParameters[24] = new float[]{4, 20, 4, 5, 9};
-            mLevelParameters[25] = new float[]{5, 20, 4, 5, 9};
-            mLevelParameters[26] = new float[]{5, 18, 4, 5, 10};
-            mLevelParameters[27] = new float[]{5, 18, 4, 5, 10};
-            mLevelParameters[28] = new float[]{6, 16, 4, 5, 10};
-            mLevelParameters[29] = new float[]{6, 16, 4, 5, 10};
+            mLevelParameters[20] = new float[]{5, 24, 4, 5, 8};
+            mLevelParameters[21] = new float[]{5, 24, 4, 5, 8};
+            mLevelParameters[22] = new float[]{6, 22, 4, 5, 8};
+            mLevelParameters[23] = new float[]{6, 22, 4, 5, 9};
+            mLevelParameters[24] = new float[]{7, 20, 4, 5, 9};
+            mLevelParameters[25] = new float[]{7, 20, 4, 5, 9};
+            mLevelParameters[26] = new float[]{7, 18, 4, 5, 10};
+            mLevelParameters[27] = new float[]{8, 18, 4, 5, 10};
+            mLevelParameters[28] = new float[]{8, 16, 4, 5, 10};
+            mLevelParameters[29] = new float[]{8, 16, 4, 5, 10};
             
-            mLevelParameters[30] = new float[]{4, 22, 5, 5, 11};
-            mLevelParameters[31] = new float[]{4, 22, 5, 5, 11};
-            mLevelParameters[32] = new float[]{4, 20, 5, 5, 11};
-            mLevelParameters[33] = new float[]{5, 20, 5, 5, 11};
-            mLevelParameters[34] = new float[]{5, 19, 5, 5, 11};
-            mLevelParameters[35] = new float[]{6, 19, 5, 5, 12};
-            mLevelParameters[36] = new float[]{6, 17, 5, 5, 12};
-            mLevelParameters[37] = new float[]{6, 17, 5, 5, 12};
-            mLevelParameters[38] = new float[]{7, 15, 5, 5, 12};
-            mLevelParameters[39] = new float[]{7, 15, 5, 5, 12};
+            mLevelParameters[30] = new float[]{7, 22, 5, 5, 11};
+            mLevelParameters[31] = new float[]{7, 22, 5, 5, 11};
+            mLevelParameters[32] = new float[]{7, 20, 5, 5, 11};
+            mLevelParameters[33] = new float[]{7, 20, 5, 5, 11};
+            mLevelParameters[34] = new float[]{8, 19, 5, 5, 11};
+            mLevelParameters[35] = new float[]{8, 19, 5, 5, 12};
+            mLevelParameters[36] = new float[]{8, 17, 5, 5, 12};
+            mLevelParameters[37] = new float[]{8, 17, 5, 5, 12};
+            mLevelParameters[38] = new float[]{9, 15, 5, 5, 12};
+            mLevelParameters[39] = new float[]{9, 15, 5, 5, 12};
             
-            mLevelParameters[40] = new float[]{5, 20, 6, 6, 13};
-            mLevelParameters[41] = new float[]{5, 20, 6, 6, 13};
-            mLevelParameters[42] = new float[]{5, 18, 6, 6, 13};
-            mLevelParameters[43] = new float[]{6, 18, 6, 6, 13};
-            mLevelParameters[44] = new float[]{6, 17, 6, 6, 13};
-            mLevelParameters[45] = new float[]{7, 17, 6, 6, 14};
-            mLevelParameters[46] = new float[]{7, 15, 6, 6, 14};
-            mLevelParameters[47] = new float[]{7, 15, 6, 6, 14};
-            mLevelParameters[48] = new float[]{8, 13, 6, 6, 14};
-            mLevelParameters[49] = new float[]{8, 13, 6, 6, 14};
+            mLevelParameters[40] = new float[]{8, 20, 6, 6, 13};
+            mLevelParameters[41] = new float[]{8, 20, 6, 6, 13};
+            mLevelParameters[42] = new float[]{8, 18, 6, 6, 13};
+            mLevelParameters[43] = new float[]{8, 18, 6, 6, 13};
+            mLevelParameters[44] = new float[]{9, 17, 6, 6, 13};
+            mLevelParameters[45] = new float[]{9, 17, 6, 6, 14};
+            mLevelParameters[46] = new float[]{9, 15, 6, 6, 14};
+            mLevelParameters[47] = new float[]{9, 15, 6, 6, 14};
+            mLevelParameters[48] = new float[]{10, 13, 6, 6, 14};
+            mLevelParameters[49] = new float[]{11, 13, 6, 6, 14};
         }
         
         /**
