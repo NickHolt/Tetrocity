@@ -569,6 +569,22 @@ public class Engine extends JFrame{
         mBoostPreviousTime = mLinePiecePreviousTime = mZeroGravityPreviousTime
                 = mClearGridPreviousTime = 0;
         
+        Image lockImage = Toolkit.getDefaultToolkit().getImage(getClass()
+                .getResource("/resources/images/lock.png"));     
+        
+        mAbilityPanel0.setImage(lockImage);
+        mAbilityPanel0.setTopText("");
+        mAbilityPanel0.setBottomText("Level 10");
+        mAbilityPanel1.setImage(lockImage);
+        mAbilityPanel1.setTopText("");
+        mAbilityPanel1.setBottomText("Level 20");
+        mAbilityPanel2.setImage(lockImage);
+        mAbilityPanel2.setTopText("");
+        mAbilityPanel2.setBottomText("Level 30");
+        mAbilityPanel3.setImage(lockImage);
+        mAbilityPanel3.setTopText("");
+        mAbilityPanel3.setBottomText("Level 40");
+        
         mTetriminoFactory.
             setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel)); 
         fillBoardQueue();
