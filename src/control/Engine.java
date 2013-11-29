@@ -845,7 +845,7 @@ public class Engine extends JFrame{
         } else {
             text += "You are a god.";
         }
-        mScoreBar.setText(text);
+        mScoreBar.setText(text + " Press 'r' to try again.");
     }
     
     /****************************/
