@@ -147,27 +147,15 @@ public class Engine extends JFrame{
                     if (mLevel == 6) { //unlock abilities (note these levels cannot be skipped)
                         setBoostGraphic();
                         mBoostUnlocked = true;
-                        if (mSoundEffectsEnabled) {
-                            SoundEffect.ABILITY_UNLOCK.play();
-                        }
                     } else if (mLevel == 12) {
                         setStraightLineGraphic();
                         mLinePieceAbilityUnlocked = true;
-                        if (mSoundEffectsEnabled) {
-                            SoundEffect.ABILITY_UNLOCK.play();
-                        }
                     } else if (mLevel == 18) {
                         setZeroGravityGraphic();
                         mZeroGravityUnlocked = true;
-                        if (mSoundEffectsEnabled) {
-                            SoundEffect.ABILITY_UNLOCK.play();
-                        }
                     } else if (mLevel == 24) {
                         setClearGridGraphic();
                         mClearGridUnlocked = true;
-                        if (mSoundEffectsEnabled) {
-                            SoundEffect.ABILITY_UNLOCK.play();
-                        }
                     } else if (mSoundEffectsEnabled) {
                         SoundEffect.LEVEL_UP.play();
                     }
@@ -309,6 +297,9 @@ public class Engine extends JFrame{
             long elapsedTime = System.currentTimeMillis() - mBoostPreviousTime;
             
             if (elapsedTime > BOOST_COOLDOWN * 1000) {
+                if (!mBoostAvailable && mSoundEffectsEnabled) {
+                    SoundEffect.ABILITY_UNLOCK.play(); //play when made available
+                }
                 mBoostEnabled = false;
                 mBoostAvailable = true;
                 mAbilityPanel0.setTopText("A");
@@ -331,6 +322,10 @@ public class Engine extends JFrame{
             long elapsedTime = System.currentTimeMillis() - mLinePiecePreviousTime;
             
             if (elapsedTime > STRAIGHT_LINE_ABILITY_COOLDOWN * 1000) {
+                if (!mLinePieceAbilityAvailable && mSoundEffectsEnabled) {
+                    SoundEffect.ABILITY_UNLOCK.play();
+                }
+                
                 mLinePieceAbilityAvailable = true;
                 mAbilityPanel1.setTopText("S");
                 mAbilityPanel1.setBottomText("Line Piece");
@@ -345,6 +340,10 @@ public class Engine extends JFrame{
             long elapsedTime = System.currentTimeMillis() - mZeroGravityPreviousTime;
             
             if (elapsedTime > ZERO_GRAVITY_COOLDOWN * 1000) {
+                if (!mZeroGravityAvailable && mSoundEffectsEnabled) {
+                    SoundEffect.ABILITY_UNLOCK.play();
+                }
+                
                 mZeroGravityEnabled = false;
                 mZeroGravityAvailable = true;
                 mAbilityPanel2.setTopText("D");
@@ -367,6 +366,10 @@ public class Engine extends JFrame{
             long elapsedTime = System.currentTimeMillis() - mClearGridPreviousTime;
             
             if (elapsedTime > CLEAR_GRID_COOLDOWN * 1000) {
+                if (!mClearGridAvailable && mSoundEffectsEnabled) {
+                    SoundEffect.ABILITY_UNLOCK.play();
+                }
+                
                 mClearGridAvailable = true;
                 mAbilityPanel3.setTopText("F");
                 mAbilityPanel3.setBottomText("Clear Grid");
