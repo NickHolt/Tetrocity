@@ -144,16 +144,16 @@ public class Engine extends JFrame{
                     mTetriminoFactory.
                         setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel));    
                     
-                    if (mLevel == 10) { //unlock abilities (note these levels cannot be skipped)
+                    if (mLevel == 6) { //unlock abilities (note these levels cannot be skipped)
                         setBoostGraphic();
                         mBoostUnlocked = true;
-                    } else if (mLevel == 20) {
+                    } else if (mLevel == 12) {
                         setStraightLineGraphic();
                         mLinePieceAbilityUnlocked = true;
-                    } else if (mLevel == 30) {
+                    } else if (mLevel == 18) {
                         setZeroGravityGraphic();
                         mZeroGravityUnlocked = true;
-                    } else if (mLevel == 40) {
+                    } else if (mLevel == 24) {
                         setClearGridGraphic();
                         mClearGridUnlocked = true;
                     }
@@ -246,12 +246,14 @@ public class Engine extends JFrame{
     /** Uses current game information to interpret the corresponding increase in score after
      * a number of lines have been cleared.
      * 
-     *  The equation used is linesCleared^1.3 * e^(3*level/max_level). 
+     *  The equation used is 100 * linesCleared^1.3 * e^(3*level/max_level). 
      *  
      *  The first term rewards multiple lines cleared at once with an exponentially weighted 
      * bonus. The second term causes higher levels to reward exponentially higher scores in 
      * a similar fashion. The particular constants used in this equation were determined via
      * an informal analysis. 
+     * 
+     *  The 100 term simply makes the score "big". 
      * 
      * @param linesCleared The number of lines cleared.
      * @return The amount of score to add. 
@@ -260,18 +262,19 @@ public class Engine extends JFrame{
         double baseScore = Math.pow(linesCleared, 1.3) 
                 * Math.exp(3 * mLevel / (float) GuidedLevelParameters.MAX_LEVEL);
         if (mBoostEnabled) {
-            return 2 * baseScore;
+            return 200 * baseScore;
         } else {
-            return baseScore;
+            return 100 * baseScore;
         }
     }
 
     /** Uses current game information to interpret the corresponding increase in score after
      * a Tetrimino piece was dropped a number of lines. 
      * 
-     *  The equation used is linesDropped / (total_rows - max_length) * e^(level / max_level).
+     *  The equation used is 100 * linesDropped / (total_rows - max_length) * e^(level / max_level).
      * This equation was determined by an informal analysis. See 
      * {@link Engine#scoreLinesCleared} for a similar explanation of reasoning. 
+     * 
      * 
      * @param linesDropped The number of lines dropped.
      * @return The amount of score to add. 
@@ -281,9 +284,9 @@ public class Engine extends JFrame{
                         - GuidedLevelParameters.MAX_TETRIMINO_LENGTH)
                 * Math.exp(mLevel / (double) GuidedLevelParameters.MAX_LEVEL);
         if (mBoostEnabled) {
-            return 2 * baseScore;
+            return 100 * baseScore;
         } else {
-            return baseScore;
+            return 50 * baseScore;
         }
     }
 
@@ -597,16 +600,16 @@ public class Engine extends JFrame{
         
         mAbilityPanel0.setImage(lockImage);
         mAbilityPanel0.setTopText("");
-        mAbilityPanel0.setBottomText("Level 10");
+        mAbilityPanel0.setBottomText("Level 6");
         mAbilityPanel1.setImage(lockImage);
         mAbilityPanel1.setTopText("");
-        mAbilityPanel1.setBottomText("Level 20");
+        mAbilityPanel1.setBottomText("Level 12");
         mAbilityPanel2.setImage(lockImage);
         mAbilityPanel2.setTopText("");
-        mAbilityPanel2.setBottomText("Level 30");
+        mAbilityPanel2.setBottomText("Level 18");
         mAbilityPanel3.setImage(lockImage);
         mAbilityPanel3.setTopText("");
-        mAbilityPanel3.setBottomText("Level 40");
+        mAbilityPanel3.setBottomText("Level 24");
         
         mTetriminoFactory.
             setLengthRange(mLevelParameters.getLevelLiveTetriminoLengthRange(mLevel)); 
@@ -674,13 +677,13 @@ public class Engine extends JFrame{
                 .getResource("/resources/images/lock.png"));     
         
         mAbilityPanel0 = new ImagePanel(lockImage); //Everything begins locked
-        mAbilityPanel0.setBottomText("Level 10");
+        mAbilityPanel0.setBottomText("Level 6");
         mAbilityPanel1 = new ImagePanel(lockImage);
-        mAbilityPanel1.setBottomText("Level 20");
+        mAbilityPanel1.setBottomText("Level 12");
         mAbilityPanel2 = new ImagePanel(lockImage);
-        mAbilityPanel2.setBottomText("Level 30");
+        mAbilityPanel2.setBottomText("Level 18");
         mAbilityPanel3 = new ImagePanel(lockImage);
-        mAbilityPanel3.setBottomText("Level 40");
+        mAbilityPanel3.setBottomText("Level 24");
                           
         float width = 2 * BASE_WIDTH_FACTOR * cols,
                 height = (int) (width * rows / cols);
@@ -796,7 +799,8 @@ public class Engine extends JFrame{
     /** Sets the standard level and score message on this Engine's score bar. 
      */
     private void setLevelAndScoreMessage() {
-        mScoreBar.setText("Level: " + mLevel + ", Score: " + (int) mPlayer.getScore());
+        long formattedScore = (long) (mPlayer.getScore() - mPlayer.getScore() % 5);
+        mScoreBar.setText("Level: " + mLevel + ", Score: " + formattedScore);
     }
 
     /** Sets the paused message on this Engine's score bar. 
@@ -808,17 +812,18 @@ public class Engine extends JFrame{
     /** Sets the game over message on this Engine's score bar. 
      */
     private void setGameOverMessage() {
-        String text = "GAME OVER! Level: " + mLevel + ", Score: " + (int) mPlayer.getScore() + ". ";
+        long formattedScore = (long) (mPlayer.getScore() - mPlayer.getScore() % 5);
+        String text = "GAME OVER! Level: " + mLevel + ", Score: " + formattedScore + ". ";
         
-        if (mLevel < 10) {
+        if (mLevel < 6) {
             text += "Keep practicing!";
-        } else if (mLevel < 20) {
+        } else if (mLevel < 12) {
             text += "Not bad!";
-        } else if (mLevel < 30) {
+        } else if (mLevel < 18) {
             text += "Nice one!";
-        } else if (mLevel < 40) {
+        } else if (mLevel < 24) {
             text += "Impressive!";
-        } else if (mLevel < 50) {
+        } else if (mLevel < 30) {
             text += "Holy crap!";
         } else {
             text += "You are a god.";
@@ -937,66 +942,46 @@ public class Engine extends JFrame{
      */
     private class GuidedLevelParameters {
         public static final int MAX_TETRIMINO_LENGTH = 6;
-        public static final int MAX_LEVEL = 50;
+        public static final int MAX_LEVEL = 30;
         
         private float[][] mLevelParameters;
 
         public GuidedLevelParameters() {
             mLevelParameters = new float[MAX_LEVEL][5];
-            mLevelParameters[0] = new float[]{1, 26, 3, 3, 2};
-            mLevelParameters[1] = new float[]{1, 26, 3, 4, 2};
-            mLevelParameters[2] = new float[]{2, 24, 3, 4, 2};
-            mLevelParameters[3] = new float[]{2, 24, 3, 4, 3};
-            mLevelParameters[4] = new float[]{3, 23, 3, 4, 3};
-            mLevelParameters[5] = new float[]{3, 23, 3, 4, 3};
-            mLevelParameters[6] = new float[]{3, 21, 3, 4, 4};
-            mLevelParameters[7] = new float[]{4, 21, 3, 4, 4};
-            mLevelParameters[8] = new float[]{4, 20, 3, 4, 4};
-            mLevelParameters[9] = new float[]{4, 20, 3, 4, 4};
+            mLevelParameters[0] = new float[]{1, 26, 3, 4, 1};
+            mLevelParameters[1] = new float[]{2, 26, 3, 4, 2};
+            mLevelParameters[2] = new float[]{3, 26, 3, 4, 2};
+            mLevelParameters[3] = new float[]{4, 26, 4, 4, 3};
+            mLevelParameters[4] = new float[]{5, 26, 4, 4, 3};
+            mLevelParameters[5] = new float[]{5, 26, 4, 4, 3};
             
-            mLevelParameters[10] = new float[]{3, 25, 3, 5, 5};
-            mLevelParameters[11] = new float[]{3, 25, 3, 5, 5};
-            mLevelParameters[12] = new float[]{4, 23, 3, 5, 5};
-            mLevelParameters[13] = new float[]{4, 23, 3, 5, 6};
-            mLevelParameters[14] = new float[]{5, 21, 3, 5, 6};
-            mLevelParameters[15] = new float[]{5, 21, 3, 5, 6};
-            mLevelParameters[16] = new float[]{5, 19, 3, 5, 7};
-            mLevelParameters[17] = new float[]{6, 19, 3, 5, 7};
-            mLevelParameters[18] = new float[]{6, 18, 3, 5, 7};
-            mLevelParameters[19] = new float[]{6, 18, 3, 5, 7};
+            mLevelParameters[6] = new float[]{5, 24, 3, 5, 4};
+            mLevelParameters[7] = new float[]{5, 24, 3, 5, 4};
+            mLevelParameters[8] = new float[]{6, 24, 3, 5, 4};
+            mLevelParameters[9] = new float[]{6, 24, 3, 5, 5};
+            mLevelParameters[10] = new float[]{7, 24, 3, 5, 5};
+            mLevelParameters[11] = new float[]{7, 24, 3, 5, 5};
             
-            mLevelParameters[20] = new float[]{5, 24, 4, 5, 8};
-            mLevelParameters[21] = new float[]{5, 24, 4, 5, 8};
-            mLevelParameters[22] = new float[]{6, 22, 4, 5, 8};
-            mLevelParameters[23] = new float[]{6, 22, 4, 5, 9};
-            mLevelParameters[24] = new float[]{7, 20, 4, 5, 9};
-            mLevelParameters[25] = new float[]{7, 20, 4, 5, 9};
-            mLevelParameters[26] = new float[]{7, 18, 4, 5, 10};
-            mLevelParameters[27] = new float[]{8, 18, 4, 5, 10};
-            mLevelParameters[28] = new float[]{8, 16, 4, 5, 10};
-            mLevelParameters[29] = new float[]{8, 16, 4, 5, 10};
+            mLevelParameters[12] = new float[]{8, 22, 4, 5, 6};
+            mLevelParameters[13] = new float[]{8, 22, 4, 5, 6};
+            mLevelParameters[14] = new float[]{9, 22, 4, 5, 6};
+            mLevelParameters[15] = new float[]{9, 22, 4, 5, 7};
+            mLevelParameters[16] = new float[]{10, 22, 4, 5, 7};
+            mLevelParameters[17] = new float[]{10, 22, 4, 5, 7};
             
-            mLevelParameters[30] = new float[]{7, 22, 5, 5, 11};
-            mLevelParameters[31] = new float[]{7, 22, 5, 5, 11};
-            mLevelParameters[32] = new float[]{7, 20, 5, 5, 11};
-            mLevelParameters[33] = new float[]{7, 20, 5, 5, 11};
-            mLevelParameters[34] = new float[]{8, 19, 5, 5, 11};
-            mLevelParameters[35] = new float[]{8, 19, 5, 5, 12};
-            mLevelParameters[36] = new float[]{8, 17, 5, 5, 12};
-            mLevelParameters[37] = new float[]{8, 17, 5, 5, 12};
-            mLevelParameters[38] = new float[]{9, 15, 5, 5, 12};
-            mLevelParameters[39] = new float[]{9, 15, 5, 5, 12};
+            mLevelParameters[18] = new float[]{10, 20, 5, 5, 8};
+            mLevelParameters[19] = new float[]{10, 20, 5, 5, 8};
+            mLevelParameters[20] = new float[]{11, 20, 5, 5, 8};
+            mLevelParameters[21] = new float[]{11, 20, 5, 5, 9};
+            mLevelParameters[22] = new float[]{12, 20, 5, 5, 9};
+            mLevelParameters[23] = new float[]{12, 20, 5, 5, 9};
             
-            mLevelParameters[40] = new float[]{8, 20, 6, 6, 13};
-            mLevelParameters[41] = new float[]{8, 20, 6, 6, 13};
-            mLevelParameters[42] = new float[]{8, 18, 6, 6, 13};
-            mLevelParameters[43] = new float[]{8, 18, 6, 6, 13};
-            mLevelParameters[44] = new float[]{9, 17, 6, 6, 13};
-            mLevelParameters[45] = new float[]{9, 17, 6, 6, 14};
-            mLevelParameters[46] = new float[]{9, 15, 6, 6, 14};
-            mLevelParameters[47] = new float[]{9, 15, 6, 6, 14};
-            mLevelParameters[48] = new float[]{10, 13, 6, 6, 14};
-            mLevelParameters[49] = new float[]{11, 13, 6, 6, 14};
+            mLevelParameters[24] = new float[]{12, 18, 3, 6, 10};
+            mLevelParameters[25] = new float[]{12, 18, 3, 6, 10};
+            mLevelParameters[26] = new float[]{14, 18, 4, 6, 10};
+            mLevelParameters[27] = new float[]{14, 18, 4, 6, 11};
+            mLevelParameters[28] = new float[]{16, 18, 5, 6, 11};
+            mLevelParameters[29] = new float[]{16, 18, 6, 6, 11};
         }
         
         /**
@@ -1042,7 +1027,7 @@ public class Engine extends JFrame{
             if (level < MAX_LEVEL) {
                 return (int) mLevelParameters[level - 1][4];
             } else {
-                return Integer.MAX_VALUE; //Can never progress past level 50
+                return Integer.MAX_VALUE; //Can never progress past max level
             }
         }
     }
