@@ -228,8 +228,10 @@ public class Board extends JPanel{
      * 
      *  It should be noted that because of how the rotation algorithm works (see 
      * {@link Shape#rotateClockwise()}), it is only ever necessary to push a Tetrimino to the left.
+     * 
+     * @return True IFF the rotation was a success. 
      */    
-    public void rotateTetriminoClockwise() {
+    public boolean rotateTetriminoClockwise() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
     
         if (bottomLiveValidTetrimino != null) {
@@ -252,13 +254,18 @@ public class Board extends JPanel{
                 bottomLiveValidTetrimino.setRootColumn(bottomLiveValidTetrimino.getRootCoordinate()[1]
                         + shiftVal); //shift it back
                 bottomLiveValidTetrimino.rotateCounterClockwise(); //rotate it back
+                return false;
             } else {
                 generateLiveTetriminoProjectionCoordinates();
     
                 refreshGrid();
                 repaint();
+                
+                return true;
             }
         }
+        
+        return false;
     }
 
     /** Attempts to rotate the bottom live Tetrimino piece counter-clockwise. This method implements 
@@ -275,8 +282,10 @@ public class Board extends JPanel{
      *  It should be noted that because of how the rotation algorithm works (see 
      * {@link Shape#rotateCounterClockwise()}), it is only ever necessary to push a Tetrimino to the 
      * left.
+     * 
+     * @return True IFF the rotation was a success. 
      */      
-    public void rotateTetriminoCounterClockwise() {
+    public boolean rotateTetriminoCounterClockwise() {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
     
         if (bottomLiveValidTetrimino != null) {
@@ -299,13 +308,19 @@ public class Board extends JPanel{
                 bottomLiveValidTetrimino.setRootColumn(bottomLiveValidTetrimino.getRootCoordinate()[1]
                         + shiftVal); //shift it back
                 bottomLiveValidTetrimino.rotateClockwise(); //rotate it back
+                
+                return false;
             } else {
                 generateLiveTetriminoProjectionCoordinates();
     
                 refreshGrid();
                 repaint();
+                
+                return true;
             }
         }
+        
+        return false;
     }
 
     /** Removes the Tetrimino from the grid and the list of live Tetriminoes. 
@@ -437,8 +452,10 @@ public class Board extends JPanel{
      * 
      * @throws GameOverException thrown if the space where the new, previously stored Tetrimino
      * is already occupied. This should not happen by game design.
+     * 
+     * @return True IFF the storage was a success. 
      */
-    public void storeTetrimino() throws GameOverException {
+    public boolean storeTetrimino() throws GameOverException {
         Tetrimino bottomLiveValidTetrimino = getBottomLiveTetrimino();
         
         if (bottomLiveValidTetrimino != null 
@@ -478,7 +495,11 @@ public class Board extends JPanel{
             
             mSidePanel.updateStoragePiece();
             generateLiveTetriminoProjectionCoordinates();
-        }         
+            
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /** Replace the Tetrimino currently in storage with the input Tetrimino. This will
