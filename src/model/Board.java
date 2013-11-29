@@ -133,7 +133,11 @@ public class Board extends JPanel{
      * @param direction The direction to shift all live Tetriminoes in. 
      */
     public void shiftAllLiveTetriminoes(Direction shiftDirection) {
-        for (Tetrimino tetrimino : mLiveTetriminoes) {
+        @SuppressWarnings("unchecked")
+        ArrayList<Tetrimino> liveTetrimioesCopy 
+        = (ArrayList<Tetrimino>) mLiveTetriminoes.clone(); //avoid concurrent modification
+        
+        for (Tetrimino tetrimino : liveTetrimioesCopy) {
             shiftTetrimino(tetrimino, shiftDirection);
         }
     }
