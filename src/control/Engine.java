@@ -15,6 +15,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import audio.SoundEffect;
 import model.Board;
 import model.Tetrimino;
 import util.Direction;
@@ -44,8 +45,8 @@ public class Engine extends JFrame{
     /* This value may be tweaked to scale all components proportionally. */
     private static final int BASE_WIDTH_FACTOR = 20;
     /* Ability constants. */
-    public static final int BOOST_DURATION = 5;
-    public static final int BOOST_COOLDOWN = 30;
+    public static final int BOOST_DURATION = 3;
+    public static final int BOOST_COOLDOWN = 25;
     public static final int STRAIGHT_LINE_ABILITY_COOLDOWN = 60;
     public static final int ZERO_GRAVITY_DURATION = 5;
     public static final int ZERO_GRAVITY_COOLDOWN = 120;
@@ -60,7 +61,7 @@ public class Engine extends JFrame{
     private JLabel mScoreBar;
     /* Game states. */
     private int mLevel, mLinesClearedThisLevel;
-    private boolean mIsWelcoming, mIsPaused, mIsHalted;
+    private boolean mIsWelcoming, mIsPaused, mIsHalted, mSoundEffectsEnabled;
     /* Ability states. */
     private boolean mBoostEnabled, mBoostAvailable, mBoostUnlocked;
     private long mBoostPreviousTime;
@@ -84,6 +85,7 @@ public class Engine extends JFrame{
         mLevel = 1;
         mLinesClearedThisLevel = 0;
         mIsPaused = false;
+        mSoundEffectsEnabled = true;
         mBoostEnabled = mBoostAvailable = mBoostUnlocked =
                 mLinePieceAbilityAvailable = mLinePieceAbilityUnlocked =
                 mZeroGravityEnabled = mZeroGravityAvailable = mZeroGravityUnlocked =
@@ -116,6 +118,7 @@ public class Engine extends JFrame{
     public void run() {        
         constructGUI();
         welcome();
+        SoundEffect.GAME_START.play();
         
         /* Run the game. */
         float dropPeriod = (1 / 
@@ -185,6 +188,17 @@ public class Engine extends JFrame{
         updateScore(rowsCleared);
         mLinesClearedThisLevel += rowsCleared;
         
+        if (rowsCleared > 0) {
+            if (rowsCleared <= GuidedLevelParameters.MAX_TETRIMINO_LENGTH / 3) {
+                SoundEffect.CLEAR_SINGLE.play();
+            } else if (rowsCleared <= 2 * GuidedLevelParameters.MAX_TETRIMINO_LENGTH / 3) {
+                SoundEffect.CLEAR_DOUBLE.play();
+            } else {
+                SoundEffect.CLEAR_TRIPLE.play();
+            }
+        }
+        
+        
         Tetrimino topLiveTetrimino = mBoard.getTopLiveTetrimino();
         if (topLiveTetrimino == null ||
                 (mBoard.numLiveTetriminoes() != 0 &&
@@ -193,8 +207,7 @@ public class Engine extends JFrame{
             try {
                 mBoard.putTetrimino();
             } catch (GameOverException e) {
-                setGameOverMessage();
-                halt();
+                gameOver();
             }
         }
         
@@ -202,8 +215,7 @@ public class Engine extends JFrame{
             try {
                 mBoard.putTetrimino();
             } catch (GameOverException e) {
-                setGameOverMessage();
-                halt();
+                gameOver();
             }
         }      
         
@@ -349,48 +361,109 @@ public class Engine extends JFrame{
     private void interpretInput(int keyCode) {
         if (keyCode == KeyEvent.VK_RIGHT || keyCode == KeyEvent.VK_KP_RIGHT) {
             mBoard.shiftTetrimino(Direction.EAST);
+            if (mSoundEffectsEnabled) {
+                SoundEffect.BLIP.play();
+            }
         } else if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_KP_DOWN) {
             mBoard.shiftTetrimino(Direction.SOUTH);
+            if (mSoundEffectsEnabled) {
+                SoundEffect.SOFT_DROP.play();
+            }
         } else if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_KP_LEFT) {
             mBoard.shiftTetrimino(Direction.WEST);
+            if (mSoundEffectsEnabled) {
+                SoundEffect.BLIP.play();
+            }
         } else if (keyCode == KeyEvent.VK_SPACE) {
             mPlayer.addToScore(scoreLinesDropped(mBoard.dropTetrimino()));
+            if (mSoundEffectsEnabled) {
+                SoundEffect.HARD_DROP.play();
+            }
         } else if (keyCode == KeyEvent.VK_SHIFT) {
             try {
-                mBoard.storeTetrimino();
+                boolean storeSuccess = mBoard.storeTetrimino();
+                
+                if (mSoundEffectsEnabled) {
+                    if (storeSuccess) {
+                        SoundEffect.STORE.play();
+                    } else {
+                        SoundEffect.ROTATE_FAIL.play();
+                    }
+                }
             } catch (GameOverException e) {
-                setGameOverMessage();
-                halt();
+                gameOver();
             }
         } else if (keyCode == KeyEvent.VK_Z) {
-            mBoard.rotateTetriminoCounterClockwise();
+            boolean rotateSuccess = mBoard.rotateTetriminoCounterClockwise();
+            
+            if (mSoundEffectsEnabled) {
+                if (rotateSuccess) {
+                    SoundEffect.ROTATE.play();
+                } else {
+                    SoundEffect.ROTATE_FAIL.play();
+                }
+            }
         } else if (keyCode == KeyEvent.VK_X || keyCode == KeyEvent.VK_UP 
                 || keyCode == KeyEvent.VK_KP_UP) {
-            mBoard.rotateTetriminoClockwise();
+            boolean rotateSuccess = mBoard.rotateTetriminoClockwise();
+            
+            if (mSoundEffectsEnabled) {
+                if (rotateSuccess) {
+                    SoundEffect.ROTATE.play();
+                } else {
+                    SoundEffect.ROTATE_FAIL.play();
+                }
+            }
         } else if (keyCode == KeyEvent.VK_ESCAPE) {
+            if (mSoundEffectsEnabled) {
+                SoundEffect.BLIP.play();
+            }
+            
             pause();
         } else if (keyCode == KeyEvent.VK_R) {
+            if (mSoundEffectsEnabled) {
+                SoundEffect.BLIP.play();
+            }
+            
             restart();
         } else if (keyCode == KeyEvent.VK_A){
             if (mBoostUnlocked && mBoostAvailable) {
                 mBoostEnabled = true;
                 mBoostPreviousTime = System.currentTimeMillis();
+                
+                if (mSoundEffectsEnabled) {
+                    SoundEffect.SCORE_BOOST.play();
+                }
             }
         } else if (keyCode == KeyEvent.VK_S){
             if (mLinePieceAbilityUnlocked && mLinePieceAbilityAvailable) {
                 mBoard.storeTetrimino(mTetriminoFactory.getRandomMaxLengthStraightLineTetrimino());
                 mLinePiecePreviousTime = System.currentTimeMillis();
+                
+                if (mSoundEffectsEnabled) {
+                    SoundEffect.LINE_PIECE.play();
+                }
             }
         } else if (keyCode == KeyEvent.VK_D){
             if (mZeroGravityUnlocked && mZeroGravityAvailable) {
                 mZeroGravityEnabled = true;
                 mZeroGravityPreviousTime = System.currentTimeMillis();
+                
+                if (mSoundEffectsEnabled) {
+                    SoundEffect.ZERO_GRAVITY.play();
+                }
             }
         } else if (keyCode == KeyEvent.VK_F) {
             if (mClearGridUnlocked && mClearGridAvailable) {
                 mBoard.emptyGrid();
                 mClearGridPreviousTime = System.currentTimeMillis();
+                
+                if (mSoundEffectsEnabled) {
+                    SoundEffect.CLEAR_GRID.play();
+                }
             }
+        } else if (keyCode == KeyEvent.VK_M) {
+            mSoundEffectsEnabled = !mSoundEffectsEnabled;
         }
     }
 
@@ -502,8 +575,6 @@ public class Engine extends JFrame{
     
     /** Runs the halt protocol. This simply displays the appropriate message, and waits for the 
      * player to press the appropriate key to start a new game.
-     * 
-     *  This protocol is run when the game is over.
      */
     private void halt() {
         removeKeyListener(mPlayer);
@@ -519,6 +590,17 @@ public class Engine extends JFrame{
         removeKeyListener(loopKeyListener);
         addKeyListener(mPlayer);
         restart();
+    }
+    
+    /** Runs the game over protocol. This simply displays the appropriate message, sound effect,
+     * and then halts. 
+     * 
+     *  This protocol is run when the game is over.
+     */
+    private void gameOver() {
+        SoundEffect.GAME_OVER.play();
+        setGameOverMessage();
+        halt();
     }
     
     /********************/
@@ -546,7 +628,7 @@ public class Engine extends JFrame{
         setLevelAndScoreMessage();
         
         Image lockImage = Toolkit.getDefaultToolkit().getImage(getClass()
-                .getResource("/images/lock.png"));     
+                .getResource("/resources/images/lock.png"));     
         
         mAbilityPanel0 = new ImagePanel(lockImage); //Everything begins locked
         mAbilityPanel0.setBottomText("Level 10");
@@ -621,7 +703,7 @@ public class Engine extends JFrame{
      */
     private void setBoostGraphic() {
         Image image = Toolkit.getDefaultToolkit().getImage(getClass()
-                .getResource("/images/boost_score.png"));  
+                .getResource("/resources/images/boost_score.png"));  
         
         mAbilityPanel0.setImage(image);
         mAbilityPanel0.setBottomText("Score Boost");
@@ -631,7 +713,7 @@ public class Engine extends JFrame{
      */
     private void setStraightLineGraphic() {
         Image image = Toolkit.getDefaultToolkit().getImage(getClass()
-                .getResource("/images/line_piece.png"));   
+                .getResource("/resources/images/line_piece.png"));   
         
         mAbilityPanel1.setImage(image);
         mAbilityPanel1.setBottomText("Line Piece");
@@ -641,7 +723,7 @@ public class Engine extends JFrame{
      */
     private void setZeroGravityGraphic() {
         Image image = Toolkit.getDefaultToolkit().getImage(getClass()
-                .getResource("/images/zero_gravity.png"));  
+                .getResource("/resources/images/zero_gravity.png"));  
         
         mAbilityPanel2.setImage(image);
         mAbilityPanel2.setBottomText("Zero Gravity");
@@ -651,7 +733,7 @@ public class Engine extends JFrame{
      */
     private void setClearGridGraphic() {
         Image image = Toolkit.getDefaultToolkit().getImage(getClass()
-                .getResource("/images/clear_grid.png"));  
+                .getResource("/resources/images/clear_grid.png"));  
         
         mAbilityPanel3.setImage(image);
         mAbilityPanel3.setBottomText("Clear Grid");
@@ -741,19 +823,40 @@ public class Engine extends JFrame{
                         
                         setClearGridGraphic();
                         mClearGridUnlocked = true;
-                }
-                if (keyCode == KeyEvent.VK_SPACE) {
+                } else if (keyCode == KeyEvent.VK_SPACE) {
+                    if (mSoundEffectsEnabled) {
+                        SoundEffect.BLIP.play();
+                    }
+                    
                     mIsWelcoming = false;
+                } else if (keyCode == KeyEvent.VK_M) {
+                    mSoundEffectsEnabled = !mSoundEffectsEnabled;
                 }
             } else if (mState == PAUSED) {
                 if (keyCode == KeyEvent.VK_ESCAPE) {
+                    if (mSoundEffectsEnabled) {
+                        SoundEffect.BLIP.play();
+                    }
+                    
                     mIsPaused = false;
                 } else if (keyCode == KeyEvent.VK_R) {
+                    if (mSoundEffectsEnabled) {
+                        SoundEffect.BLIP.play();
+                    }
+                    
                     restart();
+                } else if (keyCode == KeyEvent.VK_M) {
+                    mSoundEffectsEnabled = !mSoundEffectsEnabled;
                 }
             } else if (mState == HALTED) {
                 if (keyCode == KeyEvent.VK_R){
+                    if (mSoundEffectsEnabled) {
+                        SoundEffect.BLIP.play();
+                    }
+                    
                     restart();
+                } else if (keyCode == KeyEvent.VK_M) {
+                    mSoundEffectsEnabled = !mSoundEffectsEnabled;
                 }
             }
         }
