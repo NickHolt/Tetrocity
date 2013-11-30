@@ -55,7 +55,7 @@ public class Engine extends JFrame{
     private Board mBoard;
     private TetriminoFactory mTetriminoFactory;
     private Player mPlayer;    
-    private GuidedLevelParameters mLevelParameters;
+    private LevelParameters mLevelParameters;
     private Board.SidePanel mSidePanel;
     private ImagePanel mAbilityPanel0, mAbilityPanel1, mAbilityPanel2, mAbilityPanel3;
     private JLabel mScoreBar;
@@ -80,7 +80,7 @@ public class Engine extends JFrame{
      * locked. 
      */
     public Engine() {
-        mLevelParameters = new GuidedLevelParameters();
+        mLevelParameters = new LevelParameters();
 
         mLevel = 1;
         mLinesClearedThisLevel = 0;
@@ -191,9 +191,9 @@ public class Engine extends JFrame{
         mLinesClearedThisLevel += rowsCleared;
         
         if (rowsCleared > 0) {
-            if (rowsCleared <= GuidedLevelParameters.MAX_TETRIMINO_LENGTH / 3) {
+            if (rowsCleared <= LevelParameters.MAX_TETRIMINO_LENGTH / 3) {
                 SoundEffect.CLEAR_SINGLE.play();
-            } else if (rowsCleared <= 2 * GuidedLevelParameters.MAX_TETRIMINO_LENGTH / 3) {
+            } else if (rowsCleared <= 2 * LevelParameters.MAX_TETRIMINO_LENGTH / 3) {
                 SoundEffect.CLEAR_DOUBLE.play();
             } else {
                 SoundEffect.CLEAR_TRIPLE.play();
@@ -258,7 +258,7 @@ public class Engine extends JFrame{
      */
     private double scoreLinesCleared(int linesCleared) {
         double baseScore = Math.pow(linesCleared, 1.3) 
-                * Math.exp(3 * mLevel / (float) GuidedLevelParameters.MAX_LEVEL) * 100;
+                * Math.exp(3 * mLevel / (float) LevelParameters.MAX_LEVEL) * 100;
         if (mBoostEnabled) {
             return 2 * baseScore;
         } else {
@@ -279,8 +279,8 @@ public class Engine extends JFrame{
      */
     private double scoreLinesDropped(int linesDropped) {
         double baseScore = linesDropped / (double) (mBoard.getGridDimensions()[0] 
-                        - GuidedLevelParameters.MAX_TETRIMINO_LENGTH)
-                * Math.exp(mLevel / (double) GuidedLevelParameters.MAX_LEVEL) * 50;
+                        - LevelParameters.MAX_TETRIMINO_LENGTH)
+                * Math.exp(mLevel / (double) LevelParameters.MAX_LEVEL) * 50;
         if (mBoostEnabled) {
             return 2 * baseScore;
         } else {
@@ -668,7 +668,7 @@ public class Engine extends JFrame{
     
     /** Creates all components of the GUI, alone with the appropriate initial text field values.
      * This Engine is a JFrame whose size is determined by 
-     * {@link GuidedLevelParameters#MAX_TETRIMINO_LENGTH}, {@link Engine#ROW_RATIO}, 
+     * {@link LevelParameters#MAX_TETRIMINO_LENGTH}, {@link Engine#ROW_RATIO}, 
      * {@link Engine#COLUMN_RATIO} and {@link Engine#BASE_WIDTH_FACTOR}.
      * 
      *  The layout of the JFrame is a {@link GridBagLayout} with 7 components: the {@link Board.SidePanel},
@@ -676,10 +676,10 @@ public class Engine extends JFrame{
      * a JLabel to display game statistics such as score and level.
      */
     private void constructGUI() {
-        int rows = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * ROW_RATIO),
-                cols = (int) ((GuidedLevelParameters.MAX_TETRIMINO_LENGTH - 1) * COLUMN_RATIO),
-                buffer = GuidedLevelParameters.MAX_TETRIMINO_LENGTH;
-        mBoard = new Board(rows, cols, buffer, GuidedLevelParameters.MAX_TETRIMINO_LENGTH);
+        int rows = (int) ((LevelParameters.MAX_TETRIMINO_LENGTH - 1) * ROW_RATIO),
+                cols = (int) ((LevelParameters.MAX_TETRIMINO_LENGTH - 1) * COLUMN_RATIO),
+                buffer = LevelParameters.MAX_TETRIMINO_LENGTH;
+        mBoard = new Board(rows, cols, buffer, LevelParameters.MAX_TETRIMINO_LENGTH);
                 
         mSidePanel = mBoard.getSidePanel();        
         
@@ -957,13 +957,13 @@ public class Engine extends JFrame{
      * 
      * @author Nick Holt
      */
-    private class GuidedLevelParameters {
+    private class LevelParameters {
         public static final int MAX_TETRIMINO_LENGTH = 6;
         public static final int MAX_LEVEL = 30;
         
         private float[][] mLevelParameters;
 
-        public GuidedLevelParameters() {
+        public LevelParameters() {
             mLevelParameters = new float[MAX_LEVEL][5];
             mLevelParameters[0] = new float[]{1, 26, 3, 4, 1};
             mLevelParameters[1] = new float[]{2, 26, 3, 4, 2};
