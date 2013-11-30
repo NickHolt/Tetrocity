@@ -946,9 +946,9 @@ public class Engine extends JFrame{
      *   3) The length range of the live Tetriminoes.
      *   4) The number of lines needed to progress to the next level. 
      *   
-     *  These values are represented in 5-element float arrays, which are hard-coded into this class. 
+     *  These values are represented in 5-element int arrays, which are hard-coded into this class. 
      *  
-     *  For example, level 1 in a game of Tetrocity has the level-array: [1.0, 26, 3, 3, 2]. 
+     *  For example, level 1 in a game of Tetrocity has the level-array: [1, 26, 3, 3, 2]. 
      * Thus, level 1:
      *   1) Has a drop speed of 1.0 row/second.
      *   2) Has a live Tetrimino spacing of 26 (i.e. only 1 live Tetrimino active at a time)
@@ -961,50 +961,50 @@ public class Engine extends JFrame{
         public static final int MAX_TETRIMINO_LENGTH = 6;
         public static final int MAX_LEVEL = 30;
         
-        private float[][] mLevelParameters;
+        private int[][] mLevelParameters;
 
         public LevelParameters() {
-            mLevelParameters = new float[MAX_LEVEL][5];
-            mLevelParameters[0] = new float[]{1, 26, 3, 4, 1};
-            mLevelParameters[1] = new float[]{2, 26, 3, 4, 2};
-            mLevelParameters[2] = new float[]{3, 26, 3, 4, 2};
-            mLevelParameters[3] = new float[]{4, 26, 4, 4, 3};
-            mLevelParameters[4] = new float[]{5, 26, 4, 4, 3};
-            mLevelParameters[5] = new float[]{5, 26, 4, 4, 3};
+            mLevelParameters = new int[MAX_LEVEL][5];
+            mLevelParameters[0] = new int[]{1, 26, 3, 4, 1};
+            mLevelParameters[1] = new int[]{2, 26, 3, 4, 2};
+            mLevelParameters[2] = new int[]{3, 26, 3, 4, 2};
+            mLevelParameters[3] = new int[]{4, 26, 4, 4, 3};
+            mLevelParameters[4] = new int[]{5, 26, 4, 4, 3};
+            mLevelParameters[5] = new int[]{5, 26, 4, 4, 3};
             
-            mLevelParameters[6] = new float[]{5, 24, 3, 5, 4};
-            mLevelParameters[7] = new float[]{5, 24, 3, 5, 4};
-            mLevelParameters[8] = new float[]{6, 24, 3, 5, 4};
-            mLevelParameters[9] = new float[]{6, 24, 3, 5, 5};
-            mLevelParameters[10] = new float[]{7, 24, 3, 5, 5};
-            mLevelParameters[11] = new float[]{7, 24, 3, 5, 5};
+            mLevelParameters[6] = new int[]{5, 24, 3, 5, 4};
+            mLevelParameters[7] = new int[]{5, 24, 3, 5, 4};
+            mLevelParameters[8] = new int[]{6, 24, 3, 5, 4};
+            mLevelParameters[9] = new int[]{6, 24, 3, 5, 5};
+            mLevelParameters[10] = new int[]{7, 24, 3, 5, 5};
+            mLevelParameters[11] = new int[]{7, 24, 3, 5, 5};
             
-            mLevelParameters[12] = new float[]{8, 22, 4, 5, 6};
-            mLevelParameters[13] = new float[]{8, 22, 4, 5, 6};
-            mLevelParameters[14] = new float[]{9, 22, 4, 5, 6};
-            mLevelParameters[15] = new float[]{9, 22, 4, 5, 7};
-            mLevelParameters[16] = new float[]{10, 22, 4, 5, 7};
-            mLevelParameters[17] = new float[]{10, 22, 4, 5, 7};
+            mLevelParameters[12] = new int[]{8, 22, 4, 5, 6};
+            mLevelParameters[13] = new int[]{8, 22, 4, 5, 6};
+            mLevelParameters[14] = new int[]{9, 22, 4, 5, 6};
+            mLevelParameters[15] = new int[]{9, 22, 4, 5, 7};
+            mLevelParameters[16] = new int[]{10, 22, 4, 5, 7};
+            mLevelParameters[17] = new int[]{10, 22, 4, 5, 7};
             
-            mLevelParameters[18] = new float[]{10, 20, 5, 5, 8};
-            mLevelParameters[19] = new float[]{10, 20, 5, 5, 8};
-            mLevelParameters[20] = new float[]{11, 20, 5, 5, 8};
-            mLevelParameters[21] = new float[]{11, 20, 5, 5, 9};
-            mLevelParameters[22] = new float[]{12, 20, 5, 5, 9};
-            mLevelParameters[23] = new float[]{12, 20, 5, 5, 9};
+            mLevelParameters[18] = new int[]{10, 20, 5, 5, 8};
+            mLevelParameters[19] = new int[]{10, 20, 5, 5, 8};
+            mLevelParameters[20] = new int[]{11, 20, 5, 5, 8};
+            mLevelParameters[21] = new int[]{11, 20, 5, 5, 9};
+            mLevelParameters[22] = new int[]{12, 20, 5, 5, 9};
+            mLevelParameters[23] = new int[]{12, 20, 5, 5, 9};
             
-            mLevelParameters[24] = new float[]{12, 18, 3, 6, 10};
-            mLevelParameters[25] = new float[]{12, 18, 3, 6, 10};
-            mLevelParameters[26] = new float[]{14, 18, 4, 6, 10};
-            mLevelParameters[27] = new float[]{14, 18, 4, 6, 11};
-            mLevelParameters[28] = new float[]{16, 18, 5, 6, 11};
-            mLevelParameters[29] = new float[]{16, 18, 6, 6, 11};
+            mLevelParameters[24] = new int[]{12, 18, 3, 6, 10};
+            mLevelParameters[25] = new int[]{12, 18, 3, 6, 10};
+            mLevelParameters[26] = new int[]{14, 18, 4, 6, 10};
+            mLevelParameters[27] = new int[]{14, 18, 4, 6, 11};
+            mLevelParameters[28] = new int[]{16, 18, 5, 6, 11};
+            mLevelParameters[29] = new int[]{16, 18, 6, 6, 11};
         }
         
         /**
          * @return The drop speed increase factor for a given level.
          */
-        public float getLevelDropFactor(int level) {
+        public int getLevelDropFactor(int level) {
             if (level <= MAX_LEVEL) {
                 return mLevelParameters[level - 1][0];
             } else {
