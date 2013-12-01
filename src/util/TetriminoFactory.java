@@ -132,7 +132,7 @@ public class TetriminoFactory {
      * 
      * @return The random shape matrix. 
      */
-    private int[][] getRandomShapeMatrix() {
+    public int[][] getRandomShapeMatrix() {
         /* This method works by starting with a blank 2L + 1 by 2L + 1 matrix, where L 
          * is the randomly selected Tetrimino length. 2L is used to ensure even a straight
          * line piece will fit, and the + 1 provides necessary buffering. 
@@ -220,7 +220,7 @@ public class TetriminoFactory {
      * @return A new {@link Shape} instance randomly generated using this
      * TetriminoFactory's length range and seed.
      */
-    private Shape getRandomShape() {
+    public Shape getRandomShape() {
         return new Shape(getRandomShapeMatrix());
     }
     
