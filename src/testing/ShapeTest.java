@@ -2,7 +2,6 @@ package testing;
 
 import java.util.Arrays;
 
-import util.Direction;
 import model.Shape;
 
 public class ShapeTest implements TestSuite {

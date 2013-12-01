@@ -100,19 +100,6 @@ public class TetriminoTest implements TestSuite {
         return true;
     }
     
-    public boolean isEmptyTest() {
-        int[][] matrix = new int[2][2];
-        matrix[0] = new int[]{1, 0};
-        matrix[1] = new int[]{1, 0};
-        Shape shape = new Shape(matrix);
-        Tetrimino tetrimino = new Tetrimino(shape, 11, new int[]{10, 10});
-        
-        tetrimino.deleteBlock(10, 10);
-        tetrimino.deleteBlock(11, 10);
-        
-        return tetrimino.isEmpty();
-    }
-    
     public boolean getBottomRowTest() {
         int[][] matrix = new int[4][4];
         matrix[0] = new int[]{1, 0};
@@ -138,9 +125,6 @@ public class TetriminoTest implements TestSuite {
         }
         if (!deleteBlockTest()) {
             System.out.println("TetriminoTest.deleteBlockTest() failed.");
-        }
-        if (!isEmptyTest()) {
-            System.out.println("TetriminoTest.isEmptyTest() failed.");
         }
         if (!getBottomRowTest()) {
             System.out.println("TetriminoTest.getBottomRow() failed.");

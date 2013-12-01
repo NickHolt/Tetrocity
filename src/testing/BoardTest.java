@@ -55,7 +55,7 @@ public class BoardTest implements TestSuite {
         matrix[1] = new int[]{1, 0, 0, 0};
         matrix[2] = new int[]{1, 0, 0, 0};
         matrix[3] = new int[]{1, 1, 0, 0};
-        Shape shape = new Shape(matrix, 5);
+        Shape shape = new Shape(matrix);
         Tetrimino tetrimino = new Tetrimino(shape, 11);
                 
         if (!Arrays.equals(board.getPlacementCoordinate(tetrimino), new int[]{2, 4})) {
@@ -67,7 +67,7 @@ public class BoardTest implements TestSuite {
         matrix[1] = new int[]{0, 1, 0, 1};
         matrix[2] = new int[]{1, 0, 1, 0};
         matrix[3] = new int[]{0, 1, 0, 1};
-        shape = new Shape(matrix, 8);
+        shape = new Shape(matrix);
         tetrimino = new Tetrimino(shape, 11);
                 
         if (!Arrays.equals(board.getPlacementCoordinate(tetrimino), new int[]{2, 3})) {
