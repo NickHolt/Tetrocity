@@ -71,9 +71,15 @@ public class Board extends JPanel{
      * non-visible rows, so that a piece can be placed in the buffer region without
      * it instantaneously appearing on screen. 
      * 
+     *  The number of rows in the side panel may also be specified. This side panel 
+     * is used to display the queued and stored Tetrimino on the Tetrocity GUI. This
+     * value should be set to the maximum Tetrimino length in order to ensure every 
+     * Tetrimino will fit. 
+     * 
      * @param rows The number of visible rows in this Board.
      * @param cols The number of visible columns in this Board.
      * @param buffer The number of non-visible rows in this Board. 
+     * @param panelWidth The number of columns in the side panel.
      */
     public Board(int rows, int cols, int buffer, int panelWidth) {
         if (rows < 1
@@ -100,6 +106,21 @@ public class Board extends JPanel{
                 
         setVisible(true);
         repaint();        
+    }
+    
+    /** A new Board for a game of Tetrocity. A board is a (BUFFER + ROWS) x COLS matrix 
+     * (grid) on which the game is played. A buffer is used to provide a number of
+     * non-visible rows, so that a piece can be placed in the buffer region without
+     * it instantaneously appearing on screen. 
+     * 
+     *  The side panel width will be set to the buffer by default. 
+     * 
+     * @param rows The number of visible rows in this Board.
+     * @param cols The number of visible columns in this Board.
+     * @param buffer The number of non-visible rows in this Board. 
+     */
+    public Board(int rows, int cols, int buffer) {
+        this(rows, cols, buffer, buffer); 
     }
     
     /**************************************/

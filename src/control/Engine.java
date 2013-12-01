@@ -679,7 +679,7 @@ public class Engine extends JFrame{
         int rows = (int) ((LevelParameters.MAX_TETRIMINO_LENGTH - 1) * ROW_RATIO),
                 cols = (int) ((LevelParameters.MAX_TETRIMINO_LENGTH - 1) * COLUMN_RATIO),
                 buffer = LevelParameters.MAX_TETRIMINO_LENGTH;
-        mBoard = new Board(rows, cols, buffer, LevelParameters.MAX_TETRIMINO_LENGTH);
+        mBoard = new Board(rows, cols, buffer);
                 
         mSidePanel = mBoard.getSidePanel();        
         
