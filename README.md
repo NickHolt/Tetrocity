@@ -6,7 +6,7 @@ Tetrocity is an intense take on Tetris with a faster pace and a slew of new game
 How To Run
 =========
 
-Tetrocity is currently in the process of becoming hosted online. In the meantime, use the .jar included at the top level of this repo. Alternatively, you can download the full source code and compile it yourself. The entry point is src/control/Tetrocity.java.
+Tetrocity is available to play as a JWS application here: http://cusg.eecs.berkeley.edu/~nickholt/, or by downloading and running the .jar included in this repo. If security is a concern, feel free to clone this repo and compile if yourself! All necessary resources have been included. 
 
 Rules
 =========
