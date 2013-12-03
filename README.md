@@ -6,7 +6,7 @@ Tetrocity is an intense take on Tetris with a faster pace and a slew of new game
 How To Run
 =========
 
-Tetrocity is available to play as a JWS application here: http://cusg.eecs.berkeley.edu/~nickholt/, or by downloading and running the .jar included in this repo. If security is a concern, feel free to clone this repo and compile if yourself! All necessary resources have been included. 
+Tetrocity is available to play as a JWS application here: http://cusg.eecs.berkeley.edu/~nickholt/ (won't work on 32-bit browsers like OSX Chrome), or by downloading and running the .jar included in this repo. If security is a concern, feel free to clone this repo and compile if yourself! All necessary resources have been included. 
 
 Rules
 =========
