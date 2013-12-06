@@ -61,6 +61,7 @@ public class Engine extends JFrame{
     private JLabel mScoreBar;
     /* Game states. */
     private int mLevel, mLinesClearedThisLevel;
+    private float mDropPeriod;
     private boolean mIsWelcoming, mIsPaused, mIsHalted, mSoundEffectsEnabled;
     /* Ability states. */
     private boolean mBoostEnabled, mBoostAvailable, mBoostUnlocked;
@@ -121,16 +122,16 @@ public class Engine extends JFrame{
         SoundEffect.GAME_START.play();
         
         /* Run the game. */
-        float dropPeriod = (1 / 
-                ((float) INITIAL_DROP_SPEED * mLevelParameters.getLevelDropFactor(mLevel))) * 1000,
-                logicPeriod = (1 / (float) LOGICAL_FPS) * 1000;
+        mDropPeriod = (1 / 
+                ((float) INITIAL_DROP_SPEED * mLevelParameters.getLevelDropFactor(mLevel))) * 1000;
+        float logicPeriod = (1 / (float) LOGICAL_FPS) * 1000;
                         
         double dropTime = 0, 
                 logicTime = 0; //The last system time these operations ran
                 
         while (true) {
             if (!mZeroGravityEnabled 
-                    && System.currentTimeMillis() >= dropTime + dropPeriod) { //drop Tetriminoes
+                    && System.currentTimeMillis() >= dropTime + mDropPeriod) { //drop Tetriminoes
                 mBoard.shiftAllLiveTetriminoes(Direction.SOUTH);
                 dropTime = System.currentTimeMillis();
             }
@@ -138,7 +139,7 @@ public class Engine extends JFrame{
                 if (mLinesClearedThisLevel >= mLevelParameters.getNextLevelLinesCleared(mLevel)) {
                     mLinesClearedThisLevel = 0;
                     mLevel++;
-                    dropPeriod = (1 / (float) (INITIAL_DROP_SPEED * 
+                    mDropPeriod = (1 / (float) (INITIAL_DROP_SPEED * 
                             Math.pow(DROP_SPEED_INCREASE_FACTOR, 
                                     mLevelParameters.getLevelDropFactor(mLevel)))) * 1000;
                     mTetriminoFactory.
@@ -595,6 +596,8 @@ public class Engine extends JFrame{
     /** Runs the welcome protocol. This resets all state variables and components. 
      */
     private void restart() {
+        mDropPeriod = (1 / 
+                ((float) INITIAL_DROP_SPEED * mLevelParameters.getLevelDropFactor(mLevel))) * 1000;
         mLevel = 1;
         mLinesClearedThisLevel = 0;
         mPlayer.resetScore();
@@ -630,6 +633,10 @@ public class Engine extends JFrame{
         
         mIsPaused = false;
         mIsHalted = false;        
+        
+        if (mSoundEffectsEnabled) {
+            SoundEffect.GAME_START.play();
+        }
     }
     
     /** Runs the halt protocol. This simply displays the appropriate message, and waits for the 
@@ -765,7 +772,7 @@ public class Engine extends JFrame{
                 .getResource("/resources/images/boost_score.png"));  
         
         mAbilityPanel0.setImage(image);
-        mAbilityPanel0.setBottomText("Score Boost");
+        mAbilityPanel0.setBottomText("Boost Score");
     }
 
     /** Sets the second ImagePanel's graphic to represent the new straight-line ability. 
@@ -801,7 +808,7 @@ public class Engine extends JFrame{
     /** Sets the welcome message on this Engine's score bar. 
      */
     private void setWelcomeMessage() {
-        String welcome = "<html><p align = center>==CONTROLS==<br />Left/Down/Right : Shift <br />z/x/Up : Rotate<br />"
+        String welcome = "<html><p align = center>==CONTROLS==<br />Left/Down/Right : Move <br />z/x/Up : Rotate<br />"
                 + "Shift : Store<br />Space : Drop<br />a/s/d/f : Activate ability"
                 + "<br >m : Toggle sound</p>"
                 + "<p align = center><br>Press 'space' to start! Good luck!</p></html>";
@@ -819,7 +826,7 @@ public class Engine extends JFrame{
     /** Sets the paused message on this Engine's score bar. 
      */
     private void setPausedMessage() {
-        String paused = "<html><p align = center>==CONTROLS==<br />Left/Down/Right : Shift <br />z/x/Up : Rotate<br />"
+        String paused = "<html><p align = center>==CONTROLS==<br />Left/Down/Right : Move <br />z/x/Up : Rotate<br />"
                 + "Shift : Store<br />Space : Drop<br />a/s/d/f : Activate ability"
                 + "<br >m : Toggle sound</p>"
                 + "<p align = center><br>PAUSED. Press 'Escape' to get back in the game!</p></html>";
