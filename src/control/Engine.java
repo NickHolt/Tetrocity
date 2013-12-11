@@ -1000,12 +1000,12 @@ public class Engine extends JFrame{
             mLevelParameters[22] = new int[]{12, 20, 5, 5, 9};
             mLevelParameters[23] = new int[]{12, 20, 5, 5, 9};
             
-            mLevelParameters[24] = new int[]{12, 18, 3, 6, 10};
-            mLevelParameters[25] = new int[]{12, 18, 3, 6, 10};
-            mLevelParameters[26] = new int[]{14, 18, 4, 6, 10};
-            mLevelParameters[27] = new int[]{14, 18, 4, 6, 11};
-            mLevelParameters[28] = new int[]{16, 18, 5, 6, 11};
-            mLevelParameters[29] = new int[]{16, 18, 6, 6, 11};
+            mLevelParameters[24] = new int[]{12, 16, 4, 5, 10};
+            mLevelParameters[25] = new int[]{13, 14, 4, 5, 10};
+            mLevelParameters[26] = new int[]{14, 12, 4, 5, 10};
+            mLevelParameters[27] = new int[]{15, 18, 3, 6, 11};
+            mLevelParameters[28] = new int[]{16, 16, 3, 6, 11};
+            mLevelParameters[29] = new int[]{16, 18, 5, 6, 11};
         }
         
         /**
