@@ -50,7 +50,7 @@ public class Engine extends JFrame{
     public static final int STRAIGHT_LINE_ABILITY_COOLDOWN = 60;
     public static final int ZERO_GRAVITY_DURATION = 5;
     public static final int ZERO_GRAVITY_COOLDOWN = 120;
-    public static final int CLEAR_GRID_COOLDOWN = 300;
+    public static final int CLEAR_GRID_COOLDOWN = 450;
     /* Game components. */
     private Board mBoard;
     private TetriminoFactory mTetriminoFactory;
